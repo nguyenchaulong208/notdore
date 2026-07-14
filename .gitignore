@@ -1,0 +1,75 @@
+# ============================
+# PYTHON
+# ============================
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+
+# Virtual environment
+venv/
+env/
+.venv/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# ============================
+# FASTAPI / UVICORN
+# ============================
+*.log
+*.pid
+
+# ============================
+# ENVIRONMENT VARIABLES
+# ============================
+.env
+.env.local
+.env.production
+.env.development
+
+# ============================
+# DATABASE / MIGRATIONS
+# ============================
+# SQLite (nếu dùng tạm)
+*.db
+*.sqlite3
+
+# Alembic
+alembic/versions/*.pyc
+alembic/*.pyc
+
+# ============================
+# UPLOAD FILES
+# ============================
+uploads/
+storage/
+files/
+media/
+static/uploads/
+
+# ============================
+# EDITOR / OS FILES
+# ============================
+.DS_Store
+Thumbs.db
+
+# VSCode
+.vscode/
+*.code-workspace
+
+# PyCharm
+.idea/
+
+# ============================
+# CACHE / BUILD
+# ============================
+dist/
+build/
+*.egg-info/
+.cache/
+# ============================
+# SCRIPTS DATABASE
+# ============================
+scriptsDB/
