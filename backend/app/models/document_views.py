@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, Text, TIMESTAMP, ForeignKey
 from sqlalchemy.sql import func
-from database import Base
+from backend.app.database import Base
 
 class DocumentView(Base):
     __tablename__ = "document_views"

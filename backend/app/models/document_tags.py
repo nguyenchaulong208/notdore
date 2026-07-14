@@ -1,5 +1,5 @@
 from sqlalchemy import Column, Integer, Text, ForeignKey
-from database import Base
+from backend.app.database import Base
 
 class DocumentTag(Base):
     __tablename__ = "document_tags"
