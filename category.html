@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+	<title>NotDore</title>
+
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta name="description" content="NotDore - Kho tài liệu pháp luật">
+	<link rel="shortcut icon" href="favicon.ico">
+
+	<link href="https://fonts.googleapis.com/css?family=Quicksand:700|Roboto:400,400i,700&display=swap"
+		rel="stylesheet">
+
+	<script defer src="assets/fontawesome/js/all.min.js"></script>
+	<link id="theme-style" rel="stylesheet" href="assets/css/theme.css">
+
+	<style>
+		.doc-list {
+			list-style: none;
+			padding: 0;
+			margin: 0;
+		}
+		.doc-list li {
+			padding: 0.625rem 1rem;
+			border-bottom: 1px solid #e9ecef;
+			display: flex;
+			align-items: baseline;
+			gap: 0.5rem;
+		}
+		.doc-list li:last-child {
+			border-bottom: none;
+		}
+		.doc-list .doc-code {
+			font-weight: 700;
+			font-family: 'Quicksand', sans-serif;
+			color: #1c1e2e;
+			font-size: 0.875rem;
+			white-space: nowrap;
+		}
+		.doc-list .doc-title {
+			color: #4c527d;
+			font-size: 0.85rem;
+			line-height: 1.4;
+		}
+		.doc-list-wrapper {
+			background: #fff;
+			border-radius: 0.5rem;
+			box-shadow: 0 5px 20px -4px rgba(0,0,0,0.08);
+			padding: 1rem;
+		}
+		.doc-list-wrapper .list-title {
+			font-size: 0.95rem;
+			font-weight: bold;
+			font-family: 'Quicksand', sans-serif;
+			color: #ed6524;
+			margin-bottom: 0.75rem;
+			padding-bottom: 0.5rem;
+			border-bottom: 2px solid #ed6524;
+		}
+		.loading {
+			text-align: center;
+			padding: 3rem 0;
+			color: #4c527d;
+		}
+		.loading i {
+			font-size: 2rem;
+			color: #ed6524;
+			margin-bottom: 1rem;
+		}
+		.error-msg {
+			text-align: center;
+			padding: 3rem 1rem;
+			color: #dc3545;
+		}
+		.error-msg i {
+			font-size: 2rem;
+			margin-bottom: 1rem;
+		}
+	</style>
+</head>
+
+<body>
+	<header class="header">
+		<div class="branding">
+			<div class="container-fluid position-relative py-3">
+				<div class="logo-wrapper">
+					<div class="site-logo"><a class="navbar-brand" href="index.html"><img class="logo-icon me-2"
+								src="assets/images/site-logo.svg" alt="logo"><span class="logo-text">NotDore</span></a>
+					</div>
+				</div>
+			</div>
+		</div>
+	</header>
+
+	<!-- LẤY DATA TỪ BACKEND QUA API VÀ HIỂN THỊ TRÊN GIAO DIỆN NGƯỜI DÙNG -->
+	 
+	<section class="hero-section" id="hero-section">
+		<div class="container">
+			<div class="row" id="hero-row"></div>
+		</div>
+	</section>
+
+	<section id="info-section" class="content-section">
+		<div class="container">
+			<div class="single-col-max mx-auto" id="overview-wrap">
+				<h2 class="section-heading text-center mb-5" id="overview-title">Tổng quan</h2>
+				<div class="row">
+					<div class="col-12 mb-5">
+						<div class="key-points mb-4 text-center">
+							<ul class="key-points-list list-unstyled mb-4 mx-auto d-inline-block text-start" id="overview-list"></ul>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</section>
+
+	<section id="documents-section" class="benefits-section theme-bg-light-gradient py-5">
+		<div class="container py-5">
+			<h2 class="section-heading text-center mb-3" id="doc-section-title">VĂN BẢN</h2>
+			<div class="section-intro single-col-max mx-auto text-center mb-5" id="doc-section-intro">
+				Danh sách văn bản được cập nhật theo thời gian.
+			</div>
+			<div class="row text-center" id="doc-grid"></div>
+		</div>
+	</section>
+
+	<section id="audience-section" class="audience-section py-5 d-none">
+		<div class="container">
+			<h2 class="section-heading text-center mb-4">Đối tượng áp dụng</h2>
+			<div class="section-intro single-col-max mx-auto text-center mb-5" id="audience-intro"></div>
+			<div class="audience mx-auto" id="audience-list"></div>
+		</div>
+	</section>
+
+	<footer class="footer">
+		<div class="footer-bottom text-center py-5">
+			<small class="copyright">Designed with <span class="sr-only">love</span><i class="fas fa-heart"
+					style="color: #fb866a;"></i> by <a class="theme-link" href="http://themes.3rdwavemedia.com"
+					target="_blank">Xiaoying Riley</a> for developers — Customized for NOTDORE by Theodore</small>
+		</div>
+	</footer>
+
+	<script src="assets/plugins/popper.min.js"></script>
+	<script src="assets/plugins/bootstrap/js/bootstrap.min.js"></script>
+	<script src="assets/plugins/smoothscroll.min.js"></script>
+	<script src="assets/js/main.js"></script>
+
+	<script>
+		const params = new URLSearchParams(window.location.search);
+		const cat = params.get('cat') || 'vat';
+
+		const API_BASE = window.location.origin;
+
+		async function fetchJSON(url) {
+			const res = await fetch(url);
+			if (!res.ok) throw new Error(`HTTP ${res.status}`);
+			return res.json();
+		}
+
+		function renderHero(info, sidebarDocs) {
+			const row = document.getElementById('hero-row');
+			row.innerHTML = `
+				<div class="col-12 col-md-7 pt-5 mb-5 align-self-center">
+					<div class="promo pe-md-3 pe-lg-5">
+						<h1 class="headline mb-3">${info.title}</h1>
+						<div class="subheadline mb-4">${info.description}</div>
+						<div class="cta-holder row gx-md-3 gy-3 gy-md-0">
+							<div class="col-12 col-md-auto">
+								<a class="btn btn-primary w-100" href="#documents-section">Danh sách văn bản</a>
+							</div>
+							<div class="col-12 col-md-auto">
+								<a class="btn btn-secondary scrollto w-100" href="#info-section">Tổng quan</a>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="col-12 col-md-5 mb-5 align-self-center">
+					<div class="doc-list-wrapper" id="sidebar-docs">
+						<div class="list-title"><i class="fas fa-file-alt me-2"></i>Văn bản mới nhất</div>
+						<ul class="doc-list">${sidebarDocs.map(d => `
+							<li>
+								<i class="fas fa-file-alt me-2" style="color:#ed6524;font-size:0.75rem;"></i>
+								<span class="doc-code">${d.code || d.title}</span>
+								<span class="doc-title">${d.title}</span>
+							</li>
+						`).join('')}</ul>
+					</div>
+				</div>
+			`;
+		}
+
+		function renderOverview(info) {
+			document.getElementById('overview-title').textContent = `Tổng quan về ${info.title}`;
+			const list = document.getElementById('overview-list');
+			list.innerHTML = info.overview.map(p =>
+				`<li><i class="fas fa-check-circle me-2"></i>${p}</li>`
+			).join('');
+		}
+
+		function renderDocs(docs) {
+			const grid = document.getElementById('doc-grid');
+			if (!docs.length) {
+				grid.innerHTML = '<div class="col-12"><p class="text-muted">Chưa có văn bản nào trong danh mục này.</p></div>';
+				return;
+			}
+			const icons = ['file-alt', 'gavel', 'book', 'file-invoice', 'exchange-alt', 'percent', 'file-contract', 'envelope', 'chart-line', 'hand-holding-heart', 'star', 'calculator'];
+			grid.innerHTML = docs.map((d, i) => `
+				<div class="item col-12 col-md-6 col-lg-4">
+					<div class="item-inner p-3 p-lg-4">
+						<div class="item-header mb-3">
+							<div class="item-icon"><i class="fas fa-${icons[i % icons.length]}"></i></div>
+							<h3 class="item-heading">${d.code || 'Văn bản'}</h3>
+						</div>
+						<div class="item-desc">${d.title}${d.description ? ' — ' + d.description : ''}</div>
+					</div>
+				</div>
+			`).join('');
+		}
+
+		function renderAudience(info) {
+			const section = document.getElementById('audience-section');
+			section.classList.remove('d-none');
+			document.getElementById('audience-intro').textContent =
+				`${info.title} áp dụng cho các đối tượng theo quy định của pháp luật.`;
+			const list = document.getElementById('audience-list');
+			list.innerHTML = info.audience.map(a => `
+				<div class="item row gx-3">
+					<div class="col-auto item-icon"><i class="fas fa-${a.icon}"></i></div>
+					<div class="col">
+						<h4 class="item-title">${a.title}</h4>
+						<div class="item-desc">${a.desc}</div>
+					</div>
+				</div>
+			`).join('');
+		}
+
+		async function init() {
+			try {
+				const [info, docs] = await Promise.all([
+					fetchJSON(`${API_BASE}/api/category-info?cat=${cat}`),
+					fetchJSON(`${API_BASE}/api/documents?cat=${cat}`)
+				]);
+
+				document.title = `${info.title} - NotDore`;
+
+				renderHero(info, docs.slice(0, 6));
+				renderOverview(info);
+				renderDocs(docs);
+				renderAudience(info);
+
+			} catch (err) {
+				console.error(err);
+				document.getElementById('hero-row').innerHTML = `
+					<div class="col-12 error-msg">
+						<i class="fas fa-exclamation-triangle"></i>
+						<p>Không thể tải dữ liệu. Vui lòng đảm bảo backend đang chạy.</p>
+						<a class="btn btn-primary" href="index.html">Về trang chủ</a>
+					</div>
+				`;
+			}
+		}
+
+		init();
+	</script>
+</body>
+
+</html>
