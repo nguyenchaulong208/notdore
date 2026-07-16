@@ -1,23 +1,10 @@
 const SUPABASE = {
-  url: '',
-  key: '',
+  url: "https://thmvaufuaxfoflyndrcq.supabase.co",
+  key: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRobXZhdWZ1YXhmb2ZseW5kcmNxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQwNjY2NzMsImV4cCI6MjA5OTY0MjY3M30.aHbFvIVjSzTItZWfbwkAGgIkTqoX9sOc-gl4gCFu2hg",
 
   async init() {
-    if (this.url) return;
-
-    try {
-      const res = await fetch('/api/env');
-      const cfg = await res.json();
-
-      this.url = cfg.url || '';
-      this.key = cfg.key || '';
-
-      if (!this.url || !this.key) {
-        console.warn('[NotDore] Không lấy được SUPABASE_URL hoặc SUPABASE_ANON_KEY từ API env.');
-      }
-    } catch (e) {
-      console.error('Không thể load Supabase config:', e);
-    }
+    // HTML thuần: không cần fetch env
+    return true;
   },
 
   headers() {
@@ -29,8 +16,6 @@ const SUPABASE = {
   },
 
   async query(table, params = {}) {
-    if (!this.url) throw new Error('Supabase chưa được khởi tạo');
-
     const query = new URLSearchParams();
 
     if (params.select) query.set('select', params.select);
