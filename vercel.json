@@ -1,0 +1,10 @@
+{
+  "functions": {
+    "api/env.js": {
+      "runtime": "nodejs20.x"
+    },
+    "api/category.js": {
+      "runtime": "nodejs20.x"
+    }
+  }
+}
