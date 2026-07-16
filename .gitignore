@@ -74,3 +74,10 @@ build/
 # SCRIPTS DATABASE
 # ============================
 scriptsDB/
+
+# ============================
+# NEXT.JS
+# ============================
+node_modules/
+.next/
+out/
