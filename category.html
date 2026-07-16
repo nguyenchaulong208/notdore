@@ -16,6 +16,7 @@
 	<script defer src="assets/fontawesome/js/all.min.js"></script>
 	<link id="theme-style" rel="stylesheet" href="assets/css/theme.css">
 	<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+	<script src="assets/js/config.js"></script>
 
 	<style>
 		.doc-list {
@@ -151,8 +152,8 @@
 
 	<script>
 		/* ===== Cấu hình Supabase ===== */
-		const SUPABASE_URL = '';
-		const SUPABASE_ANON_KEY = '';
+		const SUPABASE_URL = window.SUPABASE_URL || '';
+		const SUPABASE_ANON_KEY = window.SUPABASE_ANON_KEY || '';
 
 		const TAG_MAP = {
 			vat: 'thue-gtgt', tncn: 'thue-tncn',
