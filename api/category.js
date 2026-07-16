@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
+import ws from 'ws';
 
 const TAG_MAP = {
   vat:  'thue-gtgt',
@@ -11,7 +12,10 @@ function createSupabaseClient() {
   const url = process.env.SUPABASE_URL;
   const key = process.env.SUPABASE_ANON_KEY;
   if (!url || !key) throw new Error('SUPABASE_URL hoặc SUPABASE_ANON_KEY chưa được cấu hình.');
-  return createClient(url, key);
+  return createClient(url, key, {
+    global: { fetch },
+    realtime: { transport: ws },
+  });
 }
 
 export default async function handler(req, res) {

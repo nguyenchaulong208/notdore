@@ -5,6 +5,7 @@
  * Truy cập: https://<your-vercel-domain>/api/debug?cat=vat
  */
 import { createClient } from '@supabase/supabase-js';
+import ws from 'ws';
 
 const TAG_MAP = {
   vat:  'thue-gtgt',
@@ -33,7 +34,10 @@ export default async function handler(req, res) {
     return res.status(200).json({ ...report, conclusion: '❌ Thiếu env vars – dừng tại đây.' });
   }
 
-  const supabase = createClient(url, key);
+  const supabase = createClient(url, key, {
+    global: { fetch },
+    realtime: { transport: ws },
+  });
 
   // ── Bước 1: Ping đơn giản – đọc 1 dòng từ bảng documents ────────────────
   const { data: pingData, error: pingError } = await supabase
