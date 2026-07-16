@@ -8,6 +8,8 @@ from sqlalchemy.orm import Session
 
 from backend.app.database import SessionLocal
 from backend.app.models.documents import Document
+from backend.app.models.document_tags import DocumentTag
+from backend.app.models.document_tag_map import DocumentTagMap
 
 app = FastAPI()
 
@@ -17,6 +19,13 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+TAG_MAP = {
+    "vat": "thue-gtgt",
+    "tncn": "thue-tncn",
+    "tndn": "thue-tndn",
+    "bhxh": "bhxh",
+}
 
 CATEGORY_INFO = {
     "vat": {
@@ -90,14 +99,23 @@ CATEGORY_INFO = {
 }
 
 
-def get_docs(cat: str):
+def get_docs_by_tag(tag_name: str):
     try:
         db: Session = SessionLocal()
-        docs = db.query(Document).filter(Document.category.ilike(f"%{cat}%")).all()
+        tag = db.query(DocumentTag).filter(DocumentTag.name == tag_name).first()
+        if not tag:
+            db.close()
+            return []
+        rows = (
+            db.query(Document)
+            .join(DocumentTagMap, DocumentTagMap.document_id == Document.id)
+            .filter(DocumentTagMap.tag_id == tag.id)
+            .all()
+        )
         db.close()
         return [
             {"id": d.id, "code": d.code or "", "title": d.title}
-            for d in docs
+            for d in rows
         ]
     except Exception:
         return None
@@ -113,7 +131,10 @@ def api_category_info(cat: str = Query(...)):
 
 @app.get("/api/documents")
 def api_documents(cat: str = Query(...)):
-    docs = get_docs(cat)
+    tag_name = TAG_MAP.get(cat)
+    if not tag_name:
+        return JSONResponse({"error": "Category not found"}, status_code=404)
+    docs = get_docs_by_tag(tag_name)
     if docs is None:
         return JSONResponse({"error": "Database unavailable"}, status_code=503)
     return docs
