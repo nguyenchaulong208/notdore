@@ -15,7 +15,6 @@ function createSupabaseClient() {
 }
 
 export default async function handler(req, res) {
-  // Cache 5 phút ở CDN (Vercel Edge), stale-while-revalidate 60 phút
   res.setHeader('Cache-Control', 's-maxage=300, stale-while-revalidate=3600');
 
   const { cat } = req.query;
@@ -27,7 +26,7 @@ export default async function handler(req, res) {
     const supabase = createSupabaseClient();
     const tagName  = TAG_MAP[cat];
 
-    // Bước 1: Lấy tag ID
+    // Bước 1: Lấy tag ID theo tên
     const { data: tag, error: tagError } = await supabase
       .from('document_tags')
       .select('id')
@@ -38,7 +37,7 @@ export default async function handler(req, res) {
       return res.json({ docs: [], total: 0 });
     }
 
-    // Bước 2: Lấy document IDs qua bảng mapping
+    // Bước 2: Lấy danh sách document_id được gán tag này
     const { data: mapping, error: mapError } = await supabase
       .from('document_tag_map')
       .select('document_id')
@@ -50,16 +49,39 @@ export default async function handler(req, res) {
 
     const ids = mapping.map(m => m.document_id);
 
-    // Bước 3: Lấy thông tin văn bản, sắp xếp theo mã văn bản
-    const { data: docs, error: docsError } = await supabase
-      .from('documents')
-      .select('id, code, title')
-      .in('id', ids)
-      .order('code', { ascending: true });
+    // Bước 3 & 4: Lấy thông tin documents + files song song
+    const [docsResult, filesResult] = await Promise.all([
+      supabase
+        .from('documents')
+        .select('id, code, title, description, created_at')
+        .in('id', ids)
+        .order('code', { ascending: true }),
 
-    if (docsError) throw docsError;
+      supabase
+        .from('document_files')
+        .select('document_id, drive_type, drive_view_url, drive_download_url, mime_type')
+        .in('document_id', ids),
+    ]);
 
-    res.json({ docs: docs || [], total: (docs || []).length });
+    if (docsResult.error) throw docsResult.error;
+
+    // Gộp file vào document (mỗi document lấy file đầu tiên)
+    const fileMap = {};
+    for (const f of filesResult.data || []) {
+      if (!fileMap[f.document_id]) fileMap[f.document_id] = f;
+    }
+
+    const docs = (docsResult.data || []).map(d => ({
+      id:            d.id,
+      code:          d.code,
+      title:         d.title,
+      description:   d.description,
+      created_at:    d.created_at,
+      file:          fileMap[d.id] ?? null,
+    }));
+
+    res.json({ docs, total: docs.length });
+
   } catch (err) {
     console.error('[NotDore] Supabase query error:', err.message);
     res.status(500).json({ error: 'Không thể tải dữ liệu. Vui lòng thử lại sau.' });

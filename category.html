@@ -225,22 +225,39 @@
 				return;
 			}
 			el.innerHTML = docs.map((d, i) => {
-				const fileLink = d.file_url
-					? '<a href="' + esc(d.file_url) + '" class="btn btn-sm btn-outline-primary mt-2" target="_blank" rel="noopener"><i class="fas fa-download me-1"></i>Tải xuống</a>'
+				// Lấy link từ bảng document_files (cấu trúc mới)
+				const viewUrl     = d.file?.drive_view_url     || '';
+				const downloadUrl = d.file?.drive_download_url || '';
+
+				const fileButtons = viewUrl
+					? '<div class="mt-2 d-flex gap-2 flex-wrap justify-content-center">' +
+						'<a href="' + esc(viewUrl) + '" class="btn btn-sm btn-outline-primary" target="_blank" rel="noopener">' +
+							'<i class="fas fa-eye me-1"></i>Xem online' +
+						'</a>' +
+						(downloadUrl
+							? '<a href="' + esc(downloadUrl) + '" class="btn btn-sm btn-outline-secondary" target="_blank" rel="noopener">' +
+								'<i class="fas fa-download me-1"></i>Tải xuống' +
+							  '</a>'
+							: '') +
+					  '</div>'
 					: '';
-				const dateStr = d.issued_date
-					? '<div style="font-size:0.8rem;color:#6c757d;margin-top:0.25rem">' + esc(d.issued_date) + '</div>'
+
+				const dateStr = d.created_at
+					? '<div style="font-size:0.8rem;color:#6c757d;margin-top:0.25rem">' +
+						esc(new Date(d.created_at).toLocaleDateString('vi-VN')) +
+					  '</div>'
 					: '';
+
 				return (
 					'<div class="item col-12 col-md-6 col-lg-4">' +
 						'<div class="item-inner p-3 p-lg-4">' +
 							'<div class="item-header mb-3">' +
 								'<div class="item-icon"><i class="fas fa-' + ICONS[i % ICONS.length] + '"></i></div>' +
-								'<h3 class="item-heading">' + esc(d.code) + '</h3>' +
+								'<h3 class="item-heading">' + esc(d.code || '—') + '</h3>' +
 							'</div>' +
 							'<div class="item-desc">' + esc(d.title) + '</div>' +
 							dateStr +
-							fileLink +
+							fileButtons +
 						'</div>' +
 					'</div>'
 				);
