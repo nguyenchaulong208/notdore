@@ -15,6 +15,7 @@
 
 	<script defer src="assets/fontawesome/js/all.min.js"></script>
 	<link id="theme-style" rel="stylesheet" href="assets/css/theme.css">
+	<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 
 	<style>
 		.doc-list {
@@ -149,11 +150,90 @@
 	<script src="assets/js/main.js"></script>
 
 	<script>
+		/* ===== Cấu hình Supabase ===== */
+		const SUPABASE_URL = '';
+		const SUPABASE_ANON_KEY = '';
+
+		const TAG_MAP = {
+			vat: 'thue-gtgt', tncn: 'thue-tncn',
+			tndn: 'thue-tndn', bhxh: 'bhxh',
+		};
+
+		const CATEGORY_INFO = {
+			vat: {
+				title: "Thuế Giá Trị Gia Tăng", short: "Thuế VAT",
+				description: "Tổng hợp các văn bản pháp luật về thuế giá trị gia tăng (VAT), bao gồm Luật, Nghị định, Thông tư hướng dẫn và các tài liệu liên quan.",
+				overview: [
+					"Thuế giá trị gia tăng (VAT) là thuế tính trên giá trị tăng thêm của hàng hóa, dịch vụ.",
+					"Đối tượng chịu thuế: hàng hóa, dịch vụ sản xuất, kinh doanh và nhập khẩu.",
+					"Các mức thuế suất: 0%, 5%, 10% (thuế suất cơ bản).",
+					"Phương pháp tính: khấu trừ thuế và tính trực tiếp.",
+					"Đối tượng không chịu thuế: 26 nhóm hàng hóa, dịch vụ theo quy định.",
+					"Văn bản hiện hành: Luật số 13/2008/QH12 và các văn bản sửa đổi, bổ sung."
+				],
+				audience: [
+					{icon:"building",title:"Doanh nghiệp sản xuất, kinh doanh",desc:"Áp dụng cho tất cả doanh nghiệp có hoạt động sản xuất, kinh doanh hàng hóa, dịch vụ chịu thuế GTGT."},
+					{icon:"user-tie",title:"Hộ kinh doanh cá thể",desc:"Hộ kinh doanh có doanh thu từ 100 triệu đồng/năm trở lên phải nộp thuế GTGT."},
+					{icon:"ship",title:"Tổ chức, cá nhân nhập khẩu",desc:"Tổ chức, cá nhân nhập khẩu hàng hóa chịu thuế GTGT phải kê khai và nộp thuế GTGT hàng nhập khẩu."}
+				]
+			},
+			tncn: {
+				title: "Thuế Thu Nhập Cá Nhân", short: "Thuế TNCN",
+				description: "Tổng hợp các văn bản pháp luật về thuế thu nhập cá nhân (TNCN), bao gồm Luật, Nghị định, Thông tư và các hướng dẫn liên quan.",
+				overview: [
+					"Thuế thu nhập cá nhân là thuế đánh vào thu nhập của cá nhân phát sinh trong kỳ tính thuế.",
+					"Đối tượng nộp thuế: cá nhân cư trú và cá nhân không cư trú có thu nhập chịu thuế.",
+					"Biểu thuế lũy tiến từng phần: 7 bậc thuế từ 5% đến 35%.",
+					"Mức giảm trừ gia cảnh: 11 triệu đồng/tháng đối với người nộp thuế.",
+					"Các khoản thu nhập được miễn thuế theo quy định của pháp luật.",
+					"Văn bản hiện hành: Luật số 04/2007/QH12 và các văn bản sửa đổi, bổ sung."
+				],
+				audience: [
+					{icon:"user-tie",title:"Người lao động làm công hưởng lương",desc:"Thu nhập từ tiền lương, tiền công và các khoản thu nhập tương tự phải kê khai và nộp thuế TNCN."},
+					{icon:"chart-pie",title:"Cá nhân kinh doanh",desc:"Cá nhân sản xuất, kinh doanh hàng hóa, dịch vụ thuộc đối tượng nộp thuế TNCN theo quy định."},
+					{icon:"home",title:"Cá nhân có thu nhập từ đầu tư vốn, chuyển nhượng",desc:"Thu nhập từ đầu tư vốn, chuyển nhượng bất động sản, chuyển nhượng vốn và các khoản thu nhập khác."}
+				]
+			},
+			tndn: {
+				title: "Thuế Thu Nhập Doanh Nghiệp", short: "Thuế TNDN",
+				description: "Tổng hợp các văn bản pháp luật về thuế thu nhập doanh nghiệp (TNDN), bao gồm Luật, Nghị định, Thông tư và các hướng dẫn liên quan.",
+				overview: [
+					"Thuế thu nhập doanh nghiệp là thuế đánh trên thu nhập chịu thuế của doanh nghiệp.",
+					"Thu nhập chịu thuế bao gồm thu nhập từ hoạt động sản xuất, kinh doanh và thu nhập khác.",
+					"Thuế suất phổ thông: 20% (áp dụng cho hầu hết doanh nghiệp).",
+					"Ưu đãi thuế TNDN cho doanh nghiệp trong các lĩnh vực, địa bàn ưu đãi đầu tư.",
+					"Các khoản chi phí được trừ và không được trừ khi tính thuế.",
+					"Văn bản hiện hành: Luật số 14/2008/QH12 và các văn bản sửa đổi, bổ sung."
+				],
+				audience: [
+					{icon:"building",title:"Doanh nghiệp trong nước",desc:"Mọi doanh nghiệp Việt Nam thuộc mọi thành phần kinh tế đều thuộc đối tượng nộp thuế TNDN."},
+					{icon:"globe",title:"Doanh nghiệp có vốn đầu tư nước ngoài",desc:"Doanh nghiệp FDI hoạt động tại Việt Nam chịu thuế TNDN theo quy định, bao gồm cả các ưu đãi đầu tư."},
+					{icon:"landmark",title:"Tổ chức khác có hoạt động sản xuất, kinh doanh",desc:"Các tổ chức khác ngoài doanh nghiệp có hoạt động sản xuất, kinh doanh hàng hóa, dịch vụ chịu thuế TNDN."}
+				]
+			},
+			bhxh: {
+				title: "Bảo Hiểm Xã Hội", short: "BHXH",
+				description: "Tổng hợp các văn bản pháp luật về bảo hiểm xã hội (BHXH), bảo hiểm y tế (BHYT) và bảo hiểm thất nghiệp (BHTN).",
+				overview: [
+					"Bảo hiểm xã hội là sự bảo đảm thay thế hoặc bù đắp một phần thu nhập cho người lao động.",
+					"Các chế độ BHXH bắt buộc: ốm đau, thai sản, tai nạn lao động, hưu trí, tử tuất.",
+					"Mức đóng BHXH bắt buộc: 32% (21.5% từ người sử dụng lao động, 10.5% từ người lao động).",
+					"Bảo hiểm y tế: mức đóng 4.5% (3% từ người sử dụng lao động, 1.5% từ người lao động).",
+					"Bảo hiểm thất nghiệp: mức đóng 2% (1% từ người sử dụng lao động, 1% từ người lao động).",
+					"Văn bản hiện hành: Luật BHXH số 58/2014/QH13 và Luật sửa đổi số 28/2024/QH15."
+				],
+				audience: [
+					{icon:"users",title:"Người lao động",desc:"Người lao động làm việc theo hợp đồng lao động từ đủ 01 tháng trở lên thuộc đối tượng tham gia BHXH bắt buộc."},
+					{icon:"building",title:"Người sử dụng lao động",desc:"Doanh nghiệp, cơ quan, tổ chức, hợp tác xã, hộ kinh doanh có thuê mướn lao động."},
+					{icon:"hand-holding-heart",title:"Người tham gia BHXH tự nguyện",desc:"Công dân Việt Nam từ đủ 15 tuổi trở lên không thuộc đối tượng tham gia BHXH bắt buộc có thể tham gia BHXH tự nguyện."}
+				]
+			}
+		};
+
 		const ICONS = ['file-alt', 'gavel', 'book', 'file-invoice', 'exchange-alt', 'percent', 'file-contract', 'envelope', 'chart-line', 'hand-holding-heart', 'star', 'calculator'];
 
 		const params = new URLSearchParams(window.location.search);
 		const cat = params.get('cat') || 'vat';
-		const API_BASE = window.location.origin;
 
 		function renderHero(info, sidebarDocs) {
 			document.getElementById('hero-row').innerHTML = `
@@ -217,23 +297,44 @@
 		}
 
 		async function init() {
-			try {
-				const [info, docs] = await Promise.all([
-					fetch(`${API_BASE}/api/category-info?cat=${cat}`).then(r => { if (!r.ok) throw new Error('API error'); return r.json(); }),
-					fetch(`${API_BASE}/api/documents?cat=${cat}`).then(r => { if (!r.ok) throw new Error('API error'); return r.json(); })
-				]);
+			const info = CATEGORY_INFO[cat];
+			if (!info) { window.location.href = 'index.html'; return; }
+			document.title = `${info.title} - NotDore`;
 
-				document.title = `${info.title} - NotDore`;
-				renderHero(info, docs);
+			if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
+				document.getElementById('hero-row').innerHTML = `
+					<div class="col-12 error-msg">
+						<i class="fas fa-exclamation-triangle"></i>
+						<p>Vui lòng cấu hình SUPABASE_URL và SUPABASE_ANON_KEY trong category.html.</p>
+						<a class="btn btn-primary" href="index.html">Về trang chủ</a>
+					</div>
+				`;
+				return;
+			}
+
+			try {
+				const supabase = supabaseJs.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+				const tagName = TAG_MAP[cat];
+				const { data: tag } = await supabase.from('document_tags').select('id').eq('name', tagName).single();
+				if (!tag) { renderDocs([]); return; }
+
+				const { data: mapping } = await supabase.from('document_tag_map').select('document_id').eq('tag_id', tag.id);
+				if (!mapping || !mapping.length) { renderDocs([]); return; }
+
+				const ids = mapping.map(m => m.document_id);
+				const { data: docs } = await supabase.from('documents').select('id, code, title').in('id', ids);
+
+				renderHero(info, docs || []);
 				renderOverview(info);
-				renderDocs(docs);
+				renderDocs(docs || []);
 				renderAudience(info);
 			} catch (err) {
 				console.error(err);
 				document.getElementById('hero-row').innerHTML = `
 					<div class="col-12 error-msg">
 						<i class="fas fa-exclamation-triangle"></i>
-						<p>Không thể tải dữ liệu. Vui lòng đảm bảo backend đang chạy.</p>
+						<p>Không thể kết nối Supabase. Vui lòng kiểm tra cấu hình.</p>
 						<a class="btn btn-primary" href="index.html">Về trang chủ</a>
 					</div>
 				`;
