@@ -1,0 +1,4 @@
+// File mẫu cho dev local — COPY sang config.js và điền giá trị thật
+// KHÔNG commit file này với giá trị thật lên Git
+window.SUPABASE_URL = "";
+window.SUPABASE_ANON_KEY = "";
