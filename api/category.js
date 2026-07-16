@@ -53,7 +53,7 @@ export default async function handler(req, res) {
     // Bước 3: Lấy thông tin văn bản, sắp xếp theo mã văn bản
     const { data: docs, error: docsError } = await supabase
       .from('documents')
-      .select('id, code, title, issued_date, file_url')
+      .select('id, code, title')
       .in('id', ids)
       .order('code', { ascending: true });
 
