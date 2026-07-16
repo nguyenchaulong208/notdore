@@ -6,7 +6,8 @@ import os
 
 from backend.app.database import SessionLocal
 from backend.app.models.documents import Document
-from backend.app.models.document_files import DocumentFile
+from backend.app.models.document_tags import DocumentTag
+from backend.app.models.document_tag_map import DocumentTagMap
 
 app = FastAPI()
 
@@ -16,11 +17,16 @@ ASSETS_DIR = os.path.join(ROOT, "assets")
 if os.path.isdir(ASSETS_DIR):
     app.mount("/assets", StaticFiles(directory=ASSETS_DIR), name="assets")
 
+TAG_MAP = {
+    "vat": "thue-gtgt",
+    "tncn": "thue-tncn",
+    "tndn": "thue-tndn",
+    "bhxh": "bhxh",
+}
+
 CATEGORY_INFO = {
     "vat": {
-        "title": "Thuế Giá Trị Gia Tăng",
-        "short": "Thuế VAT",
-        "cat_db": "vat",
+        "title": "Thuế Giá Trị Gia Tăng", "short": "Thuế VAT",
         "description": "Tổng hợp các văn bản pháp luật về thuế giá trị gia tăng (VAT), bao gồm Luật, Nghị định, Thông tư hướng dẫn và các tài liệu liên quan.",
         "overview": [
             "Thuế giá trị gia tăng (VAT) là thuế tính trên giá trị tăng thêm của hàng hóa, dịch vụ.",
@@ -31,15 +37,13 @@ CATEGORY_INFO = {
             "Văn bản hiện hành: Luật số 13/2008/QH12 và các văn bản sửa đổi, bổ sung."
         ],
         "audience": [
-            {"icon": "building", "title": "Doanh nghiệp sản xuất, kinh doanh", "desc": "Áp dụng cho tất cả doanh nghiệp có hoạt động sản xuất, kinh doanh hàng hóa, dịch vụ chịu thuế GTGT."},
-            {"icon": "user-tie", "title": "Hộ kinh doanh cá thể", "desc": "Hộ kinh doanh có doanh thu từ 100 triệu đồng/năm trở lên phải nộp thuế GTGT."},
-            {"icon": "ship", "title": "Tổ chức, cá nhân nhập khẩu", "desc": "Tổ chức, cá nhân nhập khẩu hàng hóa chịu thuế GTGT phải kê khai và nộp thuế GTGT hàng nhập khẩu."}
+            {"icon":"building","title":"Doanh nghiệp sản xuất, kinh doanh","desc":"Áp dụng cho tất cả doanh nghiệp có hoạt động sản xuất, kinh doanh hàng hóa, dịch vụ chịu thuế GTGT."},
+            {"icon":"user-tie","title":"Hộ kinh doanh cá thể","desc":"Hộ kinh doanh có doanh thu từ 100 triệu đồng/năm trở lên phải nộp thuế GTGT."},
+            {"icon":"ship","title":"Tổ chức, cá nhân nhập khẩu","desc":"Tổ chức, cá nhân nhập khẩu hàng hóa chịu thuế GTGT phải kê khai và nộp thuế GTGT hàng nhập khẩu."}
         ]
     },
     "tncn": {
-        "title": "Thuế Thu Nhập Cá Nhân",
-        "short": "Thuế TNCN",
-        "cat_db": "tncn",
+        "title": "Thuế Thu Nhập Cá Nhân", "short": "Thuế TNCN",
         "description": "Tổng hợp các văn bản pháp luật về thuế thu nhập cá nhân (TNCN), bao gồm Luật, Nghị định, Thông tư và các hướng dẫn liên quan.",
         "overview": [
             "Thuế thu nhập cá nhân là thuế đánh vào thu nhập của cá nhân phát sinh trong kỳ tính thuế.",
@@ -50,15 +54,13 @@ CATEGORY_INFO = {
             "Văn bản hiện hành: Luật số 04/2007/QH12 và các văn bản sửa đổi, bổ sung."
         ],
         "audience": [
-            {"icon": "user-tie", "title": "Người lao động làm công hưởng lương", "desc": "Thu nhập từ tiền lương, tiền công và các khoản thu nhập tương tự phải kê khai và nộp thuế TNCN."},
-            {"icon": "chart-pie", "title": "Cá nhân kinh doanh", "desc": "Cá nhân sản xuất, kinh doanh hàng hóa, dịch vụ thuộc đối tượng nộp thuế TNCN theo quy định."},
-            {"icon": "home", "title": "Cá nhân có thu nhập từ đầu tư vốn, chuyển nhượng", "desc": "Thu nhập từ đầu tư vốn, chuyển nhượng bất động sản, chuyển nhượng vốn và các khoản thu nhập khác."}
+            {"icon":"user-tie","title":"Người lao động làm công hưởng lương","desc":"Thu nhập từ tiền lương, tiền công và các khoản thu nhập tương tự phải kê khai và nộp thuế TNCN."},
+            {"icon":"chart-pie","title":"Cá nhân kinh doanh","desc":"Cá nhân sản xuất, kinh doanh hàng hóa, dịch vụ thuộc đối tượng nộp thuế TNCN theo quy định."},
+            {"icon":"home","title":"Cá nhân có thu nhập từ đầu tư vốn, chuyển nhượng","desc":"Thu nhập từ đầu tư vốn, chuyển nhượng bất động sản, chuyển nhượng vốn và các khoản thu nhập khác."}
         ]
     },
     "tndn": {
-        "title": "Thuế Thu Nhập Doanh Nghiệp",
-        "short": "Thuế TNDN",
-        "cat_db": "tndn",
+        "title": "Thuế Thu Nhập Doanh Nghiệp", "short": "Thuế TNDN",
         "description": "Tổng hợp các văn bản pháp luật về thuế thu nhập doanh nghiệp (TNDN), bao gồm Luật, Nghị định, Thông tư và các hướng dẫn liên quan.",
         "overview": [
             "Thuế thu nhập doanh nghiệp là thuế đánh trên thu nhập chịu thuế của doanh nghiệp.",
@@ -69,15 +71,13 @@ CATEGORY_INFO = {
             "Văn bản hiện hành: Luật số 14/2008/QH12 và các văn bản sửa đổi, bổ sung."
         ],
         "audience": [
-            {"icon": "building", "title": "Doanh nghiệp trong nước", "desc": "Mọi doanh nghiệp Việt Nam thuộc mọi thành phần kinh tế đều thuộc đối tượng nộp thuế TNDN."},
-            {"icon": "globe", "title": "Doanh nghiệp có vốn đầu tư nước ngoài", "desc": "Doanh nghiệp FDI hoạt động tại Việt Nam chịu thuế TNDN theo quy định, bao gồm cả các ưu đãi đầu tư."},
-            {"icon": "landmark", "title": "Tổ chức khác có hoạt động sản xuất, kinh doanh", "desc": "Các tổ chức khác ngoài doanh nghiệp có hoạt động sản xuất, kinh doanh hàng hóa, dịch vụ chịu thuế TNDN."}
+            {"icon":"building","title":"Doanh nghiệp trong nước","desc":"Mọi doanh nghiệp Việt Nam thuộc mọi thành phần kinh tế đều thuộc đối tượng nộp thuế TNDN."},
+            {"icon":"globe","title":"Doanh nghiệp có vốn đầu tư nước ngoài","desc":"Doanh nghiệp FDI hoạt động tại Việt Nam chịu thuế TNDN theo quy định, bao gồm cả các ưu đãi đầu tư."},
+            {"icon":"landmark","title":"Tổ chức khác có hoạt động sản xuất, kinh doanh","desc":"Các tổ chức khác ngoài doanh nghiệp có hoạt động sản xuất, kinh doanh hàng hóa, dịch vụ chịu thuế TNDN."}
         ]
     },
     "bhxh": {
-        "title": "Bảo Hiểm Xã Hội",
-        "short": "BHXH",
-        "cat_db": "bhxh",
+        "title": "Bảo Hiểm Xã Hội", "short": "BHXH",
         "description": "Tổng hợp các văn bản pháp luật về bảo hiểm xã hội (BHXH), bảo hiểm y tế (BHYT) và bảo hiểm thất nghiệp (BHTN).",
         "overview": [
             "Bảo hiểm xã hội là sự bảo đảm thay thế hoặc bù đắp một phần thu nhập cho người lao động.",
@@ -88,60 +88,60 @@ CATEGORY_INFO = {
             "Văn bản hiện hành: Luật BHXH số 58/2014/QH13 và Luật sửa đổi số 28/2024/QH15."
         ],
         "audience": [
-            {"icon": "users", "title": "Người lao động", "desc": "Người lao động làm việc theo hợp đồng lao động từ đủ 01 tháng trở lên thuộc đối tượng tham gia BHXH bắt buộc."},
-            {"icon": "building", "title": "Người sử dụng lao động", "desc": "Doanh nghiệp, cơ quan, tổ chức, hợp tác xã, hộ kinh doanh có thuê mướn lao động."},
-            {"icon": "hand-holding-heart", "title": "Người tham gia BHXH tự nguyện", "desc": "Công dân Việt Nam từ đủ 15 tuổi trở lên không thuộc đối tượng tham gia BHXH bắt buộc có thể tham gia BHXH tự nguyện."}
+            {"icon":"users","title":"Người lao động","desc":"Người lao động làm việc theo hợp đồng lao động từ đủ 01 tháng trở lên thuộc đối tượng tham gia BHXH bắt buộc."},
+            {"icon":"building","title":"Người sử dụng lao động","desc":"Doanh nghiệp, cơ quan, tổ chức, hợp tác xã, hộ kinh doanh có thuê mướn lao động."},
+            {"icon":"hand-holding-heart","title":"Người tham gia BHXH tự nguyện","desc":"Công dân Việt Nam từ đủ 15 tuổi trở lên không thuộc đối tượng tham gia BHXH bắt buộc có thể tham gia BHXH tự nguyện."}
         ]
     }
 }
 
-ICON_MAP = {
-    "vat": "laptop-code",
-    "tncn": "js-square",
-    "tndn": "rocketchat",
-    "bhxh": "code-branch"
-}
 
-def get_docs_from_db(cat: str):
+def get_docs_by_tag(tag_name: str):
     try:
         db: Session = SessionLocal()
-        docs = db.query(Document).filter(Document.category.ilike(f"%{cat}%")).all()
+        tag = db.query(DocumentTag).filter(DocumentTag.name == tag_name).first()
+        if not tag:
+            db.close()
+            return []
+        rows = (
+            db.query(Document)
+            .join(DocumentTagMap, DocumentTagMap.document_id == Document.id)
+            .filter(DocumentTagMap.tag_id == tag.id)
+            .all()
+        )
         db.close()
         return [
-            {
-                "id": d.id,
-                "code": d.code or "",
-                "title": d.title,
-                "description": d.description or "",
-                "issued_by": d.issued_by or "",
-                "issued_date": str(d.issued_date) if d.issued_date else ""
-            }
-            for d in docs
+            {"id": d.id, "code": d.code or "", "title": d.title}
+            for d in rows
         ]
     except Exception:
         return None
+
 
 @app.get("/api/category-info")
 def api_category_info(cat: str = Query(...)):
     info = CATEGORY_INFO.get(cat)
     if not info:
         return JSONResponse({"error": "Category not found"}, status_code=404)
-    return {
-        **info,
-        "icon": ICON_MAP.get(cat, "file-alt")
-    }
+    return info
+
 
 @app.get("/api/documents")
 def api_documents(cat: str = Query(...)):
-    docs = get_docs_from_db(cat)
+    tag_name = TAG_MAP.get(cat)
+    if not tag_name:
+        return JSONResponse({"error": "Category not found"}, status_code=404)
+    docs = get_docs_by_tag(tag_name)
     if docs is None:
         return JSONResponse({"error": "Database unavailable"}, status_code=503)
     return docs
 
-@app.get("/category.html")
-def serve_category():
-    return FileResponse(os.path.join(ROOT, "category.html"))
 
 @app.get("/")
 def serve_home():
     return FileResponse(os.path.join(ROOT, "index.html"))
+
+
+@app.get("/category.html")
+def serve_category():
+    return FileResponse(os.path.join(ROOT, "category.html"))
