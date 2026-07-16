@@ -16,7 +16,7 @@
 	<script defer src="assets/fontawesome/js/all.min.js"></script>
 	<link id="theme-style" rel="stylesheet" href="assets/css/theme.css">
 	<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-	<script src="assets/js/config.js"></script>
+	<script src="/api/config.js"></script>
 
 	<style>
 		.doc-list {
@@ -301,17 +301,6 @@
 			const info = CATEGORY_INFO[cat];
 			if (!info) { window.location.href = 'index.html'; return; }
 			document.title = `${info.title} - NotDore`;
-
-			if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
-				document.getElementById('hero-row').innerHTML = `
-					<div class="col-12 error-msg">
-						<i class="fas fa-exclamation-triangle"></i>
-						<p>Vui lòng cấu hình SUPABASE_URL và SUPABASE_ANON_KEY trong category.html.</p>
-						<a class="btn btn-primary" href="index.html">Về trang chủ</a>
-					</div>
-				`;
-				return;
-			}
 
 			try {
 				const supabase = supabaseJs.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
