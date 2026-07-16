@@ -74,8 +74,3 @@ build/
 # SCRIPTS DATABASE
 # ============================
 scriptsDB/
-
-# ============================
-# BUILD OUTPUT (Vercel env inject)
-# ============================
-assets/js/config.js
