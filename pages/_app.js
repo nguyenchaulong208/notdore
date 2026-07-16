@@ -1,5 +1,4 @@
 import Script from 'next/script';
-import '../public/assets/css/theme.css';
 
 export default function App({ Component, pageProps }) {
   return (
