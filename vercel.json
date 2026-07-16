@@ -1,0 +1,10 @@
+{
+  "functions": {
+    "api/env.js": {
+      "runtime": "nodejs24.x"
+    },
+    "api/category.js": {
+      "runtime": "nodejs24.x"
+    }
+  }
+}

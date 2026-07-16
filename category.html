@@ -94,12 +94,9 @@
 	<script src="assets/plugins/popper.min.js"></script>
 	<script src="assets/plugins/bootstrap/js/bootstrap.min.js"></script>
 	<script src="assets/plugins/smoothscroll.min.js"></script>
-	<script src="assets/js/supabase-client.js"></script>
 	<script src="assets/js/main.js"></script>
 	<script>
 		const ICONS = ['file-alt', 'gavel', 'book', 'file-invoice', 'exchange-alt', 'percent', 'file-contract', 'envelope', 'chart-line', 'hand-holding-heart', 'star', 'calculator'];
-
-		const TAG_MAP = { vat: 'thue-gtgt', tncn: 'thue-tncn', tndn: 'thue-tndn', bhxh: 'bhxh' };
 
 		const CATEGORY_INFO = {
 			vat: {
@@ -189,7 +186,6 @@
 			}
 
 			const info = CATEGORY_INFO[cat];
-			const tagName = TAG_MAP[cat];
 
 			document.title = 'NotDore - ' + info.short;
 			document.getElementById('category-title').textContent = info.title;
@@ -207,34 +203,18 @@
 				'</div>'
 			).join('');
 
-			await SUPABASE.init();
-			if (!SUPABASE.url) {
-				document.getElementById('documents-grid').innerHTML = '<div class="col-12"><div class="alert alert-warning">Chưa kết nối được Supabase. Kiểm tra biến môi trường SUPABASE_URL và SUPABASE_ANON_KEY.</div></div>';
-				return;
-			}
-
 			try {
-				const tags = await SUPABASE.query('document_tags', { select: 'id', eq: ['name', tagName], single: true });
-				if (!tags) {
-					document.getElementById('documents-grid').innerHTML = '<div class="col-12"><p class="text-muted">Chưa có văn bản nào.</p></div>';
-					return;
-				}
+				const res = await fetch('/api/category?cat=' + cat);
+				const data = await res.json();
+				if (!res.ok) throw new Error(data.error || 'Request failed');
 
-				const mapping = await SUPABASE.query('document_tag_map', { select: 'document_id', eq: ['tag_id', tags.id] });
-				if (!mapping || !mapping.length) {
-					document.getElementById('documents-grid').innerHTML = '<div class="col-12"><p class="text-muted">Chưa có văn bản nào.</p></div>';
-					return;
-				}
-
-				const ids = mapping.map(m => m.document_id);
-				const docs = await SUPABASE.query('documents', { select: 'id,code,title', in: ['id', ids] });
-
+				const docs = data.docs || [];
 				const sidebarEl = document.getElementById('sidebar-list');
 				const gridEl = document.getElementById('documents-grid');
 				sidebarEl.innerHTML = '';
 				gridEl.innerHTML = '';
 
-				if (!docs || !docs.length) {
+				if (!docs.length) {
 					sidebarEl.innerHTML = '<li class="text-muted" style="padding:0.5rem 1rem">Chưa có văn bản.</li>';
 					gridEl.innerHTML = '<div class="col-12"><p class="text-muted">Chưa có văn bản nào.</p></div>';
 					return;
@@ -262,7 +242,7 @@
 						'</div>';
 				});
 			} catch (err) {
-				document.getElementById('documents-grid').innerHTML = '<div class="col-12"><div class="alert alert-danger">Lỗi kết nối Supabase: ' + err.message + '</div></div>';
+				document.getElementById('documents-grid').innerHTML = '<div class="col-12"><div class="alert alert-danger">Lỗi tải dữ liệu: ' + err.message + '</div></div>';
 			}
 		});
 	</script>
