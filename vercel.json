@@ -1,7 +1,0 @@
-{
-  "functions": {
-    "api/env.js": {
-      "runtime": "nodejs20.x"
-    }
-  }
-}
