@@ -1,25 +1,19 @@
 /**
  * assets/js/admin.js
- * Toàn bộ logic cho trang Admin — NotDore
+ * Admin Tool — sinh SQL INSERT offline (không cần server/Supabase)
  *
- * Chức năng:
- *  1. Nhập đơn lẻ → sinh SQL INSERT
- *  2. Import hàng loạt qua CSV → preview → sinh SQL bulk INSERT
- *  3. Download CSV template
- *  4. Không ghi trực tiếp vào database
+ * Schema: integer SERIAL id, document_files (drive_type, drive_file_id),
+ *         document_texts (content), document_tag_map (composite PK)
  */
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Mapping dữ liệu
-// ─────────────────────────────────────────────────────────────────────────────
 const TAGS = [
-  { key: 'vat',           name: 'thue-gtgt',       label: 'Thuế GTGT' },
-  { key: 'tncn',          name: 'thue-tncn',        label: 'Thuế TNCN' },
-  { key: 'tndn',          name: 'thue-tndn',        label: 'Thuế TNDN' },
-  { key: 'bhxh',          name: 'bhxh',             label: 'BHXH' },
-  { key: 'ke-toan',       name: 'ke-toan',          label: 'Kế toán' },
-  { key: 'hai-quan',      name: 'hai-quan',         label: 'Hải quan' },
-  { key: 'xnk',          name: 'xuat-nhap-khau',   label: 'Xuất nhập khẩu' },
+  { key: 'vat',      name: 'thue-gtgt',      label: 'Thuế GTGT' },
+  { key: 'tncn',     name: 'thue-tncn',      label: 'Thuế TNCN' },
+  { key: 'tndn',     name: 'thue-tndn',      label: 'Thuế TNDN' },
+  { key: 'bhxh',     name: 'bhxh',           label: 'BHXH' },
+  { key: 'ke-toan',  name: 'ke-toan',        label: 'Kế toán' },
+  { key: 'hai-quan', name: 'hai-quan',       label: 'Hải quan' },
+  { key: 'xnk',      name: 'xuat-nhap-khau', label: 'Xuất nhập khẩu' },
 ];
 
 const STATUS_LABEL = {
@@ -35,57 +29,71 @@ const MIME_SHORT = {
   doc:  'application/msword',
 };
 
-// Dữ liệu parse từ CSV (state toàn cục)
 let parsedRows = [];
 
-// ─────────────────────────────────────────────────────────────────────────────
-// UUID v4 (không cần lib bên ngoài)
-// ─────────────────────────────────────────────────────────────────────────────
-function uuid4() {
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
-    const r = Math.random() * 16 | 0;
-    return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
-  });
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// SQL Generator
-// ─────────────────────────────────────────────────────────────────────────────
+// ── SQL helpers ───────────────────────────────────────────────────────────────
 function escSql(str) {
-  if (!str && str !== 0) return 'NULL';
+  if (str === null || str === undefined || str === '') return 'NULL';
   return `'${String(str).replace(/'/g, "''")}'`;
 }
 
 function dateOrNull(val) {
-  if (!val || val.trim() === '') return 'NULL';
-  return escSql(val.trim());
+  if (!val || String(val).trim() === '') return 'NULL';
+  return escSql(String(val).trim());
+}
+
+function intOrNull(val) {
+  if (val === null || val === undefined || String(val).trim() === '') return 'NULL';
+  const n = parseInt(String(val).trim(), 10);
+  return Number.isFinite(n) ? String(n) : 'NULL';
+}
+
+/** Trích drive_file_id từ Google Drive URL hoặc trả về chuỗi gốc nếu đã là ID */
+function parseDriveFileId(urlOrId) {
+  const s = (urlOrId || '').trim();
+  if (!s) return '';
+  const fromPath = s.match(/\/file\/d\/([^/?#]+)/);
+  if (fromPath) return fromPath[1];
+  const fromQuery = s.match(/[?&]id=([^&#]+)/);
+  if (fromQuery) return fromQuery[1];
+  if (!s.includes('://') && /^[\w-]{10,}$/.test(s)) return s;
+  return s;
+}
+
+function resolveDriveFileId(explicit, viewUrl, downloadUrl) {
+  const id = (explicit || '').trim();
+  if (id) return id;
+  return parseDriveFileId(viewUrl) || parseDriveFileId(downloadUrl) || '';
+}
+
+function normalizeMime(raw) {
+  const short = (raw || 'pdf').toLowerCase().trim();
+  return MIME_SHORT[short] || short;
+}
+
+function normalizeDriveType(raw) {
+  const t = (raw || 'google').toLowerCase().trim();
+  return t === 'onedrive' ? 'onedrive' : 'google';
 }
 
 /**
- * Sinh SQL cho một văn bản.
- * @param {object} doc
- * @param {string[]} tagNames  — mảng tag name (thue-gtgt, bhxh…)
+ * Sinh SQL INSERT cho một văn bản (dùng SERIAL id + RETURNING).
  */
 function generateSqlForDoc(doc, tagNames) {
-  const docId  = uuid4();
-  const fileId = uuid4();
-  const hasFile = doc.drive_view_url || doc.drive_download_url;
-  const mime = doc.mime_type || 'application/pdf';
-
   const lines = [];
+  const label = doc.code || doc.title;
 
   lines.push(`-- ───────────────────────────────────────────────────────────`);
-  lines.push(`-- Văn bản: ${doc.code}`);
+  lines.push(`-- Văn bản: ${label}`);
   lines.push(`-- ───────────────────────────────────────────────────────────`);
 
-  lines.push(`WITH doc_${docId.slice(0,8)} AS (`);
+  lines.push(`WITH ins_doc AS (`);
   lines.push(`  INSERT INTO documents`);
-  lines.push(`    (id, code, title, description, issued_date, expiry_date, status)`);
+  lines.push(`    (title, code, description, issued_date, expiry_date, status)`);
   lines.push(`  VALUES (`);
-  lines.push(`    '${docId}',`);
-  lines.push(`    ${escSql(doc.code)},`);
   lines.push(`    ${escSql(doc.title)},`);
-  lines.push(`    ${escSql(doc.description || null)},`);
+  lines.push(`    ${doc.code ? escSql(doc.code) : 'NULL'},`);
+  lines.push(`    ${doc.description ? escSql(doc.description) : 'NULL'},`);
   lines.push(`    ${dateOrNull(doc.issued_date)},`);
   lines.push(`    ${dateOrNull(doc.expiry_date)},`);
   lines.push(`    ${escSql(doc.status || 'hieu_luc')}`);
@@ -93,37 +101,44 @@ function generateSqlForDoc(doc, tagNames) {
   lines.push(`  RETURNING id`);
   lines.push(`)`);
 
+  const driveFileId = resolveDriveFileId(doc.drive_file_id, doc.drive_view_url, doc.drive_download_url);
+  const hasFile = !!driveFileId;
+
   if (hasFile) {
-    lines.push(`, file_${fileId.slice(0,8)} AS (`);
+    lines.push(`, ins_file AS (`);
     lines.push(`  INSERT INTO document_files`);
-    lines.push(`    (id, document_id, drive_view_url, drive_download_url, mime_type)`);
+    lines.push(`    (document_id, drive_type, drive_file_id, drive_view_url, drive_download_url, mime_type, size)`);
     lines.push(`  SELECT`);
-    lines.push(`    '${fileId}',`);
     lines.push(`    id,`);
-    lines.push(`    ${escSql(doc.drive_view_url || null)},`);
-    lines.push(`    ${escSql(doc.drive_download_url || null)},`);
-    lines.push(`    ${escSql(mime)}`);
-    lines.push(`  FROM doc_${docId.slice(0,8)}`);
+    lines.push(`    ${escSql(normalizeDriveType(doc.drive_type))},`);
+    lines.push(`    ${escSql(driveFileId)},`);
+    lines.push(`    ${doc.drive_view_url ? escSql(doc.drive_view_url) : 'NULL'},`);
+    lines.push(`    ${doc.drive_download_url ? escSql(doc.drive_download_url) : 'NULL'},`);
+    lines.push(`    ${doc.mime_type ? escSql(doc.mime_type) : 'NULL'},`);
+    lines.push(`    ${intOrNull(doc.file_size)}`);
+    lines.push(`  FROM ins_doc`);
+    lines.push(`)`);
+  }
+
+  const hasText = doc.content && String(doc.content).trim();
+  if (hasText) {
+    lines.push(`, ins_text AS (`);
+    lines.push(`  INSERT INTO document_texts (document_id, content)`);
+    lines.push(`  SELECT id, ${escSql(doc.content.trim())} FROM ins_doc`);
     lines.push(`)`);
   }
 
   tagNames.forEach((tagName, i) => {
-    const alias = `tag_${i}_${docId.slice(0,4)}`;
-    const prevCte = i === 0 && !hasFile
-      ? `doc_${docId.slice(0,8)}`
-      : i === 0 && hasFile
-        ? `file_${fileId.slice(0,8)}`
-        : `tag_${i-1}_${docId.slice(0,4)}`;
-    lines.push(`, ${alias} AS (`);
+    lines.push(`, ins_tag_${i} AS (`);
     lines.push(`  INSERT INTO document_tag_map (document_id, tag_id)`);
     lines.push(`  SELECT d.id, t.id`);
-    lines.push(`  FROM doc_${docId.slice(0,8)} d`);
+    lines.push(`  FROM ins_doc d`);
     lines.push(`  JOIN document_tags t ON t.name = ${escSql(tagName)}`);
     lines.push(`  ON CONFLICT DO NOTHING`);
     lines.push(`)`);
   });
 
-  lines.push(`SELECT 'OK: ' || id AS result FROM doc_${docId.slice(0,8)};`);
+  lines.push(`SELECT 'OK: id=' || id AS result FROM ins_doc;`);
   lines.push('');
 
   return lines.join('\n');
@@ -136,32 +151,24 @@ function wrapInTransaction(body) {
 function buildSqlHeader(count) {
   return [
     `-- =============================================================`,
-    `-- NotDore — SQL Script tự động sinh bởi Admin Tool`,
+    `-- NotDore — SQL Script (Admin Tool)`,
     `-- Ngày tạo: ${new Date().toLocaleString('vi-VN')}`,
     `-- Số văn bản: ${count}`,
     `-- Chạy trong: Supabase → SQL Editor`,
+    `-- Lưu ý: tag phải tồn tại trong document_tags trước khi chạy`,
     `-- =============================================================`,
     ``,
   ].join('\n');
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// UI Helpers
-// ─────────────────────────────────────────────────────────────────────────────
+// ── UI helpers ────────────────────────────────────────────────────────────────
 function renderSqlHighlight(el, sql) {
-  // Đơn giản: wrap keywords
-  const escaped = sql
-    .replace(/&/g,'&amp;')
-    .replace(/</g,'&lt;')
-    .replace(/>/g,'&gt;');
-
-  const highlighted = escaped
+  const escaped = sql.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  el.innerHTML = escaped
     .replace(/\b(BEGIN|COMMIT|WITH|INSERT|INTO|VALUES|SELECT|FROM|JOIN|ON|WHERE|RETURNING|AS|ON CONFLICT DO NOTHING)\b/g,
       '<span class="kw">$1</span>')
     .replace(/'([^']*)'/g, '<span class="str">\'$1\'</span>')
     .replace(/(--[^\n]*)/g, '<span class="cm">$1</span>');
-
-  el.innerHTML = highlighted;
 }
 
 function copyToClipboard(text) {
@@ -181,18 +188,13 @@ function showToast(msg) {
     position:fixed;bottom:24px;right:24px;z-index:9999;
     background:#0f172a;color:#e2e8f0;padding:10px 18px;
     border-radius:8px;font-size:13px;box-shadow:0 4px 12px rgba(0,0,0,.3);
-    animation:fadein .2s ease;
   `;
   t.textContent = msg;
   document.body.appendChild(t);
   setTimeout(() => t.remove(), 2200);
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Nav routing
-// ─────────────────────────────────────────────────────────────────────────────
 const PANEL_TITLES = {
-  manage:   'Quản lý văn bản',
   single:   'Nhập văn bản đơn lẻ',
   bulk:     'Import hàng loạt',
   schema:   'Sơ đồ Database',
@@ -207,9 +209,7 @@ function switchPanel(panelId) {
   document.getElementById('panel-title').textContent = PANEL_TITLES[panelId] || '';
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// CSV Parser
-// ─────────────────────────────────────────────────────────────────────────────
+// ── CSV ───────────────────────────────────────────────────────────────────────
 function parseCsv(text) {
   const lines = text.trim().split('\n').map(l => l.trimEnd());
   if (lines.length < 2) return { headers: [], rows: [] };
@@ -221,7 +221,7 @@ function parseCsv(text) {
     for (let i = 0; i < line.length; i++) {
       const ch = line[i];
       if (ch === '"') {
-        if (inQuotes && line[i+1] === '"') { current += '"'; i++; }
+        if (inQuotes && line[i + 1] === '"') { current += '"'; i++; }
         else inQuotes = !inQuotes;
       } else if (ch === ',' && !inQuotes) {
         result.push(current.trim());
@@ -235,37 +235,37 @@ function parseCsv(text) {
   }
 
   const headers = parseLine(lines[0]);
-  const rows = lines.slice(1)
-    .filter(l => l.trim())
-    .map(l => {
-      const vals = parseLine(l);
-      const row = {};
-      headers.forEach((h, i) => row[h.trim()] = vals[i] ?? '');
-      return row;
-    });
+  const rows = lines.slice(1).filter(l => l.trim()).map(l => {
+    const vals = parseLine(l);
+    const row = {};
+    headers.forEach((h, i) => { row[h.trim()] = vals[i] ?? ''; });
+    return row;
+  });
 
   return { headers, rows };
 }
 
 function normalizeRow(row) {
-  // Chuẩn hoá các trường từ CSV
-  const mimeShort = (row.mime_type || 'pdf').toLowerCase().trim();
-  const mime = MIME_SHORT[mimeShort] || mimeShort;
-
   const tagStr = (row.tags || '').trim();
   const tagKeys = tagStr ? tagStr.split(';').map(t => t.trim()).filter(Boolean) : [];
+  const viewUrl = row.drive_view_url?.trim() || '';
+  const downloadUrl = row.drive_download_url?.trim() || '';
 
   return {
-    code:               row.code?.trim()               || '',
     title:              row.title?.trim()              || '',
+    code:               row.code?.trim()               || '',
     description:        row.description?.trim()        || '',
     issued_date:        row.issued_date?.trim()        || '',
     expiry_date:        row.expiry_date?.trim()        || '',
     status:             row.status?.trim()             || 'hieu_luc',
     tagKeys,
-    drive_view_url:     row.drive_view_url?.trim()     || '',
-    drive_download_url: row.drive_download_url?.trim() || '',
-    mime_type:          mime,
+    drive_type:         normalizeDriveType(row.drive_type),
+    drive_file_id:      resolveDriveFileId(row.drive_file_id, viewUrl, downloadUrl),
+    drive_view_url:     viewUrl,
+    drive_download_url: downloadUrl,
+    mime_type:          normalizeMime(row.mime_type),
+    file_size:          row.file_size?.trim()          || '',
+    content:            row.content?.trim()            || '',
   };
 }
 
@@ -276,9 +276,6 @@ function rowToTagNames(tagKeys) {
   });
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Render preview table
-// ─────────────────────────────────────────────────────────────────────────────
 function renderPreview(rows) {
   const tbody = document.getElementById('preview-tbody');
   tbody.innerHTML = rows.map((r, i) => {
@@ -287,17 +284,21 @@ function renderPreview(rows) {
       const t = TAGS.find(x => x.key === k || x.name === k);
       return `<span class="badge bg-secondary me-1" style="font-size:10px">${t?.label || k}</span>`;
     }).join('');
-    const hasFile = r.drive_view_url || r.drive_download_url ? '✅' : '—';
+    const fileInfo = r.drive_file_id
+      ? `<span class="badge bg-info text-dark" style="font-size:10px">${r.drive_type}</span>`
+      : '—';
+    const textInfo = r.content ? '📝' : '—';
 
     return `<tr>
-      <td class="text-muted">${i+1}</td>
-      <td><strong>${r.code}</strong></td>
-      <td style="max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${r.title}">${r.title}</td>
+      <td class="text-muted">${i + 1}</td>
+      <td><strong>${r.code || '—'}</strong></td>
+      <td style="max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${r.title}">${r.title}</td>
       <td>${r.issued_date || '—'}</td>
       <td>${r.expiry_date || '—'}</td>
       <td><span class="status-badge ${statusCls}">${STATUS_LABEL[r.status] || r.status}</span></td>
       <td>${tagBadges || '—'}</td>
-      <td class="text-center">${hasFile}</td>
+      <td class="text-center">${fileInfo}</td>
+      <td class="text-center">${textInfo}</td>
     </tr>`;
   }).join('');
 
@@ -306,34 +307,72 @@ function renderPreview(rows) {
   document.getElementById('bulk-preview').style.display = 'block';
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// CSV Template
-// ─────────────────────────────────────────────────────────────────────────────
-const CSV_HEADERS = 'code,title,description,issued_date,expiry_date,status,tags,drive_view_url,drive_download_url,mime_type';
+const CSV_HEADERS = [
+  'title', 'code', 'description', 'issued_date', 'expiry_date', 'status', 'tags',
+  'drive_type', 'drive_file_id', 'drive_view_url', 'drive_download_url', 'mime_type', 'file_size', 'content',
+].join(',');
 
 const CSV_SAMPLE = `${CSV_HEADERS}
-163/2017/NĐ-CP,"Nghị định 163/2017/NĐ-CP Quy định về kinh doanh dịch vụ Logistics","Quy định điều kiện kinh doanh dịch vụ logistics",2017-12-19,,hieu_luc,vat,https://drive.google.com/file/d/example/view,https://drive.google.com/uc?id=example&export=download,pdf
-32/2017/TT-BTC,"Thông tư 32/2017/TT-BTC hướng dẫn về hóa đơn điện tử","Hướng dẫn thực hiện hóa đơn điện tử",2017-04-06,,hieu_luc,vat;ke-toan,,,pdf
-105/2020/NĐ-CP,"Nghị định 105/2020/NĐ-CP quy định điều kiện đầu tư kinh doanh","",2020-09-09,,hieu_luc,tncn,,,pdf`;
+"Nghị định 163/2017/NĐ-CP Quy định về kinh doanh dịch vụ Logistics",163/2017/NĐ-CP,"Quy định điều kiện kinh doanh dịch vụ logistics",2017-12-19,,hieu_luc,vat,google,1abcExampleFileId,https://drive.google.com/file/d/1abcExampleFileId/view,https://drive.google.com/uc?id=1abcExampleFileId&export=download,pdf,,
+"Thông tư 32/2017/TT-BTC hướng dẫn về hóa đơn điện tử",32/2017/TT-BTC,"Hướng dẫn thực hiện hóa đơn điện tử",2017-04-06,,hieu_luc,vat;ke-toan,,,,,pdf,,
+"Nghị định 105/2020/NĐ-CP",105/2020/NĐ-CP,"",2020-09-09,,hieu_luc,tncn,,,,,pdf,,"`;
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Init
-// ─────────────────────────────────────────────────────────────────────────────
-document.addEventListener('DOMContentLoaded', () => {
+function readFormDoc() {
+  const viewUrl = document.getElementById('f-view-url').value.trim();
+  const downloadUrl = document.getElementById('f-download-url').value.trim();
+  const driveFileId = resolveDriveFileId(
+    document.getElementById('f-drive-file-id').value.trim(),
+    viewUrl,
+    downloadUrl,
+  );
 
-  // ── Nav ─────────────────────────────────────────────────────────────────────
+  return {
+    title:              document.getElementById('f-title').value.trim(),
+    code:               document.getElementById('f-code').value.trim(),
+    description:        document.getElementById('f-description').value.trim(),
+    issued_date:        document.getElementById('f-issued-date').value,
+    expiry_date:        document.getElementById('f-expiry-date').value,
+    status:             document.getElementById('f-status').value,
+    drive_type:         document.getElementById('f-drive-type').value,
+    drive_file_id:      driveFileId,
+    drive_view_url:     viewUrl,
+    drive_download_url: downloadUrl,
+    mime_type:          document.getElementById('f-mime').value,
+    file_size:          document.getElementById('f-file-size').value.trim(),
+    content:            document.getElementById('f-content').value.trim(),
+  };
+}
+
+function validateDoc(doc) {
+  if (!doc.title) {
+    showToast('⚠ Vui lòng điền Tên văn bản (title)');
+    return false;
+  }
+  const hasFileHint = doc.drive_file_id || doc.drive_view_url || doc.drive_download_url;
+  if (hasFileHint && !doc.drive_file_id) {
+    showToast('⚠ Cần Drive File ID (hoặc URL có chứa ID) khi đính kèm file');
+    return false;
+  }
+  return true;
+}
+
+function autoFillDriveFileId() {
+  const input = document.getElementById('f-drive-file-id');
+  if (input.value.trim()) return;
+  const id = resolveDriveFileId(
+    '',
+    document.getElementById('f-view-url').value,
+    document.getElementById('f-download-url').value,
+  );
+  if (id) input.value = id;
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+function initAdmin() {
   document.querySelectorAll('[data-panel]').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const panelId = btn.dataset.panel;
-      if (panelId === 'template') {
-        switchPanel('template');
-      } else {
-        switchPanel(panelId);
-      }
-    });
+    btn.addEventListener('click', () => switchPanel(btn.dataset.panel));
   });
 
-  // ── Render tag checkboxes ────────────────────────────────────────────────────
   const tagContainer = document.getElementById('tag-checkboxes');
   TAGS.forEach(tag => {
     const div = document.createElement('label');
@@ -345,38 +384,28 @@ document.addEventListener('DOMContentLoaded', () => {
     tagContainer.appendChild(div);
   });
 
-  // ── Form: Nhập đơn lẻ ───────────────────────────────────────────────────────
+  ['f-view-url', 'f-download-url'].forEach(id => {
+    document.getElementById(id).addEventListener('blur', autoFillDriveFileId);
+  });
+  document.getElementById('btn-extract-id').addEventListener('click', () => {
+    autoFillDriveFileId();
+    showToast('Đã trích xuất Drive File ID');
+  });
+
   let lastSqlSingle = '';
 
   document.getElementById('form-single').addEventListener('submit', e => {
     e.preventDefault();
+    autoFillDriveFileId();
 
-    const code  = document.getElementById('f-code').value.trim();
-    const title = document.getElementById('f-title').value.trim();
+    const doc = readFormDoc();
+    if (!validateDoc(doc)) return;
 
-    if (!code || !title) {
-      showToast('⚠ Vui lòng điền Số hiệu và Tên văn bản');
-      return;
-    }
+    const tagNames = rowToTagNames(
+      [...document.querySelectorAll('input[name="tags"]:checked')].map(cb => cb.value),
+    );
 
-    const checkedTags = [...document.querySelectorAll('input[name="tags"]:checked')]
-      .map(cb => cb.value);
-    const tagNames = rowToTagNames(checkedTags);
-
-    const doc = {
-      code,
-      title,
-      description:        document.getElementById('f-description').value.trim(),
-      issued_date:        document.getElementById('f-issued-date').value,
-      expiry_date:        document.getElementById('f-expiry-date').value,
-      status:             document.getElementById('f-status').value,
-      drive_view_url:     document.getElementById('f-view-url').value.trim(),
-      drive_download_url: document.getElementById('f-download-url').value.trim(),
-      mime_type:          document.getElementById('f-mime').value,
-    };
-
-    const body = generateSqlForDoc(doc, tagNames);
-    lastSqlSingle = buildSqlHeader(1) + wrapInTransaction(body);
+    lastSqlSingle = buildSqlHeader(1) + wrapInTransaction(generateSqlForDoc(doc, tagNames));
 
     const el = document.getElementById('sql-code-single');
     renderSqlHighlight(el, lastSqlSingle);
@@ -396,22 +425,24 @@ document.addEventListener('DOMContentLoaded', () => {
     downloadFile(lastSqlSingle, `insert_${code}.sql`);
   });
 
-  // ── Bulk: Upload / Paste ─────────────────────────────────────────────────────
   let lastSqlBulk = '';
-
-  const dropZone  = document.getElementById('drop-zone');
+  const dropZone = document.getElementById('drop-zone');
   const fileInput = document.getElementById('file-input');
 
-  document.getElementById('click-upload').addEventListener('click', () => fileInput.click());
+  document.getElementById('click-upload').addEventListener('click', e => {
+    e.stopPropagation();
+    fileInput.click();
+  });
+  dropZone.addEventListener('click', e => {
+    if (e.target === fileInput) return;
+    fileInput.click();
+  });
 
   fileInput.addEventListener('change', () => {
     if (fileInput.files[0]) readFile(fileInput.files[0]);
   });
 
-  dropZone.addEventListener('dragover', e => {
-    e.preventDefault();
-    dropZone.classList.add('dragover');
-  });
+  dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragover'); });
   dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
   dropZone.addEventListener('drop', e => {
     e.preventDefault();
@@ -437,8 +468,8 @@ document.addEventListener('DOMContentLoaded', () => {
   function processCsv(text) {
     const { rows } = parseCsv(text);
     if (!rows.length) { showToast('⚠ Không tìm thấy dữ liệu trong CSV'); return; }
-    parsedRows = rows.map(normalizeRow).filter(r => r.code && r.title);
-    if (!parsedRows.length) { showToast('⚠ Không có dòng hợp lệ (cần có code và title)'); return; }
+    parsedRows = rows.map(normalizeRow).filter(r => r.title);
+    if (!parsedRows.length) { showToast('⚠ Không có dòng hợp lệ (cần có title)'); return; }
     renderPreview(parsedRows);
     document.getElementById('sql-output-bulk').style.display = 'none';
     showToast(`✅ Đã tải ${parsedRows.length} văn bản`);
@@ -453,15 +484,19 @@ document.addEventListener('DOMContentLoaded', () => {
     lastSqlBulk = '';
   });
 
-  // ── Bulk: Generate SQL ───────────────────────────────────────────────────────
   document.getElementById('btn-generate-bulk').addEventListener('click', () => {
     if (!parsedRows.length) { showToast('⚠ Chưa có dữ liệu'); return; }
 
-    const body = parsedRows.map(r => {
-      const tagNames = rowToTagNames(r.tagKeys);
-      return generateSqlForDoc(r, tagNames);
-    }).join('\n');
+    const invalid = parsedRows.find(r => {
+      const hasFile = r.drive_file_id || r.drive_view_url || r.drive_download_url;
+      return hasFile && !r.drive_file_id;
+    });
+    if (invalid) {
+      showToast(`⚠ Dòng "${invalid.title}" thiếu drive_file_id`);
+      return;
+    }
 
+    const body = parsedRows.map(r => generateSqlForDoc(r, rowToTagNames(r.tagKeys))).join('\n');
     lastSqlBulk = buildSqlHeader(parsedRows.length) + wrapInTransaction(body);
 
     const el = document.getElementById('sql-code-bulk');
@@ -473,306 +508,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
   document.getElementById('btn-copy-bulk').addEventListener('click', () => copyToClipboard(lastSqlBulk));
   document.getElementById('btn-download-bulk').addEventListener('click', () => {
-    const ts = new Date().toISOString().slice(0,10);
-    downloadFile(lastSqlBulk, `bulk_insert_${ts}.sql`);
+    downloadFile(lastSqlBulk, `bulk_insert_${new Date().toISOString().slice(0, 10)}.sql`);
   });
 
-  // ── Template download ────────────────────────────────────────────────────────
   document.getElementById('btn-dl-template').addEventListener('click', () => {
     downloadFile(CSV_HEADERS + '\n', 'notdore_template.csv');
   });
   document.getElementById('btn-dl-template-sample').addEventListener('click', () => {
     downloadFile(CSV_SAMPLE, 'notdore_sample.csv');
   });
+}
 
-  // ── Quản lý văn bản ─────────────────────────────────────────────────────────
-  let allDocsCache = [];
-  let allTagsCache = [];
-  let hasNewCols   = false;
-  let editingId    = null;
-
-  async function loadAllDocs() {
-    document.getElementById('manage-loading').style.display = 'block';
-    document.getElementById('manage-table-wrap').style.display = 'none';
-    closeDrawer();
-
-    try {
-      const res  = await fetch('/api/admin/docs');
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Lỗi tải dữ liệu');
-
-      allDocsCache = data.docs || [];
-      allTagsCache = data.allTags || [];
-      hasNewCols   = !!data.hasNewColumns;
-
-      document.getElementById('schema-warning').style.display = hasNewCols ? 'none' : 'block';
-      renderManageTable(allDocsCache);
-    } catch (err) {
-      showToast('❌ ' + err.message);
-    } finally {
-      document.getElementById('manage-loading').style.display = 'none';
-    }
-  }
-
-  function renderManageTable(docs) {
-    const tbody = document.getElementById('manage-tbody');
-    tbody.innerHTML = docs.map(d => {
-      const issued  = d.issued_date  ? formatDateShort(d.issued_date)  : '<span class="text-muted">—</span>';
-      const expiry  = d.expiry_date  ? `<span class="text-danger">${formatDateShort(d.expiry_date)}</span>` : '<span class="text-muted">—</span>';
-      const status  = d.status ? statusChip(d.status) : '<span class="text-muted">—</span>';
-      const tagList = (d.tags || []).map(t => `<span class="badge bg-secondary me-1" style="font-size:10px">${esc(t.label || t.name)}</span>`).join('') || '<span class="text-muted">—</span>';
-      return `<tr data-id="${d.id}" class="manage-row">
-        <td><strong style="font-size:12px">${esc(d.code)}</strong></td>
-        <td style="max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px" title="${esc(d.title)}">${esc(d.title)}</td>
-        <td style="font-size:12px">${issued}</td>
-        <td style="font-size:12px">${expiry}</td>
-        <td>${status}</td>
-        <td>${tagList}</td>
-        <td>
-          <button class="btn btn-sm btn-outline-primary btn-edit-doc py-0 px-2" data-id="${d.id}" style="font-size:12px">
-            <i class="bi bi-pencil me-1"></i>Sửa
-          </button>
-        </td>
-      </tr>`;
-    }).join('');
-
-    document.getElementById('manage-count').textContent = `${docs.length} văn bản trong database`;
-    document.getElementById('manage-table-wrap').style.display = 'block';
-
-    // Bind edit buttons
-    document.querySelectorAll('.btn-edit-doc').forEach(btn => {
-      btn.addEventListener('click', e => {
-        e.stopPropagation();
-        openDrawer(Number(btn.dataset.id));
-      });
-    });
-  }
-
-  function statusChip(status) {
-    const map = {
-      hieu_luc:      ['status-hieu_luc',      'Còn hiệu lực'],
-      het_hieu_luc:  ['status-het_hieu_luc',  'Hết hiệu lực'],
-      chua_hieu_luc: ['status-chua_hieu_luc', 'Chưa có hiệu lực'],
-    };
-    const [cls, label] = map[status] || ['', status];
-    return `<span class="status-badge ${cls}">${label}</span>`;
-  }
-
-  function formatDateShort(s) {
-    if (!s) return '';
-    const d = new Date(s);
-    return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
-  }
-
-  function esc(s) {
-    return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-  }
-
-  function openDrawer(id) {
-    const doc = allDocsCache.find(d => d.id === id);
-    if (!doc) return;
-    editingId = id;
-
-    document.getElementById('edit-doc-code').textContent  = doc.code;
-    document.getElementById('edit-doc-title').textContent = doc.title;
-    document.getElementById('edit-issued-date').value     = doc.issued_date  || '';
-    document.getElementById('edit-expiry-date').value     = doc.expiry_date  || '';
-    document.getElementById('edit-status').value          = doc.status       || 'hieu_luc';
-    document.getElementById('edit-view-url').value        = doc.file?.drive_view_url     || '';
-    document.getElementById('edit-download-url').value   = doc.file?.drive_download_url || '';
-
-    // Ẩn fields chưa có trong schema
-    ['edit-issued-wrap','edit-expiry-wrap','edit-status-wrap'].forEach(id => {
-      document.getElementById(id).style.display = hasNewCols ? '' : 'none';
-    });
-
-    // Render tag checkboxes
-    const currentTagNames = (doc.tags || []).map(t => t.name);
-    const tagGrid = document.getElementById('edit-tag-grid');
-    tagGrid.innerHTML = allTagsCache.map(tag => `
-      <label class="tag-check">
-        <input type="checkbox" name="edit-tag" value="${tag.name}" ${currentTagNames.includes(tag.name) ? 'checked' : ''} />
-        <span>${esc(tag.label || tag.name)}</span>
-      </label>`).join('');
-
-    document.getElementById('save-status').textContent = '';
-    document.getElementById('edit-drawer').style.display = 'block';
-
-    // Highlight row
-    document.querySelectorAll('.manage-row').forEach(r => r.classList.remove('table-primary'));
-    const row = document.querySelector(`.manage-row[data-id="${id}"]`);
-    if (row) {
-      row.classList.add('table-primary');
-      row.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-    }
-
-    document.getElementById('edit-drawer').scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }
-
-  function closeDrawer() {
-    editingId = null;
-    document.getElementById('edit-drawer').style.display = 'none';
-    document.querySelectorAll('.manage-row').forEach(r => r.classList.remove('table-primary'));
-  }
-
-  document.getElementById('btn-close-drawer').addEventListener('click', closeDrawer);
-  document.getElementById('btn-cancel-edit').addEventListener('click', closeDrawer);
-
-  document.getElementById('btn-save-doc').addEventListener('click', async () => {
-    if (!editingId) return;
-    const statusEl = document.getElementById('save-status');
-    const btn      = document.getElementById('btn-save-doc');
-
-    const selectedTags = [...document.querySelectorAll('input[name="edit-tag"]:checked')].map(cb => cb.value);
-    const doc = allDocsCache.find(d => d.id === editingId);
-
-    const payload = {
-      tags:               selectedTags,
-      drive_view_url:     document.getElementById('edit-view-url').value.trim(),
-      drive_download_url: document.getElementById('edit-download-url').value.trim(),
-    };
-
-    if (hasNewCols) {
-      payload.issued_date = document.getElementById('edit-issued-date').value || null;
-      payload.expiry_date = document.getElementById('edit-expiry-date').value || null;
-      payload.status      = document.getElementById('edit-status').value;
-    }
-
-    btn.disabled = true;
-    statusEl.innerHTML = '<span class="text-muted"><span class="spinner-border spinner-border-sm me-1"></span>Đang lưu…</span>';
-
-    try {
-      const res = await fetch(`/api/admin/docs/${editingId}`, {
-        method:  'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify(payload),
-      });
-      const data = await res.json();
-
-      if (!res.ok) {
-        // RLS blocked → fallback: sinh UPDATE SQL script
-        if (data.error && data.error.includes('permission denied')) {
-          showUpdateSql(editingId, doc, payload, selectedTags);
-          statusEl.innerHTML = '<span class="text-warning"><i class="bi bi-exclamation-triangle me-1"></i>RLS chặn ghi. Đã tạo SQL script bên dưới.</span>';
-          btn.disabled = false;
-          return;
-        }
-        throw new Error(data.error || 'Lỗi lưu dữ liệu');
-      }
-
-      // Thành công → cập nhật cache và re-render
-      const idx = allDocsCache.findIndex(d => d.id === editingId);
-      if (idx !== -1) {
-        if (hasNewCols) {
-          allDocsCache[idx].issued_date = payload.issued_date;
-          allDocsCache[idx].expiry_date = payload.expiry_date;
-          allDocsCache[idx].status      = payload.status;
-        }
-        allDocsCache[idx].tags = allTagsCache.filter(t => selectedTags.includes(t.name));
-        if (payload.drive_view_url || payload.drive_download_url) {
-          allDocsCache[idx].file = {
-            drive_view_url:     payload.drive_view_url,
-            drive_download_url: payload.drive_download_url,
-          };
-        }
-        renderManageTable(allDocsCache);
-      }
-
-      statusEl.innerHTML = '<span class="text-success"><i class="bi bi-check-circle me-1"></i>Đã lưu!</span>';
-      setTimeout(() => closeDrawer(), 1200);
-      showToast('✅ Đã lưu thay đổi');
-    } catch (err) {
-      statusEl.innerHTML = `<span class="text-danger"><i class="bi bi-x-circle me-1"></i>${err.message}</span>`;
-    } finally {
-      btn.disabled = false;
-    }
-  });
-
-  /** Hiển thị UPDATE SQL khi RLS chặn ghi trực tiếp */
-  function showUpdateSql(id, doc, payload, selectedTags) {
-    const lines = [];
-    lines.push(`-- Cập nhật văn bản: ${doc?.code || id}`);
-    lines.push(`-- Chạy trong Supabase → SQL Editor`);
-    lines.push('');
-    lines.push('BEGIN;');
-    lines.push('');
-
-    // UPDATE documents
-    if (hasNewCols) {
-      const sets = [];
-      if (payload.issued_date !== undefined) sets.push(`  issued_date = ${payload.issued_date ? `'${payload.issued_date}'` : 'NULL'}`);
-      if (payload.expiry_date !== undefined) sets.push(`  expiry_date = ${payload.expiry_date ? `'${payload.expiry_date}'` : 'NULL'}`);
-      if (payload.status)                   sets.push(`  status = '${payload.status}'`);
-      if (sets.length) {
-        lines.push(`UPDATE documents SET`);
-        lines.push(sets.join(',\n'));
-        lines.push(`WHERE id = ${id};`);
-        lines.push('');
-      }
-    }
-
-    // UPDATE document_files
-    if (payload.drive_view_url || payload.drive_download_url) {
-      lines.push(`UPDATE document_files SET`);
-      lines.push(`  drive_view_url = ${payload.drive_view_url ? `'${payload.drive_view_url.replace(/'/g,"''")}'` : 'NULL'},`);
-      lines.push(`  drive_download_url = ${payload.drive_download_url ? `'${payload.drive_download_url.replace(/'/g,"''")}'` : 'NULL'}`);
-      lines.push(`WHERE document_id = ${id};`);
-      lines.push('');
-    }
-
-    // Tags: delete + reinsert
-    lines.push(`-- Cập nhật tags`);
-    lines.push(`DELETE FROM document_tag_map WHERE document_id = ${id};`);
-    if (selectedTags.length) {
-      lines.push(`INSERT INTO document_tag_map (document_id, tag_id)`);
-      lines.push(`SELECT ${id}, id FROM document_tags WHERE name IN (${selectedTags.map(t=>`'${t}'`).join(', ')});`);
-    }
-    lines.push('');
-    lines.push('COMMIT;');
-
-    const sql = lines.join('\n');
-
-    // Hiện SQL output trong drawer
-    let sqlWrap = document.getElementById('edit-sql-fallback');
-    if (!sqlWrap) {
-      sqlWrap = document.createElement('div');
-      sqlWrap.id = 'edit-sql-fallback';
-      sqlWrap.className = 'mt-4';
-      document.getElementById('edit-drawer-inner').appendChild(sqlWrap);
-    }
-    sqlWrap.innerHTML = `
-      <div class="sql-panel">
-        <div class="sql-toolbar">
-          <span><i class="bi bi-terminal me-2"></i>UPDATE SQL — chạy trong Supabase SQL Editor</span>
-          <div class="actions">
-            <button class="btn btn-sm btn-outline-secondary text-white border-secondary" id="btn-copy-update-sql">
-              <i class="bi bi-clipboard me-1"></i>Copy
-            </button>
-          </div>
-        </div>
-        <div class="sql-output" style="font-size:12px">${sql.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div>
-      </div>
-      <div class="mt-3 p-3 bg-light rounded" style="font-size:12px">
-        <strong><i class="bi bi-info-circle me-1"></i>Để ghi trực tiếp không cần SQL script:</strong>
-        Chạy lệnh này trong Supabase SQL Editor một lần duy nhất:<br>
-        <code class="d-block mt-2 p-2 bg-dark text-light rounded" style="font-size:11px">ALTER TABLE documents DISABLE ROW LEVEL SECURITY;<br>ALTER TABLE document_files DISABLE ROW LEVEL SECURITY;<br>ALTER TABLE document_tag_map DISABLE ROW LEVEL SECURITY;</code>
-      </div>`;
-    document.getElementById('btn-copy-update-sql').addEventListener('click', () => copyToClipboard(sql));
-    sqlWrap.scrollIntoView({ behavior: 'smooth' });
-  }
-
-  document.getElementById('btn-reload-docs').addEventListener('click', loadAllDocs);
-
-  // Auto-load khi chuyển sang panel manage lần đầu
-  let managePanelLoaded = false;
-  const _origNavButtons = document.querySelectorAll('[data-panel]');
-  _origNavButtons.forEach(btn => {
-    btn.addEventListener('click', () => {
-      if (btn.dataset.panel === 'manage' && !managePanelLoaded) {
-        managePanelLoaded = true;
-        loadAllDocs();
-      }
-    });
-  });
-
-});
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initAdmin);
+} else {
+  initAdmin();
+}

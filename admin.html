@@ -330,12 +330,6 @@
     <div class="label">Admin · Quản trị nội bộ</div>
   </div>
 
-  <div class="nav-section">Quản lý</div>
-  <button class="nav-item-link" data-panel="manage">
-    <i class="bi bi-pencil-square"></i>
-    Quản lý văn bản
-  </button>
-
   <div class="nav-section">Nhập liệu</div>
   <button class="nav-item-link active" data-panel="single">
     <i class="bi bi-file-earmark-plus"></i>
@@ -357,8 +351,8 @@
   </button>
 
   <div class="sidebar-footer">
-    <div><i class="bi bi-lock-fill me-1"></i>Chỉ chạy local</div>
-    <div class="mt-1">Không ghi trực tiếp vào DB</div>
+    <div><i class="bi bi-lock-fill me-1"></i>Chạy offline trên trình duyệt</div>
+    <div class="mt-1">Sinh SQL → chạy thủ công trong Supabase</div>
   </div>
 </nav>
 
@@ -366,7 +360,7 @@
 <div id="main">
   <div class="topbar">
     <h1 id="panel-title">Nhập văn bản đơn lẻ</h1>
-    <span class="badge-local"><i class="bi bi-shield-lock me-1"></i>Môi trường Local</span>
+    <span class="badge-local"><i class="bi bi-shield-lock me-1"></i>Offline · Sinh SQL</span>
   </div>
 
   <div class="content-area">
@@ -385,16 +379,16 @@
         <div class="form-card">
           <h5><i class="bi bi-file-text me-2"></i>Thông tin cơ bản</h5>
           <div class="row g-3">
-            <div class="col-md-4">
-              <label class="form-label">Số hiệu văn bản <span class="text-danger">*</span></label>
-              <input type="text" class="form-control" id="f-code"
-                placeholder="VD: 163/2017/NĐ-CP" required />
-              <div class="form-text">Nhập đúng ký hiệu gốc</div>
-            </div>
             <div class="col-md-8">
-              <label class="form-label">Tên văn bản <span class="text-danger">*</span></label>
+              <label class="form-label">Tên văn bản (title) <span class="text-danger">*</span></label>
               <input type="text" class="form-control" id="f-title"
                 placeholder="VD: Nghị định 163/2017/NĐ-CP Quy định về kinh doanh dịch vụ Logistics" required />
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Số hiệu (code)</label>
+              <input type="text" class="form-control" id="f-code"
+                placeholder="VD: 163/2017/NĐ-CP" />
+              <div class="form-text">Ký hiệu văn bản — có thể để trống</div>
             </div>
             <div class="col-12">
               <label class="form-label">Mô tả / tóm tắt</label>
@@ -435,8 +429,30 @@
         </div>
 
         <div class="form-card">
-          <h5><i class="bi bi-link-45deg me-2"></i>File đính kèm (Google Drive)</h5>
+          <h5><i class="bi bi-cloud me-2"></i>File đính kèm (Cloud Drive)</h5>
           <div class="row g-3">
+            <div class="col-md-3">
+              <label class="form-label">Loại drive</label>
+              <select class="form-select" id="f-drive-type">
+                <option value="google" selected>Google Drive</option>
+                <option value="onedrive">OneDrive</option>
+              </select>
+            </div>
+            <div class="col-md-5">
+              <label class="form-label">Drive File ID <span class="text-danger">*</span> <span class="text-muted fw-normal">(nếu có file)</span></label>
+              <div class="input-group">
+                <input type="text" class="form-control font-monospace" id="f-drive-file-id"
+                  placeholder="1abc… hoặc tự trích từ URL" />
+                <button type="button" class="btn btn-outline-secondary" id="btn-extract-id" title="Trích ID từ URL">
+                  <i class="bi bi-magic"></i>
+                </button>
+              </div>
+              <div class="form-text">Bắt buộc khi insert vào <code>document_files</code></div>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Kích thước file (bytes)</label>
+              <input type="number" class="form-control" id="f-file-size" min="0" placeholder="VD: 1048576" />
+            </div>
             <div class="col-md-6">
               <label class="form-label">Link xem online</label>
               <input type="url" class="form-control" id="f-view-url"
@@ -448,7 +464,7 @@
                 placeholder="https://drive.google.com/uc?id=…&export=download" />
             </div>
             <div class="col-md-4">
-              <label class="form-label">Định dạng file</label>
+              <label class="form-label">MIME type</label>
               <select class="form-select" id="f-mime">
                 <option value="application/pdf">PDF</option>
                 <option value="application/vnd.openxmlformats-officedocument.wordprocessingml.document">DOCX</option>
@@ -457,6 +473,13 @@
               </select>
             </div>
           </div>
+        </div>
+
+        <div class="form-card">
+          <h5><i class="bi bi-file-text me-2"></i>Nội dung văn bản (tuỳ chọn)</h5>
+          <label class="form-label">Full text — lưu vào <code>document_texts.content</code></label>
+          <textarea class="form-control font-monospace" id="f-content" rows="4"
+            placeholder="Nội dung plain text / OCR… (để trống nếu chưa có)"></textarea>
         </div>
 
         <div class="d-flex gap-3 align-items-center mb-2">
@@ -513,8 +536,8 @@
 
         <label class="form-label">Dán nội dung CSV</label>
         <textarea class="form-control font-monospace" id="csv-paste" rows="8"
-          placeholder="code,title,description,issued_date,expiry_date,status,tags,drive_view_url,drive_download_url,mime_type
-163/2017/NĐ-CP,Nghị định 163/2017,Quy định logistics,2017-12-19,,hieu_luc,vat,https://…,https://…,pdf"></textarea>
+          placeholder="title,code,description,issued_date,expiry_date,status,tags,drive_type,drive_file_id,drive_view_url,drive_download_url,mime_type,file_size,content
+Nghị định 163/2017,163/2017/NĐ-CP,Quy định logistics,2017-12-19,,hieu_luc,vat,google,1abcId,https://…,https://…,pdf,,"></textarea>
 
         <button class="btn btn-brand mt-3" id="btn-parse-csv">
           <i class="bi bi-table me-2"></i>Phân tích CSV
@@ -538,7 +561,7 @@
                 <tr>
                   <th>#</th><th>Số hiệu</th><th>Tên văn bản</th>
                   <th>Ngày ban hành</th><th>Ngày hết hiệu lực</th>
-                  <th>Trạng thái</th><th>Tags</th><th>File</th>
+                  <th>Trạng thái</th><th>Tags</th><th>Drive</th><th>Text</th>
                 </tr>
               </thead>
               <tbody id="preview-tbody"></tbody>
@@ -577,7 +600,8 @@
     <!-- ── Panel 3: Schema ───────────────────────────────────── -->
     <div id="panel-schema" class="panel">
       <div class="form-card">
-        <h5><i class="bi bi-diagram-3 me-2"></i>Sơ đồ bảng database (v2)</h5>
+        <h5><i class="bi bi-diagram-3 me-2"></i>Sơ đồ database (Supabase)</h5>
+        <p class="text-muted small mb-3">Admin tool sinh SQL cho các bảng <strong>documents</strong>, <strong>document_files</strong>, <strong>document_texts</strong>, <strong>document_tag_map</strong>. Bảng <code>document_views</code> do website tự ghi khi người dùng xem.</p>
         <div class="table-responsive">
           <table class="table table-sm table-hover" style="font-size:13px">
             <thead class="table-dark">
@@ -585,43 +609,45 @@
             </thead>
             <tbody>
               <tr class="table-secondary"><td colspan="4"><strong>documents</strong></td></tr>
-              <tr><td></td><td>id</td><td><code>UUID</code></td><td>PK, tự sinh</td></tr>
-              <tr><td></td><td>code</td><td><code>TEXT</code></td><td>Số hiệu văn bản, NOT NULL</td></tr>
-              <tr><td></td><td>title</td><td><code>TEXT</code></td><td>Tên văn bản, NOT NULL</td></tr>
+              <tr><td></td><td>id</td><td><code>INTEGER</code></td><td>PK, SERIAL</td></tr>
+              <tr><td></td><td>title</td><td><code>TEXT</code></td><td>NOT NULL</td></tr>
+              <tr><td></td><td>code</td><td><code>TEXT</code></td><td>Số hiệu văn bản</td></tr>
               <tr><td></td><td>description</td><td><code>TEXT</code></td><td>Tóm tắt</td></tr>
-              <tr class="table-warning"><td></td><td><strong>issued_date</strong></td><td><code>DATE</code></td><td>🆕 Ngày ban hành</td></tr>
-              <tr class="table-warning"><td></td><td><strong>expiry_date</strong></td><td><code>DATE</code></td><td>🆕 Ngày hết hiệu lực (NULL = chưa xác định)</td></tr>
-              <tr class="table-warning"><td></td><td><strong>status</strong></td><td><code>TEXT</code></td><td>🆕 hieu_luc | het_hieu_luc | chua_hieu_luc</td></tr>
-              <tr><td></td><td>created_at</td><td><code>TIMESTAMPTZ</code></td><td>Tự động</td></tr>
-              <tr><td></td><td>updated_at</td><td><code>TIMESTAMPTZ</code></td><td>Auto-update trigger</td></tr>
+              <tr><td></td><td>issued_date</td><td><code>DATE</code></td><td>Ngày ban hành</td></tr>
+              <tr><td></td><td>expiry_date</td><td><code>DATE</code></td><td>Ngày hết hiệu lực</td></tr>
+              <tr><td></td><td>status</td><td><code>TEXT</code></td><td>hieu_luc | het_hieu_luc | chua_hieu_luc</td></tr>
+              <tr><td></td><td>created_at / updated_at</td><td><code>TIMESTAMP</code></td><td>DEFAULT now()</td></tr>
+
               <tr class="table-secondary"><td colspan="4"><strong>document_files</strong></td></tr>
-              <tr><td></td><td>id</td><td><code>UUID</code></td><td>PK</td></tr>
-              <tr><td></td><td>document_id</td><td><code>UUID</code></td><td>FK → documents.id</td></tr>
+              <tr><td></td><td>id</td><td><code>INTEGER</code></td><td>PK, SERIAL</td></tr>
+              <tr><td></td><td>document_id</td><td><code>INTEGER</code></td><td>FK → documents</td></tr>
+              <tr><td></td><td>drive_type</td><td><code>TEXT</code></td><td>google | onedrive</td></tr>
+              <tr><td></td><td>drive_file_id</td><td><code>TEXT</code></td><td>NOT NULL</td></tr>
               <tr><td></td><td>drive_view_url</td><td><code>TEXT</code></td><td>Link xem online</td></tr>
-              <tr><td></td><td>drive_download_url</td><td><code>TEXT</code></td><td>Link tải xuống</td></tr>
+              <tr><td></td><td>drive_download_url</td><td><code>TEXT</code></td><td>Link tải</td></tr>
               <tr><td></td><td>mime_type</td><td><code>TEXT</code></td><td>application/pdf…</td></tr>
+              <tr><td></td><td>size</td><td><code>BIGINT</code></td><td>Kích thước bytes</td></tr>
+              <tr><td></td><td>uploaded_at</td><td><code>TIMESTAMP</code></td><td>DEFAULT now()</td></tr>
+
               <tr class="table-secondary"><td colspan="4"><strong>document_tags</strong></td></tr>
-              <tr><td></td><td>id</td><td><code>UUID</code></td><td>PK</td></tr>
-              <tr><td></td><td>name</td><td><code>TEXT</code></td><td>UNIQUE: thue-gtgt, bhxh…</td></tr>
+              <tr><td></td><td>id</td><td><code>INTEGER</code></td><td>PK, SERIAL</td></tr>
+              <tr><td></td><td>name</td><td><code>TEXT</code></td><td>UNIQUE — thue-gtgt, bhxh…</td></tr>
               <tr><td></td><td>label</td><td><code>TEXT</code></td><td>Tên hiển thị</td></tr>
+
               <tr class="table-secondary"><td colspan="4"><strong>document_tag_map</strong></td></tr>
-              <tr><td></td><td>document_id</td><td><code>UUID</code></td><td>FK → documents</td></tr>
-              <tr><td></td><td>tag_id</td><td><code>UUID</code></td><td>FK → document_tags</td></tr>
+              <tr><td></td><td>document_id, tag_id</td><td><code>INTEGER</code></td><td>PK composite, FK cả hai</td></tr>
+
+              <tr class="table-secondary"><td colspan="4"><strong>document_texts</strong></td></tr>
+              <tr><td></td><td>id</td><td><code>INTEGER</code></td><td>PK, SERIAL</td></tr>
+              <tr><td></td><td>document_id</td><td><code>INTEGER</code></td><td>FK → documents</td></tr>
+              <tr><td></td><td>content</td><td><code>TEXT</code></td><td>Full text / OCR</td></tr>
+              <tr><td></td><td>extracted_at</td><td><code>TIMESTAMP</code></td><td>DEFAULT now()</td></tr>
+
+              <tr class="table-secondary"><td colspan="4"><strong>document_views</strong> <span class="badge bg-secondary">không nhập qua admin</span></td></tr>
+              <tr><td></td><td>document_id</td><td><code>INTEGER</code></td><td>FK — website ghi khi xem</td></tr>
+              <tr><td></td><td>viewed_at, ip</td><td><code>TIMESTAMP, TEXT</code></td><td>Thống kê lượt xem</td></tr>
             </tbody>
           </table>
-        </div>
-
-        <div class="mt-4">
-          <h5><i class="bi bi-file-code me-2"></i>Files SQL</h5>
-          <p class="text-muted small">Tải về để chạy trong Supabase SQL Editor:</p>
-          <div class="d-flex gap-3 flex-wrap">
-            <a href="/db/schema_v2.sql" download class="btn btn-outline-dark btn-sm">
-              <i class="bi bi-download me-1"></i>schema_v2.sql (tạo mới hoàn toàn)
-            </a>
-            <a href="/db/migration_v1_to_v2.sql" download class="btn btn-outline-dark btn-sm">
-              <i class="bi bi-download me-1"></i>migration_v1_to_v2.sql (giữ dữ liệu cũ)
-            </a>
-          </div>
         </div>
       </div>
 
@@ -656,16 +682,20 @@ lib/
               <tr><th>Cột</th><th>Bắt buộc</th><th>Định dạng</th><th>Ví dụ</th></tr>
             </thead>
             <tbody>
-              <tr><td><code>code</code></td><td>✅</td><td>Text</td><td>163/2017/NĐ-CP</td></tr>
               <tr><td><code>title</code></td><td>✅</td><td>Text</td><td>Nghị định 163/2017 về Logistics</td></tr>
+              <tr><td><code>code</code></td><td>—</td><td>Text</td><td>163/2017/NĐ-CP</td></tr>
               <tr><td><code>description</code></td><td>—</td><td>Text</td><td>Quy định điều kiện kinh doanh…</td></tr>
               <tr><td><code>issued_date</code></td><td>—</td><td>YYYY-MM-DD</td><td>2017-12-19</td></tr>
               <tr><td><code>expiry_date</code></td><td>—</td><td>YYYY-MM-DD hoặc trống</td><td></td></tr>
-              <tr><td><code>status</code></td><td>✅</td><td>hieu_luc | het_hieu_luc | chua_hieu_luc</td><td>hieu_luc</td></tr>
-              <tr><td><code>tags</code></td><td>—</td><td>Cách nhau bởi dấu <code>;</code></td><td>vat;tncn</td></tr>
-              <tr><td><code>drive_view_url</code></td><td>—</td><td>URL</td><td>https://drive.google.com/…</td></tr>
-              <tr><td><code>drive_download_url</code></td><td>—</td><td>URL</td><td>https://drive.google.com/…</td></tr>
-              <tr><td><code>mime_type</code></td><td>—</td><td>pdf | docx | xlsx (viết tắt)</td><td>pdf</td></tr>
+              <tr><td><code>status</code></td><td>—</td><td>hieu_luc | het_hieu_luc | chua_hieu_luc</td><td>hieu_luc</td></tr>
+              <tr><td><code>tags</code></td><td>—</td><td>Cách nhau bởi <code>;</code></td><td>vat;tncn</td></tr>
+              <tr><td><code>drive_type</code></td><td>—</td><td>google | onedrive</td><td>google</td></tr>
+              <tr><td><code>drive_file_id</code></td><td>⚠️ nếu có file</td><td>Text</td><td>1abcXYZ… (hoặc trích từ URL)</td></tr>
+              <tr><td><code>drive_view_url</code></td><td>—</td><td>URL</td><td>https://drive.google.com/file/d/…/view</td></tr>
+              <tr><td><code>drive_download_url</code></td><td>—</td><td>URL</td><td>https://drive.google.com/uc?id=…</td></tr>
+              <tr><td><code>mime_type</code></td><td>—</td><td>pdf | docx | xlsx</td><td>pdf</td></tr>
+              <tr><td><code>file_size</code></td><td>—</td><td>Số bytes</td><td>1048576</td></tr>
+              <tr><td><code>content</code></td><td>—</td><td>Text</td><td>Nội dung full text (document_texts)</td></tr>
             </tbody>
           </table>
         </div>
@@ -681,122 +711,10 @@ lib/
       </div>
     </div><!-- /panel-template -->
 
-    <!-- ── Panel: Quản lý văn bản ──────────────────────────── -->
-    <div id="panel-manage" class="panel">
-
-      <div class="d-flex align-items-center justify-content-between mb-4">
-        <div class="alert-info-custom" style="flex:1">
-          <i class="bi bi-info-circle me-1"></i>
-          Chỉnh sửa trực tiếp vào database. Mọi thay đổi được lưu ngay khi nhấn <strong>Lưu</strong>.
-        </div>
-        <button class="btn btn-brand ms-3" id="btn-reload-docs">
-          <i class="bi bi-arrow-clockwise me-1"></i>Tải lại
-        </button>
-      </div>
-
-      <!-- Schema warning -->
-      <div id="schema-warning" style="display:none" class="mb-3">
-        <div class="alert alert-warning py-2 px-3" style="font-size:13px">
-          <i class="bi bi-exclamation-triangle me-2"></i>
-          Database chưa có cột <code>issued_date</code> / <code>status</code>.
-          Hãy chạy <strong>migration_v1_to_v2.sql</strong> trong Supabase trước.
-          Hiện chỉ có thể chỉnh sửa <strong>Tags</strong> và <strong>File</strong>.
-        </div>
-      </div>
-
-      <!-- Loading -->
-      <div id="manage-loading" class="text-center py-5 text-muted">
-        <div class="spinner-border spinner-border-sm me-2"></div>Đang tải dữ liệu…
-      </div>
-
-      <!-- Docs table -->
-      <div id="manage-table-wrap" style="display:none">
-        <div class="form-card p-0" style="overflow:hidden">
-          <table class="preview-table w-100" id="manage-table">
-            <thead>
-              <tr>
-                <th style="width:140px">Số hiệu</th>
-                <th>Tên văn bản</th>
-                <th style="width:130px">Ngày ban hành</th>
-                <th style="width:130px">Ngày hết HH</th>
-                <th style="width:150px">Trạng thái</th>
-                <th style="width:180px">Tags</th>
-                <th style="width:80px"></th>
-              </tr>
-            </thead>
-            <tbody id="manage-tbody"></tbody>
-          </table>
-        </div>
-        <div class="text-muted mt-2" style="font-size:12px" id="manage-count"></div>
-      </div>
-
-      <!-- Edit drawer -->
-      <div id="edit-drawer" style="display:none">
-        <div class="form-card mt-4" id="edit-drawer-inner">
-          <div class="d-flex align-items-center justify-content-between mb-3">
-            <h5 class="mb-0" style="font-size:15px">
-              <i class="bi bi-pencil me-2"></i>Chỉnh sửa: <span id="edit-doc-code" class="text-primary"></span>
-            </h5>
-            <button class="btn btn-sm btn-outline-secondary" id="btn-close-drawer">
-              <i class="bi bi-x-lg"></i>
-            </button>
-          </div>
-
-          <div class="row g-3">
-            <div class="col-12">
-              <label class="form-label">Tên văn bản</label>
-              <div id="edit-doc-title" class="form-control bg-light" style="min-height:38px;color:#64748b;font-size:13px"></div>
-            </div>
-
-            <div class="col-md-4" id="edit-issued-wrap">
-              <label class="form-label">Ngày ban hành</label>
-              <input type="date" class="form-control" id="edit-issued-date" />
-            </div>
-            <div class="col-md-4" id="edit-expiry-wrap">
-              <label class="form-label">Ngày hết hiệu lực</label>
-              <input type="date" class="form-control" id="edit-expiry-date" />
-              <div class="form-text">Để trống nếu chưa xác định</div>
-            </div>
-            <div class="col-md-4" id="edit-status-wrap">
-              <label class="form-label">Trạng thái hiệu lực</label>
-              <select class="form-select" id="edit-status">
-                <option value="hieu_luc">Còn hiệu lực</option>
-                <option value="het_hieu_luc">Hết hiệu lực</option>
-                <option value="chua_hieu_luc">Chưa có hiệu lực</option>
-              </select>
-            </div>
-
-            <div class="col-12">
-              <label class="form-label">Tags / Danh mục</label>
-              <div class="tag-grid" id="edit-tag-grid"></div>
-            </div>
-
-            <div class="col-md-6">
-              <label class="form-label">Link xem online</label>
-              <input type="url" class="form-control" id="edit-view-url" placeholder="https://drive.google.com/…" />
-            </div>
-            <div class="col-md-6">
-              <label class="form-label">Link tải xuống</label>
-              <input type="url" class="form-control" id="edit-download-url" placeholder="https://drive.google.com/…" />
-            </div>
-          </div>
-
-          <div class="d-flex gap-2 mt-4 align-items-center">
-            <button class="btn btn-brand px-4" id="btn-save-doc">
-              <i class="bi bi-floppy me-2"></i>Lưu thay đổi
-            </button>
-            <button class="btn btn-outline-secondary" id="btn-cancel-edit">Huỷ</button>
-            <span id="save-status" class="ms-3" style="font-size:13px"></span>
-          </div>
-        </div>
-      </div>
-
-    </div><!-- /panel-manage -->
-
   </div><!-- /content-area -->
 </div><!-- /main -->
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script src="/assets/js/admin.js" type="module"></script>
+<script src="assets/js/admin.js" defer></script>
 </body>
 </html>
