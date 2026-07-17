@@ -11,6 +11,7 @@ import express from 'express';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import categoryHandler from './api/category.js';
+import { listDocs, updateDoc } from './api/admin/docs.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const PORT = process.env.PORT || 5000;
@@ -41,6 +42,8 @@ app.get('/api/category', categoryHandler);
 app.get('/admin', localOnly, (_req, res) => {
   res.sendFile(join(__dirname, 'admin.html'));
 });
+app.get('/api/admin/docs',        localOnly, listDocs);
+app.patch('/api/admin/docs/:id',  localOnly, updateDoc);
 
 // ── Static files ──────────────────────────────────────────────────────────────
 app.use(express.static(__dirname, {
