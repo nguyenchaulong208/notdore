@@ -192,6 +192,7 @@ function showToast(msg) {
 // Nav routing
 // ─────────────────────────────────────────────────────────────────────────────
 const PANEL_TITLES = {
+  manage:   'Quản lý văn bản',
   single:   'Nhập văn bản đơn lẻ',
   bulk:     'Import hàng loạt',
   schema:   'Sơ đồ Database',
@@ -482,6 +483,212 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   document.getElementById('btn-dl-template-sample').addEventListener('click', () => {
     downloadFile(CSV_SAMPLE, 'notdore_sample.csv');
+  });
+
+  // ── Quản lý văn bản ─────────────────────────────────────────────────────────
+  let allDocsCache = [];
+  let allTagsCache = [];
+  let hasNewCols   = false;
+  let editingId    = null;
+
+  async function loadAllDocs() {
+    document.getElementById('manage-loading').style.display = 'block';
+    document.getElementById('manage-table-wrap').style.display = 'none';
+    closeDrawer();
+
+    try {
+      const res  = await fetch('/api/admin/docs');
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Lỗi tải dữ liệu');
+
+      allDocsCache = data.docs || [];
+      allTagsCache = data.allTags || [];
+      hasNewCols   = !!data.hasNewColumns;
+
+      document.getElementById('schema-warning').style.display = hasNewCols ? 'none' : 'block';
+      renderManageTable(allDocsCache);
+    } catch (err) {
+      showToast('❌ ' + err.message);
+    } finally {
+      document.getElementById('manage-loading').style.display = 'none';
+    }
+  }
+
+  function renderManageTable(docs) {
+    const tbody = document.getElementById('manage-tbody');
+    tbody.innerHTML = docs.map(d => {
+      const issued  = d.issued_date  ? formatDateShort(d.issued_date)  : '<span class="text-muted">—</span>';
+      const expiry  = d.expiry_date  ? `<span class="text-danger">${formatDateShort(d.expiry_date)}</span>` : '<span class="text-muted">—</span>';
+      const status  = d.status ? statusChip(d.status) : '<span class="text-muted">—</span>';
+      const tagList = (d.tags || []).map(t => `<span class="badge bg-secondary me-1" style="font-size:10px">${esc(t.label || t.name)}</span>`).join('') || '<span class="text-muted">—</span>';
+      return `<tr data-id="${d.id}" class="manage-row">
+        <td><strong style="font-size:12px">${esc(d.code)}</strong></td>
+        <td style="max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px" title="${esc(d.title)}">${esc(d.title)}</td>
+        <td style="font-size:12px">${issued}</td>
+        <td style="font-size:12px">${expiry}</td>
+        <td>${status}</td>
+        <td>${tagList}</td>
+        <td>
+          <button class="btn btn-sm btn-outline-primary btn-edit-doc py-0 px-2" data-id="${d.id}" style="font-size:12px">
+            <i class="bi bi-pencil me-1"></i>Sửa
+          </button>
+        </td>
+      </tr>`;
+    }).join('');
+
+    document.getElementById('manage-count').textContent = `${docs.length} văn bản trong database`;
+    document.getElementById('manage-table-wrap').style.display = 'block';
+
+    // Bind edit buttons
+    document.querySelectorAll('.btn-edit-doc').forEach(btn => {
+      btn.addEventListener('click', e => {
+        e.stopPropagation();
+        openDrawer(Number(btn.dataset.id));
+      });
+    });
+  }
+
+  function statusChip(status) {
+    const map = {
+      hieu_luc:      ['status-hieu_luc',      'Còn hiệu lực'],
+      het_hieu_luc:  ['status-het_hieu_luc',  'Hết hiệu lực'],
+      chua_hieu_luc: ['status-chua_hieu_luc', 'Chưa có hiệu lực'],
+    };
+    const [cls, label] = map[status] || ['', status];
+    return `<span class="status-badge ${cls}">${label}</span>`;
+  }
+
+  function formatDateShort(s) {
+    if (!s) return '';
+    const d = new Date(s);
+    return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
+  }
+
+  function esc(s) {
+    return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  function openDrawer(id) {
+    const doc = allDocsCache.find(d => d.id === id);
+    if (!doc) return;
+    editingId = id;
+
+    document.getElementById('edit-doc-code').textContent  = doc.code;
+    document.getElementById('edit-doc-title').textContent = doc.title;
+    document.getElementById('edit-issued-date').value     = doc.issued_date  || '';
+    document.getElementById('edit-expiry-date').value     = doc.expiry_date  || '';
+    document.getElementById('edit-status').value          = doc.status       || 'hieu_luc';
+    document.getElementById('edit-view-url').value        = doc.file?.drive_view_url     || '';
+    document.getElementById('edit-download-url').value   = doc.file?.drive_download_url || '';
+
+    // Ẩn fields chưa có trong schema
+    ['edit-issued-wrap','edit-expiry-wrap','edit-status-wrap'].forEach(id => {
+      document.getElementById(id).style.display = hasNewCols ? '' : 'none';
+    });
+
+    // Render tag checkboxes
+    const currentTagNames = (doc.tags || []).map(t => t.name);
+    const tagGrid = document.getElementById('edit-tag-grid');
+    tagGrid.innerHTML = allTagsCache.map(tag => `
+      <label class="tag-check">
+        <input type="checkbox" name="edit-tag" value="${tag.name}" ${currentTagNames.includes(tag.name) ? 'checked' : ''} />
+        <span>${esc(tag.label || tag.name)}</span>
+      </label>`).join('');
+
+    document.getElementById('save-status').textContent = '';
+    document.getElementById('edit-drawer').style.display = 'block';
+
+    // Highlight row
+    document.querySelectorAll('.manage-row').forEach(r => r.classList.remove('table-primary'));
+    const row = document.querySelector(`.manage-row[data-id="${id}"]`);
+    if (row) {
+      row.classList.add('table-primary');
+      row.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    document.getElementById('edit-drawer').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function closeDrawer() {
+    editingId = null;
+    document.getElementById('edit-drawer').style.display = 'none';
+    document.querySelectorAll('.manage-row').forEach(r => r.classList.remove('table-primary'));
+  }
+
+  document.getElementById('btn-close-drawer').addEventListener('click', closeDrawer);
+  document.getElementById('btn-cancel-edit').addEventListener('click', closeDrawer);
+
+  document.getElementById('btn-save-doc').addEventListener('click', async () => {
+    if (!editingId) return;
+    const statusEl = document.getElementById('save-status');
+    const btn      = document.getElementById('btn-save-doc');
+
+    const selectedTags = [...document.querySelectorAll('input[name="edit-tag"]:checked')].map(cb => cb.value);
+
+    const payload = {
+      tags:               selectedTags,
+      drive_view_url:     document.getElementById('edit-view-url').value.trim(),
+      drive_download_url: document.getElementById('edit-download-url').value.trim(),
+    };
+
+    if (hasNewCols) {
+      payload.issued_date = document.getElementById('edit-issued-date').value || null;
+      payload.expiry_date = document.getElementById('edit-expiry-date').value || null;
+      payload.status      = document.getElementById('edit-status').value;
+    }
+
+    btn.disabled = true;
+    statusEl.innerHTML = '<span class="text-muted"><span class="spinner-border spinner-border-sm me-1"></span>Đang lưu…</span>';
+
+    try {
+      const res = await fetch(`/api/admin/docs/${editingId}`, {
+        method:  'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify(payload),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Lỗi lưu dữ liệu');
+
+      // Cập nhật cache cục bộ
+      const idx = allDocsCache.findIndex(d => d.id === editingId);
+      if (idx !== -1) {
+        if (hasNewCols) {
+          allDocsCache[idx].issued_date = payload.issued_date;
+          allDocsCache[idx].expiry_date = payload.expiry_date;
+          allDocsCache[idx].status      = payload.status;
+        }
+        allDocsCache[idx].tags = allTagsCache.filter(t => selectedTags.includes(t.name));
+        if (payload.drive_view_url || payload.drive_download_url) {
+          allDocsCache[idx].file = {
+            drive_view_url:     payload.drive_view_url,
+            drive_download_url: payload.drive_download_url,
+          };
+        }
+        renderManageTable(allDocsCache);
+      }
+
+      statusEl.innerHTML = '<span class="text-success"><i class="bi bi-check-circle me-1"></i>Đã lưu!</span>';
+      setTimeout(() => closeDrawer(), 1000);
+      showToast('✅ Đã lưu thay đổi');
+    } catch (err) {
+      statusEl.innerHTML = `<span class="text-danger"><i class="bi bi-x-circle me-1"></i>${err.message}</span>`;
+    } finally {
+      btn.disabled = false;
+    }
+  });
+
+  document.getElementById('btn-reload-docs').addEventListener('click', loadAllDocs);
+
+  // Auto-load khi chuyển sang panel manage lần đầu
+  let managePanelLoaded = false;
+  const _origNavButtons = document.querySelectorAll('[data-panel]');
+  _origNavButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (btn.dataset.panel === 'manage' && !managePanelLoaded) {
+        managePanelLoaded = true;
+        loadAllDocs();
+      }
+    });
   });
 
 });
