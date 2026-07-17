@@ -2,8 +2,8 @@
  * assets/js/category.js — Logic trang danh mục văn bản
  *
  * Đọc ?cat= từ URL, tải dữ liệu từ /api/category, rồi render
- * sidebar và grid. Toàn bộ nội dung tĩnh của từng danh mục
- * (tiêu đề, tổng quan, đối tượng) được định nghĩa trong CATEGORY_INFO.
+ * sidebar và grid. Nội dung tĩnh của từng danh mục (tiêu đề,
+ * tổng quan, đối tượng) được định nghĩa trong CATEGORY_INFO.
  */
 
 // ── Hằng số ───────────────────────────────────────────────────────────────────
@@ -46,8 +46,8 @@ const CATEGORY_INFO = {
       'Văn bản hiện hành: Luật số 04/2007/QH12 và các văn bản sửa đổi, bổ sung.',
     ],
     audience: [
-      { icon: 'user-tie',  title: 'Người lao động làm công hưởng lương',         desc: 'Thu nhập từ tiền lương, tiền công và các khoản thu nhập tương tự phải kê khai và nộp thuế TNCN.' },
-      { icon: 'chart-pie', title: 'Cá nhân kinh doanh',                           desc: 'Cá nhân sản xuất, kinh doanh hàng hóa, dịch vụ thuộc đối tượng nộp thuế TNCN theo quy định.' },
+      { icon: 'user-tie',  title: 'Người lao động làm công hưởng lương',          desc: 'Thu nhập từ tiền lương, tiền công và các khoản thu nhập tương tự phải kê khai và nộp thuế TNCN.' },
+      { icon: 'chart-pie', title: 'Cá nhân kinh doanh',                            desc: 'Cá nhân sản xuất, kinh doanh hàng hóa, dịch vụ thuộc đối tượng nộp thuế TNCN theo quy định.' },
       { icon: 'home',      title: 'Cá nhân có thu nhập từ đầu tư, chuyển nhượng', desc: 'Thu nhập từ đầu tư vốn, chuyển nhượng bất động sản, chuyển nhượng vốn và các khoản thu nhập khác.' },
     ],
   },
@@ -64,8 +64,8 @@ const CATEGORY_INFO = {
       'Văn bản hiện hành: Luật số 14/2008/QH12 và các văn bản sửa đổi, bổ sung.',
     ],
     audience: [
-      { icon: 'building', title: 'Doanh nghiệp trong nước',                        desc: 'Mọi doanh nghiệp Việt Nam thuộc mọi thành phần kinh tế đều thuộc đối tượng nộp thuế TNDN.' },
-      { icon: 'globe',    title: 'Doanh nghiệp có vốn đầu tư nước ngoài',          desc: 'Doanh nghiệp FDI hoạt động tại Việt Nam chịu thuế TNDN theo quy định, bao gồm cả các ưu đãi đầu tư.' },
+      { icon: 'building', title: 'Doanh nghiệp trong nước',                         desc: 'Mọi doanh nghiệp Việt Nam thuộc mọi thành phần kinh tế đều thuộc đối tượng nộp thuế TNDN.' },
+      { icon: 'globe',    title: 'Doanh nghiệp có vốn đầu tư nước ngoài',           desc: 'Doanh nghiệp FDI hoạt động tại Việt Nam chịu thuế TNDN theo quy định, bao gồm cả các ưu đãi đầu tư.' },
       { icon: 'landmark', title: 'Tổ chức khác có hoạt động sản xuất, kinh doanh', desc: 'Các tổ chức khác ngoài doanh nghiệp có hoạt động sản xuất, kinh doanh hàng hóa, dịch vụ chịu thuế TNDN.' },
     ],
   },
@@ -82,9 +82,9 @@ const CATEGORY_INFO = {
       'Văn bản hiện hành: Luật BHXH số 58/2014/QH13 và Luật sửa đổi số 28/2024/QH15.',
     ],
     audience: [
-      { icon: 'users',             title: 'Người lao động',                  desc: 'Người lao động làm việc theo hợp đồng lao động từ đủ 01 tháng trở lên thuộc đối tượng tham gia BHXH bắt buộc.' },
-      { icon: 'building',          title: 'Người sử dụng lao động',          desc: 'Doanh nghiệp, cơ quan, tổ chức, hợp tác xã, hộ kinh doanh có thuê mướn lao động.' },
-      { icon: 'hand-holding-heart', title: 'Người tham gia BHXH tự nguyện', desc: 'Công dân Việt Nam từ đủ 15 tuổi trở lên không thuộc đối tượng tham gia BHXH bắt buộc có thể tham gia BHXH tự nguyện.' },
+      { icon: 'users',              title: 'Người lao động',                  desc: 'Người lao động làm việc theo hợp đồng lao động từ đủ 01 tháng trở lên thuộc đối tượng tham gia BHXH bắt buộc.' },
+      { icon: 'building',           title: 'Người sử dụng lao động',          desc: 'Doanh nghiệp, cơ quan, tổ chức, hợp tác xã, hộ kinh doanh có thuê mướn lao động.' },
+      { icon: 'hand-holding-heart', title: 'Người tham gia BHXH tự nguyện',  desc: 'Công dân Việt Nam từ đủ 15 tuổi trở lên không thuộc đối tượng tham gia BHXH bắt buộc có thể tham gia BHXH tự nguyện.' },
     ],
   },
 };

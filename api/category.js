@@ -7,8 +7,8 @@
  * Response:
  *   { docs: Doc[], total: number }
  *
- * Mỗi Doc gồm: id, code, title, description, created_at, file?
- * file: { drive_view_url, drive_download_url, mime_type } | null
+ * Mỗi Doc: { id, code, title, description, created_at, file }
+ * file:    { drive_view_url, drive_download_url, mime_type } | null
  */
 import { supabase } from '../lib/supabase.js';
 
@@ -25,7 +25,9 @@ export default async function handler(req, res) {
 
   const { cat } = req.query;
   if (!cat || !TAG_MAP[cat]) {
-    return res.status(400).json({ error: `Mã danh mục không hợp lệ: "${cat}". Chấp nhận: ${Object.keys(TAG_MAP).join(', ')}.` });
+    return res.status(400).json({
+      error: `Mã danh mục không hợp lệ: "${cat}". Chấp nhận: ${Object.keys(TAG_MAP).join(', ')}.`,
+    });
   }
 
   try {
