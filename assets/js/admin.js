@@ -624,6 +624,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const btn      = document.getElementById('btn-save-doc');
 
     const selectedTags = [...document.querySelectorAll('input[name="edit-tag"]:checked')].map(cb => cb.value);
+    const doc = allDocsCache.find(d => d.id === editingId);
 
     const payload = {
       tags:               selectedTags,
@@ -647,9 +648,19 @@ document.addEventListener('DOMContentLoaded', () => {
         body:    JSON.stringify(payload),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Lỗi lưu dữ liệu');
 
-      // Cập nhật cache cục bộ
+      if (!res.ok) {
+        // RLS blocked → fallback: sinh UPDATE SQL script
+        if (data.error && data.error.includes('permission denied')) {
+          showUpdateSql(editingId, doc, payload, selectedTags);
+          statusEl.innerHTML = '<span class="text-warning"><i class="bi bi-exclamation-triangle me-1"></i>RLS chặn ghi. Đã tạo SQL script bên dưới.</span>';
+          btn.disabled = false;
+          return;
+        }
+        throw new Error(data.error || 'Lỗi lưu dữ liệu');
+      }
+
+      // Thành công → cập nhật cache và re-render
       const idx = allDocsCache.findIndex(d => d.id === editingId);
       if (idx !== -1) {
         if (hasNewCols) {
@@ -668,7 +679,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       statusEl.innerHTML = '<span class="text-success"><i class="bi bi-check-circle me-1"></i>Đã lưu!</span>';
-      setTimeout(() => closeDrawer(), 1000);
+      setTimeout(() => closeDrawer(), 1200);
       showToast('✅ Đã lưu thay đổi');
     } catch (err) {
       statusEl.innerHTML = `<span class="text-danger"><i class="bi bi-x-circle me-1"></i>${err.message}</span>`;
@@ -676,6 +687,79 @@ document.addEventListener('DOMContentLoaded', () => {
       btn.disabled = false;
     }
   });
+
+  /** Hiển thị UPDATE SQL khi RLS chặn ghi trực tiếp */
+  function showUpdateSql(id, doc, payload, selectedTags) {
+    const lines = [];
+    lines.push(`-- Cập nhật văn bản: ${doc?.code || id}`);
+    lines.push(`-- Chạy trong Supabase → SQL Editor`);
+    lines.push('');
+    lines.push('BEGIN;');
+    lines.push('');
+
+    // UPDATE documents
+    if (hasNewCols) {
+      const sets = [];
+      if (payload.issued_date !== undefined) sets.push(`  issued_date = ${payload.issued_date ? `'${payload.issued_date}'` : 'NULL'}`);
+      if (payload.expiry_date !== undefined) sets.push(`  expiry_date = ${payload.expiry_date ? `'${payload.expiry_date}'` : 'NULL'}`);
+      if (payload.status)                   sets.push(`  status = '${payload.status}'`);
+      if (sets.length) {
+        lines.push(`UPDATE documents SET`);
+        lines.push(sets.join(',\n'));
+        lines.push(`WHERE id = ${id};`);
+        lines.push('');
+      }
+    }
+
+    // UPDATE document_files
+    if (payload.drive_view_url || payload.drive_download_url) {
+      lines.push(`UPDATE document_files SET`);
+      lines.push(`  drive_view_url = ${payload.drive_view_url ? `'${payload.drive_view_url.replace(/'/g,"''")}'` : 'NULL'},`);
+      lines.push(`  drive_download_url = ${payload.drive_download_url ? `'${payload.drive_download_url.replace(/'/g,"''")}'` : 'NULL'}`);
+      lines.push(`WHERE document_id = ${id};`);
+      lines.push('');
+    }
+
+    // Tags: delete + reinsert
+    lines.push(`-- Cập nhật tags`);
+    lines.push(`DELETE FROM document_tag_map WHERE document_id = ${id};`);
+    if (selectedTags.length) {
+      lines.push(`INSERT INTO document_tag_map (document_id, tag_id)`);
+      lines.push(`SELECT ${id}, id FROM document_tags WHERE name IN (${selectedTags.map(t=>`'${t}'`).join(', ')});`);
+    }
+    lines.push('');
+    lines.push('COMMIT;');
+
+    const sql = lines.join('\n');
+
+    // Hiện SQL output trong drawer
+    let sqlWrap = document.getElementById('edit-sql-fallback');
+    if (!sqlWrap) {
+      sqlWrap = document.createElement('div');
+      sqlWrap.id = 'edit-sql-fallback';
+      sqlWrap.className = 'mt-4';
+      document.getElementById('edit-drawer-inner').appendChild(sqlWrap);
+    }
+    sqlWrap.innerHTML = `
+      <div class="sql-panel">
+        <div class="sql-toolbar">
+          <span><i class="bi bi-terminal me-2"></i>UPDATE SQL — chạy trong Supabase SQL Editor</span>
+          <div class="actions">
+            <button class="btn btn-sm btn-outline-secondary text-white border-secondary" id="btn-copy-update-sql">
+              <i class="bi bi-clipboard me-1"></i>Copy
+            </button>
+          </div>
+        </div>
+        <div class="sql-output" style="font-size:12px">${sql.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div>
+      </div>
+      <div class="mt-3 p-3 bg-light rounded" style="font-size:12px">
+        <strong><i class="bi bi-info-circle me-1"></i>Để ghi trực tiếp không cần SQL script:</strong>
+        Chạy lệnh này trong Supabase SQL Editor một lần duy nhất:<br>
+        <code class="d-block mt-2 p-2 bg-dark text-light rounded" style="font-size:11px">ALTER TABLE documents DISABLE ROW LEVEL SECURITY;<br>ALTER TABLE document_files DISABLE ROW LEVEL SECURITY;<br>ALTER TABLE document_tag_map DISABLE ROW LEVEL SECURITY;</code>
+      </div>`;
+    document.getElementById('btn-copy-update-sql').addEventListener('click', () => copyToClipboard(sql));
+    sqlWrap.scrollIntoView({ behavior: 'smooth' });
+  }
 
   document.getElementById('btn-reload-docs').addEventListener('click', loadAllDocs);
 
