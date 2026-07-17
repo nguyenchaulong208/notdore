@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin — NotDore</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+  <style>
+    :root {
+      --sidebar-w: 240px;
+      --brand: #e85d04;
+      --brand-dark: #c94d00;
+      --bg-sidebar: #0f172a;
+      --bg-main: #f8fafc;
+      --sql-bg: #0d1117;
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg-main);
+      min-height: 100vh;
+    }
+
+    /* ── Sidebar ──────────────────────────────────────────────── */
+    #sidebar {
+      position: fixed;
+      top: 0; left: 0; bottom: 0;
+      width: var(--sidebar-w);
+      background: var(--bg-sidebar);
+      color: #cbd5e1;
+      display: flex;
+      flex-direction: column;
+      z-index: 100;
+      overflow-y: auto;
+    }
+
+    .sidebar-brand {
+      padding: 20px 20px 16px;
+      border-bottom: 1px solid #1e293b;
+    }
+    .sidebar-brand .logo {
+      background: var(--brand);
+      color: #fff;
+      font-weight: 700;
+      font-size: 13px;
+      padding: 4px 8px;
+      border-radius: 6px;
+      letter-spacing: .5px;
+    }
+    .sidebar-brand .label {
+      font-size: 11px;
+      color: #64748b;
+      margin-top: 6px;
+    }
+
+    .nav-section {
+      padding: 12px 12px 4px;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #475569;
+    }
+
+    .nav-item-link {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 16px;
+      border-radius: 8px;
+      margin: 2px 8px;
+      color: #94a3b8;
+      text-decoration: none;
+      font-size: 14px;
+      cursor: pointer;
+      transition: background .15s, color .15s;
+      border: none;
+      background: none;
+      width: calc(100% - 16px);
+      text-align: left;
+    }
+    .nav-item-link:hover { background: #1e293b; color: #e2e8f0; }
+    .nav-item-link.active { background: #1e3a5f; color: #60a5fa; }
+    .nav-item-link .bi { font-size: 16px; width: 18px; }
+
+    .sidebar-footer {
+      margin-top: auto;
+      padding: 16px;
+      border-top: 1px solid #1e293b;
+      font-size: 11px;
+      color: #475569;
+    }
+
+    /* ── Main content ─────────────────────────────────────────── */
+    #main {
+      margin-left: var(--sidebar-w);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .topbar {
+      background: #fff;
+      border-bottom: 1px solid #e2e8f0;
+      padding: 14px 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky; top: 0; z-index: 50;
+    }
+    .topbar h1 { font-size: 18px; font-weight: 700; color: #0f172a; margin: 0; }
+    .topbar .badge-local {
+      background: #dcfce7;
+      color: #166534;
+      font-size: 11px;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-weight: 600;
+      border: 1px solid #86efac;
+    }
+
+    .content-area {
+      flex: 1;
+      padding: 28px;
+      max-width: 1200px;
+      width: 100%;
+    }
+
+    /* ── Panels ───────────────────────────────────────────────── */
+    .panel { display: none; }
+    .panel.active { display: block; }
+
+    /* ── Form styling ─────────────────────────────────────────── */
+    .form-card {
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 20px;
+    }
+    .form-card h5 {
+      font-size: 14px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      color: #64748b;
+      margin-bottom: 16px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #f1f5f9;
+    }
+    .form-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: #374151;
+      margin-bottom: 5px;
+    }
+    .form-control, .form-select {
+      font-size: 14px;
+      border-color: #d1d5db;
+      border-radius: 8px;
+    }
+    .form-control:focus, .form-select:focus {
+      border-color: var(--brand);
+      box-shadow: 0 0 0 3px rgba(232,93,4,.12);
+    }
+
+    .tag-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 8px;
+    }
+    .tag-check {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 8px 12px;
+      cursor: pointer;
+      transition: border-color .15s, background .15s;
+    }
+    .tag-check:has(input:checked) {
+      border-color: var(--brand);
+      background: #fff7f0;
+    }
+    .tag-check input { accent-color: var(--brand); cursor: pointer; }
+    .tag-check label { font-size: 13px; cursor: pointer; margin: 0; }
+
+    /* ── SQL Output ───────────────────────────────────────────── */
+    .sql-panel {
+      background: var(--sql-bg);
+      border-radius: 12px;
+      overflow: hidden;
+      margin-top: 20px;
+    }
+    .sql-toolbar {
+      background: #161b22;
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid #30363d;
+    }
+    .sql-toolbar span {
+      color: #8b949e;
+      font-size: 12px;
+      font-family: monospace;
+    }
+    .sql-toolbar .actions { display: flex; gap: 8px; }
+    .sql-output {
+      color: #e6edf3;
+      font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+      font-size: 13px;
+      line-height: 1.6;
+      padding: 20px;
+      white-space: pre-wrap;
+      word-break: break-all;
+      max-height: 520px;
+      overflow-y: auto;
+      min-height: 120px;
+    }
+    .sql-output .kw  { color: #ff7b72; }   /* keywords */
+    .sql-output .str { color: #a5d6ff; }   /* strings */
+    .sql-output .cm  { color: #8b949e; }   /* comments */
+    .sql-output .fn  { color: #d2a8ff; }   /* functions */
+
+    /* ── Import area ─────────────────────────────────────────── */
+    .drop-zone {
+      border: 2px dashed #d1d5db;
+      border-radius: 10px;
+      padding: 32px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color .2s, background .2s;
+      background: #f9fafb;
+    }
+    .drop-zone:hover, .drop-zone.dragover {
+      border-color: var(--brand);
+      background: #fff7f0;
+    }
+    .drop-zone .bi { font-size: 32px; color: #94a3b8; }
+
+    .preview-table {
+      font-size: 12px;
+      border-collapse: collapse;
+      width: 100%;
+    }
+    .preview-table th {
+      background: #0f172a;
+      color: #94a3b8;
+      padding: 8px 12px;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      text-align: left;
+    }
+    .preview-table td {
+      padding: 8px 12px;
+      border-bottom: 1px solid #f1f5f9;
+      max-width: 200px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .preview-table tr:hover td { background: #f8fafc; }
+
+    .status-badge {
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 20px;
+      font-weight: 600;
+    }
+    .status-hieu_luc      { background:#dcfce7; color:#166534; }
+    .status-het_hieu_luc  { background:#fee2e2; color:#991b1b; }
+    .status-chua_hieu_luc { background:#fef9c3; color:#854d0e; }
+
+    /* ── Buttons ──────────────────────────────────────────────── */
+    .btn-brand {
+      background: var(--brand);
+      border-color: var(--brand);
+      color: #fff;
+      font-size: 14px;
+      font-weight: 600;
+      border-radius: 8px;
+      padding: 8px 20px;
+    }
+    .btn-brand:hover {
+      background: var(--brand-dark);
+      border-color: var(--brand-dark);
+      color: #fff;
+    }
+
+    .step-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px; height: 24px;
+      border-radius: 50%;
+      background: var(--brand);
+      color: #fff;
+      font-size: 12px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    .alert-info-custom {
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      border-radius: 8px;
+      padding: 12px 16px;
+      font-size: 13px;
+      color: #1e40af;
+    }
+    .alert-info-custom code {
+      background: #dbeafe;
+      padding: 1px 5px;
+      border-radius: 4px;
+      font-size: 12px;
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══════════════════ SIDEBAR ══════════════════ -->
+<nav id="sidebar">
+  <div class="sidebar-brand">
+    <div class="logo">&lt;/&gt; NotDore</div>
+    <div class="label">Admin · Quản trị nội bộ</div>
+  </div>
+
+  <div class="nav-section">Nhập liệu</div>
+  <button class="nav-item-link active" data-panel="single">
+    <i class="bi bi-file-earmark-plus"></i>
+    Nhập đơn lẻ
+  </button>
+  <button class="nav-item-link" data-panel="bulk">
+    <i class="bi bi-table"></i>
+    Import hàng loạt
+  </button>
+
+  <div class="nav-section">Công cụ</div>
+  <button class="nav-item-link" data-panel="schema">
+    <i class="bi bi-diagram-3"></i>
+    Sơ đồ database
+  </button>
+  <button class="nav-item-link" data-panel="template">
+    <i class="bi bi-download"></i>
+    Tải CSV template
+  </button>
+
+  <div class="sidebar-footer">
+    <div><i class="bi bi-lock-fill me-1"></i>Chỉ chạy local</div>
+    <div class="mt-1">Không ghi trực tiếp vào DB</div>
+  </div>
+</nav>
+
+<!-- ══════════════════ MAIN ══════════════════ -->
+<div id="main">
+  <div class="topbar">
+    <h1 id="panel-title">Nhập văn bản đơn lẻ</h1>
+    <span class="badge-local"><i class="bi bi-shield-lock me-1"></i>Môi trường Local</span>
+  </div>
+
+  <div class="content-area">
+
+    <!-- ── Panel 1: Nhập đơn lẻ ─────────────────────────────── -->
+    <div id="panel-single" class="panel active">
+
+      <div class="alert-info-custom mb-4">
+        <i class="bi bi-info-circle me-1"></i>
+        Điền thông tin văn bản bên dưới. Hệ thống sẽ sinh ra <strong>SQL script</strong>
+        mà bạn chép và chạy trong <code>Supabase → SQL Editor</code>.
+      </div>
+
+      <form id="form-single" novalidate>
+
+        <div class="form-card">
+          <h5><i class="bi bi-file-text me-2"></i>Thông tin cơ bản</h5>
+          <div class="row g-3">
+            <div class="col-md-4">
+              <label class="form-label">Số hiệu văn bản <span class="text-danger">*</span></label>
+              <input type="text" class="form-control" id="f-code"
+                placeholder="VD: 163/2017/NĐ-CP" required />
+              <div class="form-text">Nhập đúng ký hiệu gốc</div>
+            </div>
+            <div class="col-md-8">
+              <label class="form-label">Tên văn bản <span class="text-danger">*</span></label>
+              <input type="text" class="form-control" id="f-title"
+                placeholder="VD: Nghị định 163/2017/NĐ-CP Quy định về kinh doanh dịch vụ Logistics" required />
+            </div>
+            <div class="col-12">
+              <label class="form-label">Mô tả / tóm tắt</label>
+              <textarea class="form-control" id="f-description" rows="2"
+                placeholder="Tóm tắt nội dung chính của văn bản…"></textarea>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-card">
+          <h5><i class="bi bi-calendar3 me-2"></i>Thời gian hiệu lực</h5>
+          <div class="row g-3">
+            <div class="col-md-4">
+              <label class="form-label">Ngày ban hành</label>
+              <input type="date" class="form-control" id="f-issued-date" />
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Ngày hết hiệu lực</label>
+              <input type="date" class="form-control" id="f-expiry-date" />
+              <div class="form-text">Để trống nếu chưa xác định</div>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Trạng thái hiệu lực <span class="text-danger">*</span></label>
+              <select class="form-select" id="f-status">
+                <option value="hieu_luc" selected>Còn hiệu lực</option>
+                <option value="het_hieu_luc">Hết hiệu lực</option>
+                <option value="chua_hieu_luc">Chưa có hiệu lực</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-card">
+          <h5><i class="bi bi-tags me-2"></i>Danh mục / Nhãn</h5>
+          <div class="tag-grid" id="tag-checkboxes">
+            <!-- Generated by JS -->
+          </div>
+        </div>
+
+        <div class="form-card">
+          <h5><i class="bi bi-link-45deg me-2"></i>File đính kèm (Google Drive)</h5>
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label">Link xem online</label>
+              <input type="url" class="form-control" id="f-view-url"
+                placeholder="https://drive.google.com/file/d/…/view" />
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Link tải xuống</label>
+              <input type="url" class="form-control" id="f-download-url"
+                placeholder="https://drive.google.com/uc?id=…&export=download" />
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Định dạng file</label>
+              <select class="form-select" id="f-mime">
+                <option value="application/pdf">PDF</option>
+                <option value="application/vnd.openxmlformats-officedocument.wordprocessingml.document">DOCX</option>
+                <option value="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">XLSX</option>
+                <option value="application/msword">DOC</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="d-flex gap-3 align-items-center mb-2">
+          <button type="submit" class="btn btn-brand px-4">
+            <i class="bi bi-code-slash me-2"></i>Tạo SQL Script
+          </button>
+          <button type="button" class="btn btn-outline-secondary" id="btn-clear-single">
+            <i class="bi bi-arrow-counterclockwise me-1"></i>Xoá form
+          </button>
+        </div>
+      </form>
+
+      <div id="sql-output-single" style="display:none">
+        <div class="sql-panel">
+          <div class="sql-toolbar">
+            <span><i class="bi bi-terminal me-2"></i>SQL Script — sẵn sàng chạy trong Supabase</span>
+            <div class="actions">
+              <button class="btn btn-sm btn-outline-secondary text-white border-secondary" id="btn-copy-single">
+                <i class="bi bi-clipboard me-1"></i>Copy
+              </button>
+              <button class="btn btn-sm btn-outline-secondary text-white border-secondary" id="btn-download-single">
+                <i class="bi bi-download me-1"></i>Tải .sql
+              </button>
+            </div>
+          </div>
+          <div class="sql-output" id="sql-code-single"></div>
+        </div>
+      </div>
+    </div><!-- /panel-single -->
+
+    <!-- ── Panel 2: Import hàng loạt ────────────────────────── -->
+    <div id="panel-bulk" class="panel">
+
+      <div class="alert-info-custom mb-4">
+        <i class="bi bi-info-circle me-1"></i>
+        Upload file <code>.csv</code> hoặc dán dữ liệu CSV trực tiếp. Hệ thống sinh SQL cho tất cả văn bản cùng lúc.
+        Tải <strong>CSV template</strong> từ menu bên trái để biết định dạng đúng.
+      </div>
+
+      <!-- Step 1: Upload / Paste -->
+      <div class="form-card mb-4">
+        <h5><span class="step-badge me-2">1</span>Tải lên hoặc dán dữ liệu CSV</h5>
+
+        <div class="drop-zone mb-3" id="drop-zone">
+          <i class="bi bi-cloud-upload"></i>
+          <div class="mt-2 fw-semibold text-secondary">Kéo thả file CSV vào đây</div>
+          <div class="text-muted small">hoặc <span class="text-primary" style="cursor:pointer" id="click-upload">nhấn để chọn file</span></div>
+          <input type="file" id="file-input" accept=".csv" style="display:none" />
+        </div>
+
+        <div class="d-flex align-items-center gap-2 my-3">
+          <hr class="flex-grow-1" /><span class="text-muted small">hoặc</span><hr class="flex-grow-1" />
+        </div>
+
+        <label class="form-label">Dán nội dung CSV</label>
+        <textarea class="form-control font-monospace" id="csv-paste" rows="8"
+          placeholder="code,title,description,issued_date,expiry_date,status,tags,drive_view_url,drive_download_url,mime_type
+163/2017/NĐ-CP,Nghị định 163/2017,Quy định logistics,2017-12-19,,hieu_luc,vat,https://…,https://…,pdf"></textarea>
+
+        <button class="btn btn-brand mt-3" id="btn-parse-csv">
+          <i class="bi bi-table me-2"></i>Phân tích CSV
+        </button>
+      </div>
+
+      <!-- Step 2: Preview -->
+      <div id="bulk-preview" style="display:none">
+        <div class="form-card mb-4">
+          <h5 class="d-flex align-items-center justify-content-between">
+            <span><span class="step-badge me-2">2</span>Xem trước dữ liệu <span id="preview-count" class="ms-2 badge bg-secondary fw-normal"></span></span>
+            <div class="d-flex gap-2">
+              <button class="btn btn-sm btn-outline-danger" id="btn-clear-bulk">
+                <i class="bi bi-x me-1"></i>Xoá
+              </button>
+            </div>
+          </h5>
+          <div style="overflow-x:auto; max-height: 320px; overflow-y:auto;">
+            <table class="preview-table" id="preview-table">
+              <thead>
+                <tr>
+                  <th>#</th><th>Số hiệu</th><th>Tên văn bản</th>
+                  <th>Ngày ban hành</th><th>Ngày hết hiệu lực</th>
+                  <th>Trạng thái</th><th>Tags</th><th>File</th>
+                </tr>
+              </thead>
+              <tbody id="preview-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Step 3: Generate -->
+        <div class="form-card mb-4">
+          <h5><span class="step-badge me-2">3</span>Tạo SQL Script</h5>
+          <button class="btn btn-brand" id="btn-generate-bulk">
+            <i class="bi bi-code-slash me-2"></i>Tạo SQL cho <span id="gen-count">0</span> văn bản
+          </button>
+        </div>
+
+        <div id="sql-output-bulk" style="display:none">
+          <div class="sql-panel">
+            <div class="sql-toolbar">
+              <span><i class="bi bi-terminal me-2"></i>SQL Script — sẵn sàng chạy trong Supabase</span>
+              <div class="actions">
+                <button class="btn btn-sm btn-outline-secondary text-white border-secondary" id="btn-copy-bulk">
+                  <i class="bi bi-clipboard me-1"></i>Copy
+                </button>
+                <button class="btn btn-sm btn-outline-secondary text-white border-secondary" id="btn-download-bulk">
+                  <i class="bi bi-download me-1"></i>Tải .sql
+                </button>
+              </div>
+            </div>
+            <div class="sql-output" id="sql-code-bulk"></div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /panel-bulk -->
+
+    <!-- ── Panel 3: Schema ───────────────────────────────────── -->
+    <div id="panel-schema" class="panel">
+      <div class="form-card">
+        <h5><i class="bi bi-diagram-3 me-2"></i>Sơ đồ bảng database (v2)</h5>
+        <div class="table-responsive">
+          <table class="table table-sm table-hover" style="font-size:13px">
+            <thead class="table-dark">
+              <tr><th>Bảng</th><th>Cột</th><th>Kiểu</th><th>Ghi chú</th></tr>
+            </thead>
+            <tbody>
+              <tr class="table-secondary"><td colspan="4"><strong>documents</strong></td></tr>
+              <tr><td></td><td>id</td><td><code>UUID</code></td><td>PK, tự sinh</td></tr>
+              <tr><td></td><td>code</td><td><code>TEXT</code></td><td>Số hiệu văn bản, NOT NULL</td></tr>
+              <tr><td></td><td>title</td><td><code>TEXT</code></td><td>Tên văn bản, NOT NULL</td></tr>
+              <tr><td></td><td>description</td><td><code>TEXT</code></td><td>Tóm tắt</td></tr>
+              <tr class="table-warning"><td></td><td><strong>issued_date</strong></td><td><code>DATE</code></td><td>🆕 Ngày ban hành</td></tr>
+              <tr class="table-warning"><td></td><td><strong>expiry_date</strong></td><td><code>DATE</code></td><td>🆕 Ngày hết hiệu lực (NULL = chưa xác định)</td></tr>
+              <tr class="table-warning"><td></td><td><strong>status</strong></td><td><code>TEXT</code></td><td>🆕 hieu_luc | het_hieu_luc | chua_hieu_luc</td></tr>
+              <tr><td></td><td>created_at</td><td><code>TIMESTAMPTZ</code></td><td>Tự động</td></tr>
+              <tr><td></td><td>updated_at</td><td><code>TIMESTAMPTZ</code></td><td>Auto-update trigger</td></tr>
+              <tr class="table-secondary"><td colspan="4"><strong>document_files</strong></td></tr>
+              <tr><td></td><td>id</td><td><code>UUID</code></td><td>PK</td></tr>
+              <tr><td></td><td>document_id</td><td><code>UUID</code></td><td>FK → documents.id</td></tr>
+              <tr><td></td><td>drive_view_url</td><td><code>TEXT</code></td><td>Link xem online</td></tr>
+              <tr><td></td><td>drive_download_url</td><td><code>TEXT</code></td><td>Link tải xuống</td></tr>
+              <tr><td></td><td>mime_type</td><td><code>TEXT</code></td><td>application/pdf…</td></tr>
+              <tr class="table-secondary"><td colspan="4"><strong>document_tags</strong></td></tr>
+              <tr><td></td><td>id</td><td><code>UUID</code></td><td>PK</td></tr>
+              <tr><td></td><td>name</td><td><code>TEXT</code></td><td>UNIQUE: thue-gtgt, bhxh…</td></tr>
+              <tr><td></td><td>label</td><td><code>TEXT</code></td><td>Tên hiển thị</td></tr>
+              <tr class="table-secondary"><td colspan="4"><strong>document_tag_map</strong></td></tr>
+              <tr><td></td><td>document_id</td><td><code>UUID</code></td><td>FK → documents</td></tr>
+              <tr><td></td><td>tag_id</td><td><code>UUID</code></td><td>FK → document_tags</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="mt-4">
+          <h5><i class="bi bi-file-code me-2"></i>Files SQL</h5>
+          <p class="text-muted small">Tải về để chạy trong Supabase SQL Editor:</p>
+          <div class="d-flex gap-3 flex-wrap">
+            <a href="/db/schema_v2.sql" download class="btn btn-outline-dark btn-sm">
+              <i class="bi bi-download me-1"></i>schema_v2.sql (tạo mới hoàn toàn)
+            </a>
+            <a href="/db/migration_v1_to_v2.sql" download class="btn btn-outline-dark btn-sm">
+              <i class="bi bi-download me-1"></i>migration_v1_to_v2.sql (giữ dữ liệu cũ)
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-card">
+        <h5><i class="bi bi-signpost-2 me-2"></i>Roadmap crawl văn bản</h5>
+        <div class="text-muted small" style="line-height:1.8">
+          <div><i class="bi bi-check2-circle text-success me-2"></i><strong>v2 (hiện tại)</strong> — Nhập tay + Import CSV → sinh SQL script</div>
+          <div><i class="bi bi-circle me-2 text-secondary"></i><strong>v3 (kế hoạch)</strong> — Crawl từ nguồn (vbpl.vn, thuvienphapluat.vn…) → auto populate form → sinh SQL</div>
+          <div><i class="bi bi-circle me-2 text-secondary"></i><strong>v4</strong> — Crawl tự động theo lịch, dedup theo số hiệu, push trực tiếp vào Supabase</div>
+        </div>
+        <div class="mt-3 p-3 bg-light rounded small">
+          <strong>Cấu trúc đề xuất cho crawler:</strong>
+          <pre class="mb-0 mt-2" style="font-size:12px">crawlers/
+  vbpl.js         # vbpl.vn — nguồn chính thức
+  thuvienphapluat.js
+  runner.js       # orchestration + dedup
+lib/
+  csv-exporter.js # output → CSV → đưa vào tool này</pre>
+        </div>
+      </div>
+    </div><!-- /panel-schema -->
+
+    <!-- ── Panel 4: Template download ───────────────────────── -->
+    <div id="panel-template" class="panel">
+      <div class="form-card">
+        <h5><i class="bi bi-download me-2"></i>CSV Template</h5>
+        <p class="text-muted small mb-3">Tải file mẫu, điền dữ liệu, rồi import vào tab <em>Import hàng loạt</em>.</p>
+
+        <div class="table-responsive mb-4">
+          <table class="table table-sm table-bordered" style="font-size:12px">
+            <thead class="table-dark">
+              <tr><th>Cột</th><th>Bắt buộc</th><th>Định dạng</th><th>Ví dụ</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><code>code</code></td><td>✅</td><td>Text</td><td>163/2017/NĐ-CP</td></tr>
+              <tr><td><code>title</code></td><td>✅</td><td>Text</td><td>Nghị định 163/2017 về Logistics</td></tr>
+              <tr><td><code>description</code></td><td>—</td><td>Text</td><td>Quy định điều kiện kinh doanh…</td></tr>
+              <tr><td><code>issued_date</code></td><td>—</td><td>YYYY-MM-DD</td><td>2017-12-19</td></tr>
+              <tr><td><code>expiry_date</code></td><td>—</td><td>YYYY-MM-DD hoặc trống</td><td></td></tr>
+              <tr><td><code>status</code></td><td>✅</td><td>hieu_luc | het_hieu_luc | chua_hieu_luc</td><td>hieu_luc</td></tr>
+              <tr><td><code>tags</code></td><td>—</td><td>Cách nhau bởi dấu <code>;</code></td><td>vat;tncn</td></tr>
+              <tr><td><code>drive_view_url</code></td><td>—</td><td>URL</td><td>https://drive.google.com/…</td></tr>
+              <tr><td><code>drive_download_url</code></td><td>—</td><td>URL</td><td>https://drive.google.com/…</td></tr>
+              <tr><td><code>mime_type</code></td><td>—</td><td>pdf | docx | xlsx (viết tắt)</td><td>pdf</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="d-flex gap-3">
+          <button class="btn btn-brand" id="btn-dl-template">
+            <i class="bi bi-download me-2"></i>Tải CSV Template
+          </button>
+          <button class="btn btn-outline-secondary" id="btn-dl-template-sample">
+            <i class="bi bi-download me-2"></i>Tải CSV mẫu (có dữ liệu ví dụ)
+          </button>
+        </div>
+      </div>
+    </div><!-- /panel-template -->
+
+  </div><!-- /content-area -->
+</div><!-- /main -->
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/assets/js/admin.js" type="module"></script>
+</body>
+</html>
