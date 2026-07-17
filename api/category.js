@@ -58,7 +58,7 @@ export default async function handler(req, res) {
         .from('documents')
         .select('id, code, title, description, created_at')
         .in('id', ids)
-        .order('code', { ascending: true }),
+        .order('created_at', { ascending: false }),
       supabase
         .from('document_files')
         .select('document_id, drive_view_url, drive_download_url, mime_type')

@@ -1,12 +1,16 @@
 /**
  * assets/js/category.js — Logic trang danh mục văn bản
  *
- * Đọc ?cat= từ URL, tải dữ liệu từ /api/category, rồi render
- * sidebar và grid. Nội dung tĩnh của từng danh mục (tiêu đề,
- * tổng quan, đối tượng) được định nghĩa trong CATEGORY_INFO.
+ * Luồng:
+ *  1. Đọc ?cat= → validate → render metadata tĩnh
+ *  2. Fetch /api/category → nhận toàn bộ docs (đã sort created_at DESC)
+ *  3. Sidebar: hiển thị 3 docs mới nhất dạng carousel (hoặc static list nếu < 3)
+ *  4. Grid:    hiển thị đầy đủ với filter + tìm kiếm + phân trang "Xem thêm"
  */
 
 // ── Hằng số ───────────────────────────────────────────────────────────────────
+
+const PAGE_SIZE = 12; // Số văn bản hiển thị mỗi lần trong grid
 
 const ICONS = [
   'file-alt', 'gavel', 'book', 'file-invoice', 'exchange-alt', 'percent',
@@ -91,7 +95,7 @@ const CATEGORY_INFO = {
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-/** Escape HTML để chống XSS khi inject dữ liệu vào innerHTML */
+/** Escape HTML để chống XSS */
 function esc(str) {
   return String(str ?? '')
     .replace(/&/g, '&amp;')
@@ -101,30 +105,205 @@ function esc(str) {
     .replace(/'/g, '&#39;');
 }
 
-/** Đọc query parameter từ URL hiện tại */
 function getQueryParam(name) {
   return new URLSearchParams(window.location.search).get(name);
 }
 
-// ── Render functions ──────────────────────────────────────────────────────────
-
-/** Hiển thị danh sách rút gọn trong sidebar (tối đa 6 mục) */
-function renderSidebar(docs) {
-  const el = document.getElementById('sidebar-list');
-  if (!docs.length) {
-    el.innerHTML = '<li class="sidebar-item sidebar-item--empty">Chưa có văn bản.</li>';
-    return;
-  }
-  el.innerHTML = docs.slice(0, 6).map(d => `
-    <li class="sidebar-item">
-      <i class="fas fa-file-alt sidebar-item__icon"></i>
-      <span class="sidebar-item__code">${esc(d.code)}</span>
-      <span class="sidebar-item__title">${esc(d.title)}</span>
-    </li>
-  `).join('');
+/**
+ * Phát hiện loại văn bản từ số hiệu.
+ * Ví dụ: "163/2017/NĐ-CP" → "Nghị định", "13/2008/QH12" → "Luật"
+ */
+function detectDocType(code) {
+  if (!code) return 'Khác';
+  if (/\/NĐ-|\/ND-/i.test(code))          return 'Nghị định';
+  if (/\/TT-|\/TT$/i.test(code))           return 'Thông tư';
+  if (/\/QH\d+$/i.test(code))              return 'Luật';
+  if (/\/QĐ-|\/QD-/i.test(code))          return 'Quyết định';
+  if (/\/CT-/i.test(code))                 return 'Chỉ thị';
+  // Công văn thường có dạng "1234/BTC-CST" (không có năm ở giữa)
+  if (/^\d+\/[A-ZÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚĂĐĨŨƠƯẠ-]+/i.test(code)) return 'Công văn';
+  return 'Khác';
 }
 
-/** Tạo nút "Xem online" và "Tải xuống" nếu có file */
+/**
+ * Lấy năm ban hành: ưu tiên từ created_at, fallback từ số hiệu.
+ */
+function detectYear(doc) {
+  if (doc.created_at) return new Date(doc.created_at).getFullYear();
+  const m = (doc.code || '').match(/\/(\d{4})\//);
+  return m ? parseInt(m[1]) : null;
+}
+
+/** Trả về true nếu văn bản được cập nhật trong vòng 30 ngày. */
+function isNew(created_at) {
+  if (!created_at) return false;
+  return Date.now() - new Date(created_at).getTime() < 30 * 24 * 60 * 60 * 1000;
+}
+
+/** Format ngày theo vi-VN, trả về '' nếu không có. */
+function formatDate(dateStr) {
+  if (!dateStr) return '';
+  return new Date(dateStr).toLocaleDateString('vi-VN');
+}
+
+// ── Sidebar carousel ─────────────────────────────────────────────────────────
+
+/**
+ * Render sidebar: carousel nếu ≥ 3 docs, list tĩnh nếu 1-2, empty nếu 0.
+ * Dùng 3 docs mới nhất (API đã sort created_at DESC nên lấy slice(0,3)).
+ */
+function renderSidebar(docs) {
+  const container = document.getElementById('sidebar-content');
+
+  if (!docs.length) {
+    container.innerHTML = '<p class="sb-state">Chưa có văn bản.</p>';
+    return;
+  }
+
+  const recent = docs.slice(0, 3);
+
+  if (recent.length < 3) {
+    // Static list
+    const items = recent.map(d => `
+      <li class="sb-static-item" onclick="document.getElementById('documents-section').scrollIntoView({behavior:'smooth'})"
+          style="cursor:pointer" title="${esc(d.title)}">
+        <i class="fas fa-file-alt sb-static-item__icon"></i>
+        <span class="sb-static-item__code">${esc(d.code)}</span>
+        <span class="sb-static-item__title">${esc(d.title)}</span>
+        ${isNew(d.created_at) ? '<span class="badge-new">MỚI</span>' : ''}
+      </li>`).join('');
+    container.innerHTML = `<ul class="sb-static-list">${items}</ul>`;
+    return;
+  }
+
+  // Carousel với 3 slides
+  const slides = recent.map((d, i) => `
+    <div class="carousel-item ${i === 0 ? 'active' : ''}"
+         onclick="document.getElementById('documents-section').scrollIntoView({behavior:'smooth'})"
+         title="${esc(d.title)}">
+      <div class="sb-slide">
+        <div class="sb-slide__code">
+          ${esc(d.code)}
+          ${isNew(d.created_at) ? '<span class="badge-new">MỚI</span>' : ''}
+        </div>
+        <div class="sb-slide__title">${esc(d.title)}</div>
+        ${d.created_at ? `<div class="sb-slide__date"><i class="fas fa-calendar-alt me-1"></i>${esc(formatDate(d.created_at))}</div>` : ''}
+      </div>
+    </div>`).join('');
+
+  const indicators = recent.map((_, i) => `
+    <button type="button" data-bs-target="#sidebar-carousel"
+            data-bs-slide-to="${i}" ${i === 0 ? 'class="active" aria-current="true"' : ''}
+            aria-label="Văn bản ${i + 1}"></button>`).join('');
+
+  container.innerHTML = `
+    <div id="sidebar-carousel" class="carousel slide"
+         data-bs-ride="carousel" data-bs-interval="4000">
+      <div class="carousel-inner">${slides}</div>
+      <div class="carousel-indicators">${indicators}</div>
+    </div>`;
+
+  // Dừng auto-play khi hover/focus
+  const carouselEl = document.getElementById('sidebar-carousel');
+  const bsCarousel = bootstrap.Carousel.getOrCreateInstance(carouselEl);
+  carouselEl.addEventListener('mouseenter', () => bsCarousel.pause());
+  carouselEl.addEventListener('focusin',    () => bsCarousel.pause());
+  carouselEl.addEventListener('mouseleave', () => bsCarousel.cycle());
+  carouselEl.addEventListener('focusout',   () => bsCarousel.cycle());
+}
+
+// ── Grid + Filter + Pagination ────────────────────────────────────────────────
+
+/** Trạng thái bộ lọc & phân trang (module-level state). */
+const state = {
+  allDocs:    [],   // toàn bộ docs từ API
+  filtered:   [],   // docs sau khi lọc
+  page:       1,    // trang hiện tại (mỗi trang PAGE_SIZE docs)
+};
+
+/** Đọc giá trị hiện tại của các bộ lọc. */
+function getFilters() {
+  return {
+    type:   document.getElementById('filter-type').value,
+    year:   document.getElementById('filter-year').value,
+    status: document.getElementById('filter-status').value,
+    search: document.getElementById('filter-search').value.trim().toLowerCase(),
+  };
+}
+
+/** Áp dụng bộ lọc lên allDocs, cập nhật state.filtered và re-render grid. */
+function applyFilters() {
+  const f = getFilters();
+
+  state.filtered = state.allDocs.filter(d => {
+    if (f.type   && detectDocType(d.code) !== f.type)              return false;
+    if (f.year   && String(detectYear(d)) !== f.year)              return false;
+    // Status: chỉ lọc nếu doc có trường status; nếu không có thì hiện tất cả
+    if (f.status && d.status && d.status !== f.status)             return false;
+    if (f.search) {
+      const haystack = `${d.code} ${d.title}`.toLowerCase();
+      if (!haystack.includes(f.search)) return false;
+    }
+    return true;
+  });
+
+  state.page = 1;
+  renderGridPage();
+  updateFilterCount();
+}
+
+/** Hiển thị PAGE_SIZE * page đầu tiên của state.filtered. */
+function renderGridPage() {
+  const grid     = document.getElementById('documents-grid');
+  const loadMore = document.getElementById('load-more-wrap');
+  const visible  = state.filtered.slice(0, state.page * PAGE_SIZE);
+
+  if (!state.filtered.length) {
+    grid.innerHTML = '<div class="col-12"><p class="text-muted text-center py-4">Không tìm thấy văn bản phù hợp.</p></div>';
+    loadMore.style.display = 'none';
+    return;
+  }
+
+  grid.innerHTML = visible.map((d, i) => {
+    const type      = detectDocType(d.code);
+    const dateStr   = formatDate(d.created_at);
+    const statusBadge = renderStatusBadge(d.status);
+
+    return `
+      <div class="item col-12 col-md-6 col-lg-4">
+        <div class="item-inner p-3 p-lg-4">
+          <div class="item-header mb-3">
+            <div class="item-icon"><i class="fas fa-${ICONS[i % ICONS.length]}"></i></div>
+            <h3 class="item-heading">${esc(d.code || '—')}</h3>
+          </div>
+          <div class="item-desc">${esc(d.title)}</div>
+          <div class="doc-card__meta">
+            ${type     ? `<span><i class="fas fa-tag me-1"></i>${esc(type)}</span>` : ''}
+            ${dateStr  ? `<span class="ms-2"><i class="fas fa-calendar-alt me-1"></i>${esc(dateStr)}</span>` : ''}
+            ${statusBadge ? `<div class="mt-1">${statusBadge}</div>` : ''}
+          </div>
+          ${renderFileButtons(d.file)}
+        </div>
+      </div>`;
+  }).join('');
+
+  // Hiện/ẩn nút "Xem thêm"
+  loadMore.style.display = visible.length < state.filtered.length ? 'block' : 'none';
+}
+
+/** Badge trạng thái hiệu lực (chỉ render khi doc có trường status). */
+function renderStatusBadge(status) {
+  const map = {
+    active:   ['badge-status--active',   'Còn hiệu lực'],
+    inactive: ['badge-status--inactive', 'Hết hiệu lực'],
+    amended:  ['badge-status--amended',  'Sửa đổi bổ sung'],
+  };
+  if (!status || !map[status]) return '';
+  const [cls, label] = map[status];
+  return `<span class="badge-status ${cls}">${label}</span>`;
+}
+
+/** Nút "Xem online" / "Tải xuống". */
 function renderFileButtons(file) {
   if (!file?.drive_view_url) return '';
   const viewBtn = `
@@ -137,53 +316,33 @@ function renderFileButtons(file) {
        target="_blank" rel="noopener">
       <i class="fas fa-download me-1"></i>Tải xuống
     </a>` : '';
-  return `<div class="doc-card__actions mt-2">${viewBtn}${downloadBtn}</div>`;
+  return `<div class="doc-card__actions">${viewBtn}${downloadBtn}</div>`;
 }
 
-/** Hiển thị lưới văn bản */
-function renderGrid(docs) {
-  const el = document.getElementById('documents-grid');
-  if (!docs.length) {
-    el.innerHTML = '<div class="col-12"><p class="text-muted text-center py-4">Chưa có văn bản nào trong danh mục này.</p></div>';
-    return;
-  }
-  el.innerHTML = docs.map((d, i) => `
-    <div class="item col-12 col-md-6 col-lg-4">
-      <div class="item-inner p-3 p-lg-4">
-        <div class="item-header mb-3">
-          <div class="item-icon"><i class="fas fa-${ICONS[i % ICONS.length]}"></i></div>
-          <h3 class="item-heading">${esc(d.code || '—')}</h3>
-        </div>
-        <div class="item-desc">${esc(d.title)}</div>
-        ${d.created_at ? `<div class="doc-card__date">${esc(new Date(d.created_at).toLocaleDateString('vi-VN'))}</div>` : ''}
-        ${renderFileButtons(d.file)}
-      </div>
-    </div>
-  `).join('');
+/** Cập nhật dòng đếm kết quả lọc. */
+function updateFilterCount() {
+  const el    = document.getElementById('filter-count');
+  const total = state.allDocs.length;
+  const shown = state.filtered.length;
+  el.textContent = shown < total
+    ? `Hiển thị ${shown} / ${total} văn bản`
+    : `${total} văn bản`;
 }
 
-/** Hiển thị thông báo lỗi khi không tải được dữ liệu */
-function renderError(message) {
-  document.getElementById('sidebar-list').innerHTML = `
-    <li class="sidebar-item sidebar-item--error">
-      <i class="fas fa-exclamation-circle me-1"></i>Không thể tải dữ liệu.
-    </li>`;
-
-  const loadingEl = document.getElementById('docs-loading');
-  if (loadingEl) loadingEl.remove();
-
-  document.getElementById('documents-grid').innerHTML = `
-    <div class="col-12">
-      <div class="alert alert-danger" role="alert">
-        <i class="fas fa-exclamation-triangle me-2"></i>
-        <strong>Không thể tải danh sách văn bản.</strong>
-        ${esc(message)}
-        Vui lòng thử lại sau hoặc <a href="index.html">quay về trang chủ</a>.
-      </div>
-    </div>`;
+/** Populate dropdown năm ban hành từ dữ liệu thực. */
+function populateYearFilter(docs) {
+  const years = [...new Set(docs.map(detectYear).filter(Boolean))].sort((a, b) => b - a);
+  const sel   = document.getElementById('filter-year');
+  years.forEach(y => {
+    const opt = document.createElement('option');
+    opt.value = String(y);
+    opt.textContent = String(y);
+    sel.appendChild(opt);
+  });
 }
 
-/** Điền nội dung tĩnh của danh mục vào trang */
+// ── Metadata tĩnh ─────────────────────────────────────────────────────────────
+
 function renderCategoryMeta(info) {
   document.title = `NotDore – ${info.short}`;
   document.querySelector('meta[name="description"]')
@@ -207,35 +366,81 @@ function renderCategoryMeta(info) {
         <h4 class="item-title">${esc(a.title)}</h4>
         <div class="item-desc">${esc(a.desc)}</div>
       </div>
-    </div>
-  `).join('');
+    </div>`).join('');
+}
+
+function renderError(message) {
+  document.getElementById('sidebar-content').innerHTML =
+    `<p class="sb-state sb-state--error"><i class="fas fa-exclamation-circle me-1"></i>Không thể tải dữ liệu.</p>`;
+
+  const loadingEl = document.getElementById('docs-loading');
+  if (loadingEl) loadingEl.remove();
+
+  document.getElementById('documents-grid').innerHTML = `
+    <div class="col-12">
+      <div class="alert alert-danger" role="alert">
+        <i class="fas fa-exclamation-triangle me-2"></i>
+        <strong>Không thể tải danh sách văn bản.</strong>
+        ${esc(message)}
+        Vui lòng thử lại sau hoặc <a href="index.html">quay về trang chủ</a>.
+      </div>
+    </div>`;
 }
 
 // ── Khởi chạy ─────────────────────────────────────────────────────────────────
 
 document.addEventListener('DOMContentLoaded', async () => {
   const cat = getQueryParam('cat');
-
-  // Redirect về trang chủ nếu cat không hợp lệ
   if (!cat || !CATEGORY_INFO[cat]) {
     window.location.href = 'index.html';
     return;
   }
 
-  const info = CATEGORY_INFO[cat];
-  renderCategoryMeta(info);
+  renderCategoryMeta(CATEGORY_INFO[cat]);
 
   try {
     const res  = await fetch(`/api/category?cat=${encodeURIComponent(cat)}`);
     const data = await res.json();
-
     if (!res.ok) throw new Error(data.error || 'Lỗi không xác định từ máy chủ.');
 
+    const docs = data.docs || [];
+
+    // Xóa loading indicator
     const loadingEl = document.getElementById('docs-loading');
     if (loadingEl) loadingEl.remove();
 
-    renderSidebar(data.docs || []);
-    renderGrid(data.docs || []);
+    // ── Sidebar ───────────────────────────────────────────────────
+    renderSidebar(docs);
+
+    // ── Grid ──────────────────────────────────────────────────────
+    state.allDocs  = docs;
+    state.filtered = docs;
+    state.page     = 1;
+
+    populateYearFilter(docs);
+    document.getElementById('filter-bar').style.display = 'block';
+    renderGridPage();
+    updateFilterCount();
+
+    // ── Event listeners: filter ───────────────────────────────────
+    ['filter-type', 'filter-year', 'filter-status'].forEach(id =>
+      document.getElementById(id).addEventListener('change', applyFilters)
+    );
+    document.getElementById('filter-search').addEventListener('input', applyFilters);
+
+    document.getElementById('filter-reset').addEventListener('click', () => {
+      document.getElementById('filter-type').value   = '';
+      document.getElementById('filter-year').value   = '';
+      document.getElementById('filter-status').value = '';
+      document.getElementById('filter-search').value = '';
+      applyFilters();
+    });
+
+    // ── Event listener: "Xem thêm" ───────────────────────────────
+    document.getElementById('load-more-btn').addEventListener('click', () => {
+      state.page++;
+      renderGridPage();
+    });
 
   } catch (err) {
     console.error('[NotDore] Fetch error:', err);
