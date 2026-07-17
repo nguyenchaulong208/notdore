@@ -126,15 +126,16 @@ function detectDocType(code) {
 }
 
 /**
- * Lấy năm ban hành: ưu tiên từ created_at, fallback từ số hiệu.
+ * Lấy năm ban hành: ưu tiên issued_date, rồi created_at, fallback từ số hiệu.
  */
 function detectYear(doc) {
-  if (doc.created_at) return new Date(doc.created_at).getFullYear();
+  if (doc.issued_date) return new Date(doc.issued_date).getFullYear();
+  if (doc.created_at)  return new Date(doc.created_at).getFullYear();
   const m = (doc.code || '').match(/\/(\d{4})\//);
   return m ? parseInt(m[1]) : null;
 }
 
-/** Trả về true nếu văn bản được cập nhật trong vòng 30 ngày. */
+/** Trả về true nếu văn bản mới được thêm vào trong vòng 30 ngày. */
 function isNew(created_at) {
   if (!created_at) return false;
   return Date.now() - new Date(created_at).getTime() < 30 * 24 * 60 * 60 * 1000;
@@ -187,7 +188,7 @@ function renderSidebar(docs) {
           ${isNew(d.created_at) ? '<span class="badge-new">MỚI</span>' : ''}
         </div>
         <div class="sb-slide__title">${esc(d.title)}</div>
-        ${d.created_at ? `<div class="sb-slide__date"><i class="fas fa-calendar-alt me-1"></i>${esc(formatDate(d.created_at))}</div>` : ''}
+        ${(d.issued_date || d.created_at) ? `<div class="sb-slide__date"><i class="fas fa-calendar-alt me-1"></i>Ban hành: ${esc(formatDate(d.issued_date || d.created_at))}</div>` : ''}
       </div>
     </div>`).join('');
 
@@ -265,8 +266,9 @@ function renderGridPage() {
   }
 
   grid.innerHTML = visible.map((d, i) => {
-    const type      = detectDocType(d.code);
-    const dateStr   = formatDate(d.created_at);
+    const type        = detectDocType(d.code);
+    const issuedStr   = formatDate(d.issued_date);
+    const expiryStr   = formatDate(d.expiry_date);
     const statusBadge = renderStatusBadge(d.status);
 
     return `
@@ -278,8 +280,9 @@ function renderGridPage() {
           </div>
           <div class="item-desc">${esc(d.title)}</div>
           <div class="doc-card__meta">
-            ${type     ? `<span><i class="fas fa-tag me-1"></i>${esc(type)}</span>` : ''}
-            ${dateStr  ? `<span class="ms-2"><i class="fas fa-calendar-alt me-1"></i>${esc(dateStr)}</span>` : ''}
+            ${type      ? `<span><i class="fas fa-tag me-1"></i>${esc(type)}</span>` : ''}
+            ${issuedStr ? `<span class="ms-2"><i class="fas fa-calendar-alt me-1"></i>Ban hành: ${esc(issuedStr)}</span>` : ''}
+            ${expiryStr ? `<span class="ms-2 text-danger"><i class="fas fa-calendar-times me-1"></i>Hết hiệu lực: ${esc(expiryStr)}</span>` : ''}
             ${statusBadge ? `<div class="mt-1">${statusBadge}</div>` : ''}
           </div>
           ${renderFileButtons(d.file)}
@@ -294,9 +297,9 @@ function renderGridPage() {
 /** Badge trạng thái hiệu lực (chỉ render khi doc có trường status). */
 function renderStatusBadge(status) {
   const map = {
-    active:   ['badge-status--active',   'Còn hiệu lực'],
-    inactive: ['badge-status--inactive', 'Hết hiệu lực'],
-    amended:  ['badge-status--amended',  'Sửa đổi bổ sung'],
+    hieu_luc:      ['badge-status--active',   'Còn hiệu lực'],
+    het_hieu_luc:  ['badge-status--inactive', 'Hết hiệu lực'],
+    chua_hieu_luc: ['badge-status--amended',  'Chưa có hiệu lực'],
   };
   if (!status || !map[status]) return '';
   const [cls, label] = map[status];
