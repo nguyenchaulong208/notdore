@@ -13,11 +13,11 @@
 	<script defer src="assets/fontawesome/js/all.min.js"></script>
 	<link id="theme-style" rel="stylesheet" href="assets/css/theme.css">
 	<style>
-		/* Sidebar */
+		/* ── Sidebar carousel ───────────────────────────────────── */
 		.sidebar-box {
 			background: #fff;
 			border-radius: 0.5rem;
-			box-shadow: 0 5px 20px -4px rgba(0, 0, 0, 0.08);
+			box-shadow: 0 5px 20px -4px rgba(0,0,0,0.08);
 			padding: 1rem;
 		}
 		.sidebar-box__title {
@@ -29,28 +29,153 @@
 			padding-bottom: 0.5rem;
 			border-bottom: 2px solid #ed6524;
 		}
-		#sidebar-list {
-			list-style: none;
-			padding: 0;
-			margin: 0;
+		.sidebar-box__footer {
+			text-align: right;
+			margin-top: 0.6rem;
+			font-size: 0.82rem;
 		}
-		.sidebar-item {
-			padding: 0.625rem 1rem;
-			border-bottom: 1px solid #e9ecef;
+		.sidebar-box__footer a {
+			color: #ed6524;
+			text-decoration: none;
+			font-weight: 600;
+		}
+		.sidebar-box__footer a:hover { text-decoration: underline; }
+
+		/* Carousel slide card */
+		.sb-slide {
+			cursor: pointer;
+			padding: 0.75rem 1rem;
+			border-radius: 0.375rem;
+			background: #fafafa;
+			border: 1px solid #e9ecef;
+			min-height: 90px;
+			transition: background 0.15s;
+		}
+		.sb-slide:hover { background: #fff4ee; }
+		.sb-slide__code {
+			font-weight: 700;
+			font-family: 'Quicksand', sans-serif;
+			color: #1c1e2e;
+			font-size: 0.875rem;
+		}
+		.sb-slide__title {
+			color: #4c527d;
+			font-size: 0.82rem;
+			line-height: 1.4;
+			white-space: nowrap;
+			overflow: hidden;
+			text-overflow: ellipsis;
+			margin: 0.2rem 0;
+		}
+		.sb-slide__date { font-size: 0.75rem; color: #6c757d; }
+		.badge-new {
+			font-size: 0.65rem;
+			background: #ed6524;
+			color: #fff;
+			border-radius: 3px;
+			padding: 1px 5px;
+			margin-left: 0.35rem;
+			vertical-align: middle;
+			font-weight: 700;
+			letter-spacing: 0.03em;
+		}
+
+		/* Bootstrap carousel indicators — custom style */
+		#sidebar-carousel .carousel-indicators {
+			position: static;
+			margin: 0.6rem 0 0;
+			justify-content: center;
+		}
+		#sidebar-carousel .carousel-indicators [data-bs-target] {
+			width: 7px;
+			height: 7px;
+			border-radius: 50%;
+			background: #c8cce8;
+			border: none;
+			opacity: 1;
+		}
+		#sidebar-carousel .carousel-indicators .active {
+			background: #ed6524;
+		}
+
+		/* Static list (< 3 docs) */
+		.sb-static-list { list-style: none; padding: 0; margin: 0; }
+		.sb-static-item {
 			display: flex;
 			align-items: baseline;
 			gap: 0.5rem;
+			padding: 0.55rem 0.5rem;
+			border-bottom: 1px solid #e9ecef;
+			font-size: 0.85rem;
 		}
-		.sidebar-item--empty,
-		.sidebar-item--error { font-size: 0.875rem; color: #6c757d; }
-		.sidebar-item--error  { color: #dc3545; }
-		.sidebar-item__icon   { color: #ed6524; font-size: 0.75rem; flex-shrink: 0; }
-		.sidebar-item__code   { font-weight: 700; font-family: 'Quicksand', sans-serif; color: #1c1e2e; font-size: 0.875rem; white-space: nowrap; }
-		.sidebar-item__title  { color: #4c527d; font-size: 0.85rem; line-height: 1.4; }
+		.sb-static-item:last-child { border-bottom: none; }
+		.sb-static-item__icon { color: #ed6524; font-size: 0.7rem; flex-shrink: 0; }
+		.sb-static-item__code { font-weight: 700; font-family: 'Quicksand', sans-serif; color: #1c1e2e; white-space: nowrap; }
+		.sb-static-item__title { color: #4c527d; line-height: 1.4; }
 
-		/* Document card */
-		.doc-card__date    { font-size: 0.8rem; color: #6c757d; margin-top: 0.25rem; }
-		.doc-card__actions { display: flex; gap: 0.5rem; flex-wrap: wrap; justify-content: center; }
+		/* Sidebar empty / error / loading */
+		.sb-state {
+			padding: 0.75rem 0.5rem;
+			font-size: 0.875rem;
+			color: #6c757d;
+		}
+		.sb-state--error { color: #dc3545; }
+
+		/* ── Filter toolbar ─────────────────────────────────────── */
+		.filter-bar {
+			background: #fff;
+			border: 1px solid #e9ecef;
+			border-radius: 0.5rem;
+			padding: 0.875rem 1rem;
+			margin-bottom: 1.5rem;
+		}
+		.filter-bar .form-select,
+		.filter-bar .form-control {
+			font-size: 0.875rem;
+		}
+		.filter-bar__reset {
+			font-size: 0.8rem;
+			color: #6c757d;
+			cursor: pointer;
+			background: none;
+			border: none;
+			padding: 0;
+			text-decoration: underline;
+		}
+		.filter-bar__reset:hover { color: #ed6524; }
+		#filter-count {
+			font-size: 0.8rem;
+			color: #6c757d;
+			margin-bottom: 0.75rem;
+		}
+
+		/* ── Document card ──────────────────────────────────────── */
+		.doc-card__meta {
+			font-size: 0.78rem;
+			color: #6c757d;
+			margin-top: 0.3rem;
+			line-height: 1.5;
+		}
+		.doc-card__actions {
+			display: flex;
+			gap: 0.5rem;
+			flex-wrap: wrap;
+			justify-content: center;
+			margin-top: 0.5rem;
+		}
+		.badge-status {
+			font-size: 0.7rem;
+			padding: 2px 7px;
+			border-radius: 3px;
+			font-weight: 600;
+			letter-spacing: 0.02em;
+		}
+		.badge-status--active   { background: #d1f0e0; color: #0a6640; }
+		.badge-status--inactive { background: #f0d1d1; color: #7a1a1a; }
+		.badge-status--amended  { background: #fff3cd; color: #7a5e00; }
+
+		/* ── Load more ──────────────────────────────────────────── */
+		#load-more-wrap { margin-top: 1.5rem; }
 	</style>
 </head>
 
@@ -70,9 +195,11 @@
 		</div>
 	</header>
 
+	<!-- ── Hero ──────────────────────────────────────────────────── -->
 	<section class="hero-section" id="hero-section">
 		<div class="container">
 			<div class="row">
+				<!-- Left: tiêu đề danh mục -->
 				<div class="col-12 col-md-7 pt-5 mb-5 align-self-center">
 					<div class="promo pe-md-3 pe-lg-5">
 						<h1 class="headline mb-3" id="category-title">Danh mục</h1>
@@ -87,22 +214,31 @@
 						</div>
 					</div>
 				</div>
+
+				<!-- Right: sidebar carousel "Văn bản mới nhất" -->
 				<div class="col-12 col-md-5 mb-5 align-self-center">
 					<div class="sidebar-box">
 						<div class="sidebar-box__title">
 							<i class="fas fa-file-alt me-2"></i>Văn bản mới nhất
 						</div>
-						<ul id="sidebar-list">
-							<li class="sidebar-item sidebar-item--empty">
+
+						<!-- Nội dung được render bởi JS -->
+						<div id="sidebar-content">
+							<p class="sb-state">
 								<i class="fas fa-spinner fa-spin me-2"></i>Đang tải...
-							</li>
-						</ul>
+							</p>
+						</div>
+
+						<div class="sidebar-box__footer">
+							<a href="#documents-section" class="scrollto">Xem tất cả văn bản →</a>
+						</div>
 					</div>
 				</div>
 			</div>
 		</div>
 	</section>
 
+	<!-- ── Tổng quan ─────────────────────────────────────────────── -->
 	<section id="info-section" class="content-section">
 		<div class="container">
 			<div class="single-col-max mx-auto">
@@ -118,19 +254,76 @@
 		</div>
 	</section>
 
+	<!-- ── Danh sách văn bản đầy đủ ─────────────────────────────── -->
 	<section id="documents-section" class="benefits-section theme-bg-light-gradient py-5">
 		<div class="container py-5">
 			<h2 class="section-heading text-center mb-3" id="documents-heading">VĂN BẢN</h2>
-			<div class="section-intro single-col-max mx-auto text-center mb-5">Danh sách văn bản được cập nhật theo thời gian.</div>
+			<div class="section-intro single-col-max mx-auto text-center mb-4">
+				Danh sách văn bản được cập nhật theo thời gian.
+			</div>
+
+			<!-- Filter toolbar -->
+			<div class="filter-bar single-col-max mx-auto" id="filter-bar" style="display:none">
+				<div class="row g-2 align-items-end">
+					<div class="col-12 col-sm-6 col-lg-3">
+						<label class="form-label fw-semibold mb-1" style="font-size:0.8rem">Loại văn bản</label>
+						<select class="form-select" id="filter-type">
+							<option value="">Tất cả loại</option>
+							<option value="Luật">Luật</option>
+							<option value="Nghị định">Nghị định</option>
+							<option value="Thông tư">Thông tư</option>
+							<option value="Quyết định">Quyết định</option>
+							<option value="Công văn">Công văn</option>
+							<option value="Khác">Khác</option>
+						</select>
+					</div>
+					<div class="col-12 col-sm-6 col-lg-2">
+						<label class="form-label fw-semibold mb-1" style="font-size:0.8rem">Năm ban hành</label>
+						<select class="form-select" id="filter-year">
+							<option value="">Tất cả năm</option>
+						</select>
+					</div>
+					<div class="col-12 col-sm-6 col-lg-3">
+						<label class="form-label fw-semibold mb-1" style="font-size:0.8rem">Trạng thái hiệu lực</label>
+						<select class="form-select" id="filter-status">
+							<option value="">Tất cả trạng thái</option>
+							<option value="active">Còn hiệu lực</option>
+							<option value="inactive">Hết hiệu lực</option>
+							<option value="amended">Sửa đổi bổ sung</option>
+						</select>
+					</div>
+					<div class="col-12 col-sm-6 col-lg-4">
+						<label class="form-label fw-semibold mb-1" style="font-size:0.8rem">Tìm kiếm</label>
+						<input type="search" class="form-control" id="filter-search"
+							placeholder="Số hiệu hoặc từ khóa...">
+					</div>
+				</div>
+				<div class="d-flex justify-content-between align-items-center mt-2">
+					<span id="filter-count"></span>
+					<button class="filter-bar__reset" id="filter-reset" type="button">
+						<i class="fas fa-times me-1"></i>Xóa bộ lọc
+					</button>
+				</div>
+			</div>
+
+			<!-- Grid -->
 			<div class="row text-center" id="documents-grid">
 				<div id="docs-loading" class="col-12 text-center py-5">
 					<i class="fas fa-spinner fa-spin fa-2x" style="color:#ed6524"></i>
 					<p class="mt-3 text-muted">Đang tải danh sách văn bản...</p>
 				</div>
 			</div>
+
+			<!-- Load more -->
+			<div id="load-more-wrap" class="text-center" style="display:none">
+				<button class="btn btn-outline-secondary px-4" id="load-more-btn" type="button">
+					<i class="fas fa-chevron-down me-2"></i>Xem thêm
+				</button>
+			</div>
 		</div>
 	</section>
 
+	<!-- ── Đối tượng áp dụng ─────────────────────────────────────── -->
 	<section id="audience-section" class="audience-section py-5">
 		<div class="container">
 			<h2 class="section-heading text-center mb-4">Đối tượng áp dụng</h2>
