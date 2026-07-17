@@ -330,6 +330,12 @@
     <div class="label">Admin · Quản trị nội bộ</div>
   </div>
 
+  <div class="nav-section">Quản lý</div>
+  <button class="nav-item-link" data-panel="manage">
+    <i class="bi bi-pencil-square"></i>
+    Quản lý văn bản
+  </button>
+
   <div class="nav-section">Nhập liệu</div>
   <button class="nav-item-link active" data-panel="single">
     <i class="bi bi-file-earmark-plus"></i>
@@ -674,6 +680,118 @@ lib/
         </div>
       </div>
     </div><!-- /panel-template -->
+
+    <!-- ── Panel: Quản lý văn bản ──────────────────────────── -->
+    <div id="panel-manage" class="panel">
+
+      <div class="d-flex align-items-center justify-content-between mb-4">
+        <div class="alert-info-custom" style="flex:1">
+          <i class="bi bi-info-circle me-1"></i>
+          Chỉnh sửa trực tiếp vào database. Mọi thay đổi được lưu ngay khi nhấn <strong>Lưu</strong>.
+        </div>
+        <button class="btn btn-brand ms-3" id="btn-reload-docs">
+          <i class="bi bi-arrow-clockwise me-1"></i>Tải lại
+        </button>
+      </div>
+
+      <!-- Schema warning -->
+      <div id="schema-warning" style="display:none" class="mb-3">
+        <div class="alert alert-warning py-2 px-3" style="font-size:13px">
+          <i class="bi bi-exclamation-triangle me-2"></i>
+          Database chưa có cột <code>issued_date</code> / <code>status</code>.
+          Hãy chạy <strong>migration_v1_to_v2.sql</strong> trong Supabase trước.
+          Hiện chỉ có thể chỉnh sửa <strong>Tags</strong> và <strong>File</strong>.
+        </div>
+      </div>
+
+      <!-- Loading -->
+      <div id="manage-loading" class="text-center py-5 text-muted">
+        <div class="spinner-border spinner-border-sm me-2"></div>Đang tải dữ liệu…
+      </div>
+
+      <!-- Docs table -->
+      <div id="manage-table-wrap" style="display:none">
+        <div class="form-card p-0" style="overflow:hidden">
+          <table class="preview-table w-100" id="manage-table">
+            <thead>
+              <tr>
+                <th style="width:140px">Số hiệu</th>
+                <th>Tên văn bản</th>
+                <th style="width:130px">Ngày ban hành</th>
+                <th style="width:130px">Ngày hết HH</th>
+                <th style="width:150px">Trạng thái</th>
+                <th style="width:180px">Tags</th>
+                <th style="width:80px"></th>
+              </tr>
+            </thead>
+            <tbody id="manage-tbody"></tbody>
+          </table>
+        </div>
+        <div class="text-muted mt-2" style="font-size:12px" id="manage-count"></div>
+      </div>
+
+      <!-- Edit drawer -->
+      <div id="edit-drawer" style="display:none">
+        <div class="form-card mt-4" id="edit-drawer-inner">
+          <div class="d-flex align-items-center justify-content-between mb-3">
+            <h5 class="mb-0" style="font-size:15px">
+              <i class="bi bi-pencil me-2"></i>Chỉnh sửa: <span id="edit-doc-code" class="text-primary"></span>
+            </h5>
+            <button class="btn btn-sm btn-outline-secondary" id="btn-close-drawer">
+              <i class="bi bi-x-lg"></i>
+            </button>
+          </div>
+
+          <div class="row g-3">
+            <div class="col-12">
+              <label class="form-label">Tên văn bản</label>
+              <div id="edit-doc-title" class="form-control bg-light" style="min-height:38px;color:#64748b;font-size:13px"></div>
+            </div>
+
+            <div class="col-md-4" id="edit-issued-wrap">
+              <label class="form-label">Ngày ban hành</label>
+              <input type="date" class="form-control" id="edit-issued-date" />
+            </div>
+            <div class="col-md-4" id="edit-expiry-wrap">
+              <label class="form-label">Ngày hết hiệu lực</label>
+              <input type="date" class="form-control" id="edit-expiry-date" />
+              <div class="form-text">Để trống nếu chưa xác định</div>
+            </div>
+            <div class="col-md-4" id="edit-status-wrap">
+              <label class="form-label">Trạng thái hiệu lực</label>
+              <select class="form-select" id="edit-status">
+                <option value="hieu_luc">Còn hiệu lực</option>
+                <option value="het_hieu_luc">Hết hiệu lực</option>
+                <option value="chua_hieu_luc">Chưa có hiệu lực</option>
+              </select>
+            </div>
+
+            <div class="col-12">
+              <label class="form-label">Tags / Danh mục</label>
+              <div class="tag-grid" id="edit-tag-grid"></div>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">Link xem online</label>
+              <input type="url" class="form-control" id="edit-view-url" placeholder="https://drive.google.com/…" />
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Link tải xuống</label>
+              <input type="url" class="form-control" id="edit-download-url" placeholder="https://drive.google.com/…" />
+            </div>
+          </div>
+
+          <div class="d-flex gap-2 mt-4 align-items-center">
+            <button class="btn btn-brand px-4" id="btn-save-doc">
+              <i class="bi bi-floppy me-2"></i>Lưu thay đổi
+            </button>
+            <button class="btn btn-outline-secondary" id="btn-cancel-edit">Huỷ</button>
+            <span id="save-status" class="ms-3" style="font-size:13px"></span>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /panel-manage -->
 
   </div><!-- /content-area -->
 </div><!-- /main -->
