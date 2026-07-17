@@ -1,59 +1,45 @@
 /**
  * server.js — Express server cho NotDore chạy trên Replit
- * Phục vụ static HTML + mount các API handlers từ /api/
+ *
+ * - Phục vụ static files (HTML, CSS, JS, ảnh)
+ * - Mount API handlers từ /api/
+ *
+ * Trên Vercel: server.js không được dùng; Vercel tự gọi các
+ * handler trong /api/ trực tiếp theo quy ước serverless function.
  */
 import express from 'express';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
+import categoryHandler from './api/category.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const app  = express();
 const PORT = process.env.PORT || 5000;
 
-// ── Middleware cơ bản ────────────────────────────────────────
+const app = express();
 app.use(express.json());
 
-// ── API routes ───────────────────────────────────────────────
-// Adapter: chuyển Express req/res sang định dạng Vercel handler
-async function mountApiHandler(handlerPath, req, res) {
-  try {
-    const mod     = await import(handlerPath + '?t=' + Date.now());
-    const handler = mod.default;
-    await handler(req, res);
-  } catch (err) {
-    console.error('API error:', err);
-    res.status(500).json({ error: err.message });
-  }
-}
+// ── API routes ────────────────────────────────────────────────────────────────
+app.get('/api/category', categoryHandler);
 
-app.get('/api/category', (req, res) =>
-  mountApiHandler(new URL('./api/category.js', import.meta.url).pathname, req, res)
-);
-
-app.get('/api/debug', (req, res) =>
-  mountApiHandler(new URL('./api/debug.js', import.meta.url).pathname, req, res)
-);
-
-// ── Static files (HTML, CSS, JS, images) ────────────────────
+// ── Static files ──────────────────────────────────────────────────────────────
 app.use(express.static(__dirname, {
   index: 'index.html',
   extensions: ['html'],
-  setHeaders(res, path) {
-    // Không cache HTML để luôn nhận bản mới nhất
-    if (path.endsWith('.html')) {
+  setHeaders(res, filePath) {
+    // Không cache HTML để trình duyệt luôn lấy bản mới nhất
+    if (filePath.endsWith('.html')) {
       res.setHeader('Cache-Control', 'no-cache');
     }
-  }
+  },
 }));
 
-// ── Fallback: trả về index.html cho các route không khớp ────
-app.get('*', (req, res) => {
-  res.sendFile('index.html', { root: __dirname });
-});
+// ── Fallback ──────────────────────────────────────────────────────────────────
+app.get('*', (_req, res) => res.sendFile('index.html', { root: __dirname }));
 
-// ── Khởi động ────────────────────────────────────────────────
+// ── Khởi động ─────────────────────────────────────────────────────────────────
 app.listen(PORT, '0.0.0.0', () => {
+  const env = (key) => process.env[key] ? '✅ Đã cấu hình' : '❌ Chưa cấu hình';
   console.log(`✅ NotDore đang chạy tại http://0.0.0.0:${PORT}`);
-  console.log(`   SUPABASE_URL:      ${process.env.SUPABASE_URL      ? '✅ Đã cấu hình' : '❌ Chưa cấu hình'}`);
-  console.log(`   SUPABASE_ANON_KEY: ${process.env.SUPABASE_ANON_KEY ? '✅ Đã cấu hình' : '❌ Chưa cấu hình'}`);
+  console.log(`   SUPABASE_URL:      ${env('SUPABASE_URL')}`);
+  console.log(`   SUPABASE_ANON_KEY: ${env('SUPABASE_ANON_KEY')}`);
 });

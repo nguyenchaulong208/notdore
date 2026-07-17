@@ -12,6 +12,49 @@
 	<link href="https://fonts.googleapis.com/css?family=Quicksand:700|Roboto:400,400i,700&display=swap" rel="stylesheet">
 	<script defer src="assets/fontawesome/js/all.min.js"></script>
 	<link id="theme-style" rel="stylesheet" href="assets/css/theme.css">
+	<style>
+		/* Sidebar */
+		.sidebar-box {
+			background: #fff;
+			border-radius: 0.5rem;
+			box-shadow: 0 5px 20px -4px rgba(0, 0, 0, 0.08);
+			padding: 1rem;
+		}
+		.sidebar-box__title {
+			font-size: 0.95rem;
+			font-weight: bold;
+			font-family: 'Quicksand', sans-serif;
+			color: #ed6524;
+			margin-bottom: 0.75rem;
+			padding-bottom: 0.5rem;
+			border-bottom: 2px solid #ed6524;
+		}
+		#sidebar-list {
+			list-style: none;
+			padding: 0;
+			margin: 0;
+		}
+		.sidebar-item {
+			padding: 0.625rem 1rem;
+			border-bottom: 1px solid #e9ecef;
+			display: flex;
+			align-items: baseline;
+			gap: 0.5rem;
+		}
+		.sidebar-item--empty,
+		.sidebar-item--error {
+			font-size: 0.875rem;
+			color: #6c757d;
+		}
+		.sidebar-item--error { color: #dc3545; }
+		.sidebar-item__icon  { color: #ed6524; font-size: 0.75rem; flex-shrink: 0; }
+		.sidebar-item__code  { font-weight: 700; font-family: 'Quicksand', sans-serif; color: #1c1e2e; font-size: 0.875rem; white-space: nowrap; }
+		.sidebar-item__title { color: #4c527d; font-size: 0.85rem; line-height: 1.4; }
+
+		/* Document card */
+		.doc-card__date    { font-size: 0.8rem; color: #6c757d; margin-top: 0.25rem; }
+		.doc-card__actions { display: flex; gap: 0.5rem; flex-wrap: wrap; justify-content: center; }
+	</style>
 </head>
 
 <body>
@@ -19,7 +62,12 @@
 		<div class="branding">
 			<div class="container-fluid position-relative py-3">
 				<div class="logo-wrapper">
-					<div class="site-logo"><a class="navbar-brand" href="index.html"><img class="logo-icon me-2" src="assets/images/site-logo.svg" alt="logo"><span class="logo-text">NotDore</span></a></div>
+					<div class="site-logo">
+						<a class="navbar-brand" href="index.html">
+							<img class="logo-icon me-2" src="assets/images/site-logo.svg" alt="logo">
+							<span class="logo-text">NotDore</span>
+						</a>
+					</div>
 				</div>
 			</div>
 		</div>
@@ -43,12 +91,12 @@
 					</div>
 				</div>
 				<div class="col-12 col-md-5 mb-5 align-self-center">
-					<div class="doc-list-wrapper" id="sidebar-wrapper" style="background:#fff;border-radius:0.5rem;box-shadow:0 5px 20px -4px rgba(0,0,0,0.08);padding:1rem">
-						<div class="list-title" style="font-size:0.95rem;font-weight:bold;font-family:'Quicksand',sans-serif;color:#ed6524;margin-bottom:0.75rem;padding-bottom:0.5rem;border-bottom:2px solid #ed6524">
+					<div class="sidebar-box">
+						<div class="sidebar-box__title">
 							<i class="fas fa-file-alt me-2"></i>Văn bản mới nhất
 						</div>
-						<ul id="sidebar-list" style="list-style:none;padding:0;margin:0">
-							<li style="padding:0.75rem 1rem;color:#6c757d;font-size:0.875rem">
+						<ul id="sidebar-list">
+							<li class="sidebar-item sidebar-item--empty">
 								<i class="fas fa-spinner fa-spin me-2"></i>Đang tải...
 							</li>
 						</ul>
@@ -78,7 +126,6 @@
 			<h2 class="section-heading text-center mb-3" id="documents-heading">VĂN BẢN</h2>
 			<div class="section-intro single-col-max mx-auto text-center mb-5">Danh sách văn bản được cập nhật theo thời gian.</div>
 			<div class="row text-center" id="documents-grid">
-				<!-- Loading skeleton -->
 				<div id="docs-loading" class="col-12 text-center py-5">
 					<i class="fas fa-spinner fa-spin fa-2x" style="color:#ed6524"></i>
 					<p class="mt-3 text-muted">Đang tải danh sách văn bản...</p>
@@ -105,237 +152,7 @@
 	<script src="assets/plugins/bootstrap/js/bootstrap.min.js"></script>
 	<script src="assets/plugins/smoothscroll.min.js"></script>
 	<script src="assets/js/main.js"></script>
-	<script>
-		// ── Helpers ──────────────────────────────────────────────────────────────
-		const ICONS = ['file-alt','gavel','book','file-invoice','exchange-alt','percent',
-		               'file-contract','envelope','chart-line','hand-holding-heart','star','calculator'];
-
-		/** Escape HTML để chống XSS khi inject dữ liệu vào innerHTML */
-		function esc(str) {
-			return String(str ?? '')
-				.replace(/&/g, '&amp;')
-				.replace(/</g, '&lt;')
-				.replace(/>/g, '&gt;')
-				.replace(/"/g, '&quot;')
-				.replace(/'/g, '&#39;');
-		}
-
-		// ── Dữ liệu danh mục ─────────────────────────────────────────────────────
-		const CATEGORY_INFO = {
-			vat: {
-				title: 'Thuế Giá Trị Gia Tăng',
-				short: 'Thuế VAT',
-				description: 'Tổng hợp các văn bản pháp luật về thuế giá trị gia tăng (VAT), bao gồm Luật, Nghị định, Thông tư hướng dẫn và các tài liệu liên quan.',
-				overview: [
-					'Thuế giá trị gia tăng (VAT) là thuế tính trên giá trị tăng thêm của hàng hóa, dịch vụ.',
-					'Đối tượng chịu thuế: hàng hóa, dịch vụ sản xuất, kinh doanh và nhập khẩu.',
-					'Các mức thuế suất: 0%, 5%, 10% (thuế suất cơ bản).',
-					'Phương pháp tính: khấu trừ thuế và tính trực tiếp.',
-					'Đối tượng không chịu thuế: 26 nhóm hàng hóa, dịch vụ theo quy định.',
-					'Văn bản hiện hành: Luật số 13/2008/QH12 và các văn bản sửa đổi, bổ sung.',
-				],
-				audience: [
-					{ icon: 'building',  title: 'Doanh nghiệp sản xuất, kinh doanh',  desc: 'Áp dụng cho tất cả doanh nghiệp có hoạt động sản xuất, kinh doanh hàng hóa, dịch vụ chịu thuế GTGT.' },
-					{ icon: 'user-tie',  title: 'Hộ kinh doanh cá thể',               desc: 'Hộ kinh doanh có doanh thu từ 100 triệu đồng/năm trở lên phải nộp thuế GTGT.' },
-					{ icon: 'ship',      title: 'Tổ chức, cá nhân nhập khẩu',         desc: 'Tổ chức, cá nhân nhập khẩu hàng hóa chịu thuế GTGT phải kê khai và nộp thuế GTGT hàng nhập khẩu.' },
-				],
-			},
-			tncn: {
-				title: 'Thuế Thu Nhập Cá Nhân',
-				short: 'Thuế TNCN',
-				description: 'Tổng hợp các văn bản pháp luật về thuế thu nhập cá nhân (TNCN), bao gồm Luật, Nghị định, Thông tư và các hướng dẫn liên quan.',
-				overview: [
-					'Thuế thu nhập cá nhân là thuế đánh vào thu nhập của cá nhân phát sinh trong kỳ tính thuế.',
-					'Đối tượng nộp thuế: cá nhân cư trú và cá nhân không cư trú có thu nhập chịu thuế.',
-					'Biểu thuế lũy tiến từng phần: 7 bậc thuế từ 5% đến 35%.',
-					'Mức giảm trừ gia cảnh: 11 triệu đồng/tháng đối với người nộp thuế.',
-					'Các khoản thu nhập được miễn thuế theo quy định của pháp luật.',
-					'Văn bản hiện hành: Luật số 04/2007/QH12 và các văn bản sửa đổi, bổ sung.',
-				],
-				audience: [
-					{ icon: 'user-tie',   title: 'Người lao động làm công hưởng lương', desc: 'Thu nhập từ tiền lương, tiền công và các khoản thu nhập tương tự phải kê khai và nộp thuế TNCN.' },
-					{ icon: 'chart-pie',  title: 'Cá nhân kinh doanh',                   desc: 'Cá nhân sản xuất, kinh doanh hàng hóa, dịch vụ thuộc đối tượng nộp thuế TNCN theo quy định.' },
-					{ icon: 'home',       title: 'Cá nhân có thu nhập từ đầu tư, chuyển nhượng', desc: 'Thu nhập từ đầu tư vốn, chuyển nhượng bất động sản, chuyển nhượng vốn và các khoản thu nhập khác.' },
-				],
-			},
-			tndn: {
-				title: 'Thuế Thu Nhập Doanh Nghiệp',
-				short: 'Thuế TNDN',
-				description: 'Tổng hợp các văn bản pháp luật về thuế thu nhập doanh nghiệp (TNDN), bao gồm Luật, Nghị định, Thông tư và các hướng dẫn liên quan.',
-				overview: [
-					'Thuế thu nhập doanh nghiệp là thuế đánh trên thu nhập chịu thuế của doanh nghiệp.',
-					'Thu nhập chịu thuế bao gồm thu nhập từ hoạt động sản xuất, kinh doanh và thu nhập khác.',
-					'Thuế suất phổ thông: 20% (áp dụng cho hầu hết doanh nghiệp).',
-					'Ưu đãi thuế TNDN cho doanh nghiệp trong các lĩnh vực, địa bàn ưu đãi đầu tư.',
-					'Các khoản chi phí được trừ và không được trừ khi tính thuế.',
-					'Văn bản hiện hành: Luật số 14/2008/QH12 và các văn bản sửa đổi, bổ sung.',
-				],
-				audience: [
-					{ icon: 'building',  title: 'Doanh nghiệp trong nước',                       desc: 'Mọi doanh nghiệp Việt Nam thuộc mọi thành phần kinh tế đều thuộc đối tượng nộp thuế TNDN.' },
-					{ icon: 'globe',     title: 'Doanh nghiệp có vốn đầu tư nước ngoài',        desc: 'Doanh nghiệp FDI hoạt động tại Việt Nam chịu thuế TNDN theo quy định, bao gồm cả các ưu đãi đầu tư.' },
-					{ icon: 'landmark',  title: 'Tổ chức khác có hoạt động sản xuất, kinh doanh', desc: 'Các tổ chức khác ngoài doanh nghiệp có hoạt động sản xuất, kinh doanh hàng hóa, dịch vụ chịu thuế TNDN.' },
-				],
-			},
-			bhxh: {
-				title: 'Bảo Hiểm Xã Hội',
-				short: 'BHXH',
-				description: 'Tổng hợp các văn bản pháp luật về bảo hiểm xã hội (BHXH), bảo hiểm y tế (BHYT) và bảo hiểm thất nghiệp (BHTN).',
-				overview: [
-					'Bảo hiểm xã hội là sự bảo đảm thay thế hoặc bù đắp một phần thu nhập cho người lao động.',
-					'Các chế độ BHXH bắt buộc: ốm đau, thai sản, tai nạn lao động, hưu trí, tử tuất.',
-					'Mức đóng BHXH bắt buộc: 32% (21.5% từ người sử dụng lao động, 10.5% từ người lao động).',
-					'Bảo hiểm y tế: mức đóng 4.5% (3% từ người sử dụng lao động, 1.5% từ người lao động).',
-					'Bảo hiểm thất nghiệp: mức đóng 2% (1% từ người sử dụng lao động, 1% từ người lao động).',
-					'Văn bản hiện hành: Luật BHXH số 58/2014/QH13 và Luật sửa đổi số 28/2024/QH15.',
-				],
-				audience: [
-					{ icon: 'users',               title: 'Người lao động',                  desc: 'Người lao động làm việc theo hợp đồng lao động từ đủ 01 tháng trở lên thuộc đối tượng tham gia BHXH bắt buộc.' },
-					{ icon: 'building',             title: 'Người sử dụng lao động',         desc: 'Doanh nghiệp, cơ quan, tổ chức, hợp tác xã, hộ kinh doanh có thuê mướn lao động.' },
-					{ icon: 'hand-holding-heart',   title: 'Người tham gia BHXH tự nguyện', desc: 'Công dân Việt Nam từ đủ 15 tuổi trở lên không thuộc đối tượng tham gia BHXH bắt buộc có thể tham gia BHXH tự nguyện.' },
-				],
-			},
-		};
-
-		// ── Lấy query param ───────────────────────────────────────────────────────
-		function getQueryParam(name) {
-			return new URLSearchParams(window.location.search).get(name);
-		}
-
-		// ── Render sidebar ────────────────────────────────────────────────────────
-		function renderSidebar(docs) {
-			const el = document.getElementById('sidebar-list');
-			if (!docs.length) {
-				el.innerHTML = '<li style="padding:0.5rem 1rem;color:#6c757d;font-size:0.875rem">Chưa có văn bản.</li>';
-				return;
-			}
-			el.innerHTML = docs.slice(0, 6).map(d =>
-				'<li style="padding:0.625rem 1rem;border-bottom:1px solid #e9ecef;display:flex;align-items:baseline;gap:0.5rem">' +
-					'<i class="fas fa-file-alt me-2" style="color:#ed6524;font-size:0.75rem;flex-shrink:0"></i>' +
-					'<span style="font-weight:700;font-family:\'Quicksand\',sans-serif;color:#1c1e2e;font-size:0.875rem;white-space:nowrap">' + esc(d.code) + '</span>' +
-					'<span style="color:#4c527d;font-size:0.85rem;line-height:1.4">' + esc(d.title) + '</span>' +
-				'</li>'
-			).join('');
-		}
-
-		// ── Render grid ───────────────────────────────────────────────────────────
-		function renderGrid(docs) {
-			const el = document.getElementById('documents-grid');
-			if (!docs.length) {
-				el.innerHTML = '<div class="col-12"><p class="text-muted text-center py-4">Chưa có văn bản nào trong danh mục này.</p></div>';
-				return;
-			}
-			el.innerHTML = docs.map((d, i) => {
-				// Lấy link từ bảng document_files (cấu trúc mới)
-				const viewUrl     = d.file?.drive_view_url     || '';
-				const downloadUrl = d.file?.drive_download_url || '';
-
-				const fileButtons = viewUrl
-					? '<div class="mt-2 d-flex gap-2 flex-wrap justify-content-center">' +
-						'<a href="' + esc(viewUrl) + '" class="btn btn-sm btn-outline-primary" target="_blank" rel="noopener">' +
-							'<i class="fas fa-eye me-1"></i>Xem online' +
-						'</a>' +
-						(downloadUrl
-							? '<a href="' + esc(downloadUrl) + '" class="btn btn-sm btn-outline-secondary" target="_blank" rel="noopener">' +
-								'<i class="fas fa-download me-1"></i>Tải xuống' +
-							  '</a>'
-							: '') +
-					  '</div>'
-					: '';
-
-				const dateStr = d.created_at
-					? '<div style="font-size:0.8rem;color:#6c757d;margin-top:0.25rem">' +
-						esc(new Date(d.created_at).toLocaleDateString('vi-VN')) +
-					  '</div>'
-					: '';
-
-				return (
-					'<div class="item col-12 col-md-6 col-lg-4">' +
-						'<div class="item-inner p-3 p-lg-4">' +
-							'<div class="item-header mb-3">' +
-								'<div class="item-icon"><i class="fas fa-' + ICONS[i % ICONS.length] + '"></i></div>' +
-								'<h3 class="item-heading">' + esc(d.code || '—') + '</h3>' +
-							'</div>' +
-							'<div class="item-desc">' + esc(d.title) + '</div>' +
-							dateStr +
-							fileButtons +
-						'</div>' +
-					'</div>'
-				);
-			}).join('');
-		}
-
-		// ── Khởi chạy ─────────────────────────────────────────────────────────────
-		document.addEventListener('DOMContentLoaded', async function () {
-			const cat = getQueryParam('cat');
-			if (!cat || !CATEGORY_INFO[cat]) {
-				window.location.href = 'index.html';
-				return;
-			}
-
-			const info = CATEGORY_INFO[cat];
-
-			// Cập nhật nội dung tĩnh
-			document.title = 'NotDore – ' + esc(info.short);
-			document.querySelector('meta[name="description"]').setAttribute('content',
-				'Danh mục ' + info.short + ': ' + info.description);
-			document.getElementById('category-title').textContent = info.title;
-			document.getElementById('category-desc').textContent  = info.description;
-			document.getElementById('documents-heading').textContent = 'VĂN BẢN ' + info.short.toUpperCase();
-			document.getElementById('overview-list').innerHTML = info.overview
-				.map(p => '<li><i class="fas fa-check-circle me-2"></i>' + esc(p) + '</li>')
-				.join('');
-			document.getElementById('audience-intro').textContent =
-				info.title + ' áp dụng cho các đối tượng theo quy định của pháp luật.';
-			document.getElementById('audience-list').innerHTML = info.audience.map(a =>
-				'<div class="item row gx-3">' +
-					'<div class="col-auto item-icon"><i class="fas fa-' + esc(a.icon) + '"></i></div>' +
-					'<div class="col">' +
-						'<h4 class="item-title">' + esc(a.title) + '</h4>' +
-						'<div class="item-desc">' + esc(a.desc) + '</div>' +
-					'</div>' +
-				'</div>'
-			).join('');
-
-			// Fetch dữ liệu từ API
-			try {
-				const res  = await fetch('/api/category?cat=' + encodeURIComponent(cat));
-				const data = await res.json();
-
-				if (!res.ok) throw new Error(data.error || 'Lỗi không xác định từ máy chủ.');
-
-				const docs = data.docs || [];
-
-				// Xoá loading indicator
-				const loadingEl = document.getElementById('docs-loading');
-				if (loadingEl) loadingEl.remove();
-
-				renderSidebar(docs);
-				renderGrid(docs);
-
-			} catch (err) {
-				console.error('[NotDore] Fetch error:', err);
-
-				// Thông báo lỗi ở sidebar
-				document.getElementById('sidebar-list').innerHTML =
-					'<li style="padding:0.5rem 1rem;color:#dc3545;font-size:0.875rem">' +
-						'<i class="fas fa-exclamation-circle me-1"></i>Không thể tải dữ liệu.' +
-					'</li>';
-
-				// Thông báo lỗi ở grid
-				const loadingEl = document.getElementById('docs-loading');
-				if (loadingEl) loadingEl.remove();
-				document.getElementById('documents-grid').innerHTML =
-					'<div class="col-12">' +
-						'<div class="alert alert-danger" role="alert">' +
-							'<i class="fas fa-exclamation-triangle me-2"></i>' +
-							'<strong>Không thể tải danh sách văn bản.</strong> ' +
-							esc(err.message) +
-							' Vui lòng thử lại sau hoặc <a href="index.html">quay về trang chủ</a>.' +
-						'</div>' +
-					'</div>';
-			}
-		});
-	</script>
+	<script src="assets/js/category.js"></script>
 </body>
 
 </html>
