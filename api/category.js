@@ -56,7 +56,7 @@ export default async function handler(req, res) {
     const [docsResult, filesResult] = await Promise.all([
       supabase
         .from('documents')
-        .select('id, code, title, description, created_at')
+        .select('id, code, title, description, issued_date, expiry_date, status, created_at')
         .in('id', ids)
         .order('created_at', { ascending: false }),
       supabase
@@ -77,6 +77,9 @@ export default async function handler(req, res) {
       code:        d.code,
       title:       d.title,
       description: d.description,
+      issued_date: d.issued_date,
+      expiry_date: d.expiry_date,
+      status:      d.status,
       created_at:  d.created_at,
       file:        fileByDocId[d.id] ?? null,
     }));
