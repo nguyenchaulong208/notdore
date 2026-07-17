@@ -4,7 +4,7 @@
  * - Phục vụ static files (HTML, CSS, JS, ảnh)
  * - Mount API handlers từ /api/
  *
- * Trên Vercel: server.js không được dùng; Vercel tự gọi các
+ * Trên Vercel: file này không được dùng — Vercel tự gọi các
  * handler trong /api/ trực tiếp theo quy ước serverless function.
  */
 import express from 'express';
