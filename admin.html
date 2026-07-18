@@ -347,7 +347,7 @@
   </button>
   <button class="nav-item-link" data-panel="template">
     <i class="bi bi-download"></i>
-    Tải CSV template
+    Tải Excel template
   </button>
 
   <div class="sidebar-footer">
@@ -359,7 +359,7 @@
 <!-- ══════════════════ MAIN ══════════════════ -->
 <div id="main">
   <div class="topbar">
-    <h1 id="panel-title">Nhập văn bản đơn lẻ</h1>
+    <h1 id="panel-title">Nhập văn bản (nhiều dòng)</h1>
     <span class="badge-local"><i class="bi bi-shield-lock me-1"></i>Offline · Sinh SQL</span>
   </div>
 
@@ -370,8 +370,10 @@
 
       <div class="alert-info-custom mb-4">
         <i class="bi bi-info-circle me-1"></i>
-        Điền thông tin văn bản bên dưới. Hệ thống sẽ sinh ra <strong>SQL script</strong>
-        mà bạn chép và chạy trong <code>Supabase → SQL Editor</code>.
+        Điền thông tin từng văn bản rồi bấm <strong>"Thêm vào danh sách"</strong>.
+        Có thể thêm nhiều văn bản liên tiếp, sau đó bấm
+        <strong>"Xác nhận &amp; Sinh SQL"</strong> để tạo <strong>1 script SQL</strong> cho toàn bộ,
+        chạy trong <code>Supabase → SQL Editor</code>.
       </div>
 
       <form id="form-single" novalidate>
@@ -484,13 +486,40 @@
 
         <div class="d-flex gap-3 align-items-center mb-2">
           <button type="submit" class="btn btn-brand px-4">
-            <i class="bi bi-code-slash me-2"></i>Tạo SQL Script
+            <i class="bi bi-plus-circle me-2"></i>Thêm vào danh sách
           </button>
           <button type="button" class="btn btn-outline-secondary" id="btn-clear-single">
             <i class="bi bi-arrow-counterclockwise me-1"></i>Xoá form
           </button>
         </div>
       </form>
+
+      <!-- Danh sách văn bản đã thêm (chờ sinh SQL) -->
+      <div id="single-preview" class="form-card" style="display:none">
+        <h5 class="d-flex align-items-center justify-content-between">
+          <span><i class="bi bi-list-check me-2"></i>Danh sách đã thêm
+            <span id="single-preview-count" class="ms-2 badge bg-secondary fw-normal">0 văn bản</span>
+          </span>
+          <button type="button" class="btn btn-sm btn-outline-danger" id="btn-clear-single-list">
+            <i class="bi bi-x me-1"></i>Xoá danh sách
+          </button>
+        </h5>
+        <div style="overflow-x:auto; max-height: 320px; overflow-y:auto;">
+          <table class="preview-table">
+            <thead>
+              <tr>
+                <th>#</th><th>Số hiệu</th><th>Tên văn bản</th>
+                <th>Ngày ban hành</th><th>Ngày hết hiệu lực</th>
+                <th>Trạng thái</th><th>Tags</th><th>Drive</th><th>Text</th><th></th>
+              </tr>
+            </thead>
+            <tbody id="single-preview-tbody"></tbody>
+          </table>
+        </div>
+        <button type="button" class="btn btn-brand mt-3" id="btn-generate-single">
+          <i class="bi bi-code-slash me-2"></i>Xác nhận &amp; Sinh SQL cho <span id="single-gen-count">0</span> văn bản
+        </button>
+      </div>
 
       <div id="sql-output-single" style="display:none">
         <div class="sql-panel">
@@ -515,33 +544,21 @@
 
       <div class="alert-info-custom mb-4">
         <i class="bi bi-info-circle me-1"></i>
-        Upload file <code>.csv</code> hoặc dán dữ liệu CSV trực tiếp. Hệ thống sinh SQL cho tất cả văn bản cùng lúc.
-        Tải <strong>CSV template</strong> từ menu bên trái để biết định dạng đúng.
+        Upload file <code>.xlsx</code> (Excel) — mỗi cột trong sheet tương ứng 1 cột trong database.
+        Hệ thống sinh SQL cho tất cả văn bản cùng lúc.
+        Tải <strong>Excel template</strong> từ menu bên trái để biết định dạng đúng.
       </div>
 
-      <!-- Step 1: Upload / Paste -->
+      <!-- Step 1: Upload -->
       <div class="form-card mb-4">
-        <h5><span class="step-badge me-2">1</span>Tải lên hoặc dán dữ liệu CSV</h5>
+        <h5><span class="step-badge me-2">1</span>Tải lên file Excel (.xlsx)</h5>
 
         <div class="drop-zone mb-3" id="drop-zone">
           <i class="bi bi-cloud-upload"></i>
-          <div class="mt-2 fw-semibold text-secondary">Kéo thả file CSV vào đây</div>
-          <div class="text-muted small">hoặc <span class="text-primary" style="cursor:pointer" id="click-upload">nhấn để chọn file</span></div>
-          <input type="file" id="file-input" accept=".csv" style="display:none" />
+          <div class="mt-2 fw-semibold text-secondary">Kéo thả file Excel vào đây</div>
+          <div class="text-muted small">hoặc <span class="text-primary" style="cursor:pointer" id="click-upload">nhấn để chọn file (.xlsx, .xls)</span></div>
+          <input type="file" id="file-input" accept=".xlsx,.xls" style="display:none" />
         </div>
-
-        <div class="d-flex align-items-center gap-2 my-3">
-          <hr class="flex-grow-1" /><span class="text-muted small">hoặc</span><hr class="flex-grow-1" />
-        </div>
-
-        <label class="form-label">Dán nội dung CSV</label>
-        <textarea class="form-control font-monospace" id="csv-paste" rows="8"
-          placeholder="title,code,description,issued_date,expiry_date,status,tags,drive_type,drive_file_id,drive_view_url,drive_download_url,mime_type,file_size,content
-Nghị định 163/2017,163/2017/NĐ-CP,Quy định logistics,2017-12-19,,hieu_luc,vat,google,1abcId,https://…,https://…,pdf,,"></textarea>
-
-        <button class="btn btn-brand mt-3" id="btn-parse-csv">
-          <i class="bi bi-table me-2"></i>Phân tích CSV
-        </button>
       </div>
 
       <!-- Step 2: Preview -->
@@ -561,7 +578,7 @@ Nghị định 163/2017,163/2017/NĐ-CP,Quy định logistics,2017-12-19,,hieu_l
                 <tr>
                   <th>#</th><th>Số hiệu</th><th>Tên văn bản</th>
                   <th>Ngày ban hành</th><th>Ngày hết hiệu lực</th>
-                  <th>Trạng thái</th><th>Tags</th><th>Drive</th><th>Text</th>
+                  <th>Trạng thái</th><th>Tags</th><th>Drive</th><th>Text</th><th></th>
                 </tr>
               </thead>
               <tbody id="preview-tbody"></tbody>
@@ -654,7 +671,7 @@ Nghị định 163/2017,163/2017/NĐ-CP,Quy định logistics,2017-12-19,,hieu_l
       <div class="form-card">
         <h5><i class="bi bi-signpost-2 me-2"></i>Roadmap crawl văn bản</h5>
         <div class="text-muted small" style="line-height:1.8">
-          <div><i class="bi bi-check2-circle text-success me-2"></i><strong>v2 (hiện tại)</strong> — Nhập tay + Import CSV → sinh SQL script</div>
+          <div><i class="bi bi-check2-circle text-success me-2"></i><strong>v2 (hiện tại)</strong> — Nhập tay (nhiều dòng) + Import Excel → sinh SQL script</div>
           <div><i class="bi bi-circle me-2 text-secondary"></i><strong>v3 (kế hoạch)</strong> — Crawl từ nguồn (vbpl.vn, thuvienphapluat.vn…) → auto populate form → sinh SQL</div>
           <div><i class="bi bi-circle me-2 text-secondary"></i><strong>v4</strong> — Crawl tự động theo lịch, dedup theo số hiệu, push trực tiếp vào Supabase</div>
         </div>
@@ -665,7 +682,7 @@ Nghị định 163/2017,163/2017/NĐ-CP,Quy định logistics,2017-12-19,,hieu_l
   thuvienphapluat.js
   runner.js       # orchestration + dedup
 lib/
-  csv-exporter.js # output → CSV → đưa vào tool này</pre>
+  xlsx-exporter.js # output → Excel → đưa vào tool này</pre>
         </div>
       </div>
     </div><!-- /panel-schema -->
@@ -673,8 +690,8 @@ lib/
     <!-- ── Panel 4: Template download ───────────────────────── -->
     <div id="panel-template" class="panel">
       <div class="form-card">
-        <h5><i class="bi bi-download me-2"></i>CSV Template</h5>
-        <p class="text-muted small mb-3">Tải file mẫu, điền dữ liệu, rồi import vào tab <em>Import hàng loạt</em>.</p>
+        <h5><i class="bi bi-download me-2"></i>Excel Template</h5>
+        <p class="text-muted small mb-3">Tải file mẫu (.xlsx), điền dữ liệu — mỗi cột ứng với 1 cột trong database — rồi import vào tab <em>Import hàng loạt</em>.</p>
 
         <div class="table-responsive mb-4">
           <table class="table table-sm table-bordered" style="font-size:12px">
@@ -702,10 +719,10 @@ lib/
 
         <div class="d-flex gap-3">
           <button class="btn btn-brand" id="btn-dl-template">
-            <i class="bi bi-download me-2"></i>Tải CSV Template
+            <i class="bi bi-download me-2"></i>Tải Excel Template
           </button>
           <button class="btn btn-outline-secondary" id="btn-dl-template-sample">
-            <i class="bi bi-download me-2"></i>Tải CSV mẫu (có dữ liệu ví dụ)
+            <i class="bi bi-download me-2"></i>Tải Excel mẫu (có dữ liệu ví dụ)
           </button>
         </div>
       </div>
@@ -715,6 +732,7 @@ lib/
 </div><!-- /main -->
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="assets/js/admin.js" defer></script>
 </body>
 </html>

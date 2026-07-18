@@ -4,6 +4,17 @@
  *
  * Schema: integer SERIAL id, document_files (drive_type, drive_file_id),
  *         document_texts (content), document_tag_map (composite PK)
+ *
+ * ⚠ THAY ĐỔI SO VỚI BẢN CŨ:
+ *   1. File import giờ là .xlsx (không còn CSV phân cách bằng dấu phẩy).
+ *      → Cần thêm SheetJS vào HTML trước file này:
+ *        <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+ *   2. Panel "Nhập văn bản đơn lẻ" giờ cho phép thêm NHIỀU record vào một
+ *      danh sách tạm (giống bảng preview), rồi mới bấm "Xác nhận & Sinh SQL"
+ *      một lần cho tất cả. Cần thêm các phần tử HTML mới (xem mục
+ *      "HTML CẦN THÊM" ở cuối file này).
+ *   3. input file / drop-zone giờ nhận .xlsx thay vì .csv, và không còn ô
+ *      "paste CSV" (vì file xlsx là nhị phân, không thể paste dạng text).
  */
 
 const TAGS = [
@@ -29,7 +40,16 @@ const MIME_SHORT = {
   doc:  'application/msword',
 };
 
-let parsedRows = [];
+// Mỗi phần tử ứng với đúng 1 cột trong file Excel import/template.
+// Thứ tự này quyết định thứ tự cột khi sinh file template.
+const TEMPLATE_COLUMNS = [
+  'title', 'code', 'description', 'issued_date', 'expiry_date', 'status', 'tags',
+  'drive_type', 'drive_file_id', 'drive_view_url', 'drive_download_url',
+  'mime_type', 'file_size', 'content',
+];
+
+let parsedRows = [];   // dữ liệu từ file xlsx import hàng loạt (panel "bulk")
+let singleEntries = []; // danh sách record được thêm thủ công (panel "single")
 
 // ── SQL helpers ───────────────────────────────────────────────────────────────
 function escSql(str) {
@@ -89,7 +109,7 @@ function generateSqlForDoc(doc, tagNames) {
 
   lines.push(`WITH ins_doc AS (`);
   lines.push(`  INSERT INTO documents`);
-  lines.push(`    (title| code| description| issued_date| expiry_date| status)`);
+  lines.push(`    (title, code, description, issued_date, expiry_date, status)`);
   lines.push(`  VALUES (`);
   lines.push(`    ${escSql(doc.title)},`);
   lines.push(`    ${doc.code ? escSql(doc.code) : 'NULL'},`);
@@ -195,10 +215,10 @@ function showToast(msg) {
 }
 
 const PANEL_TITLES = {
-  single:   'Nhập văn bản đơn lẻ',
-  bulk:     'Import hàng loạt',
+  single:   'Nhập văn bản (nhiều dòng)',
+  bulk:     'Import hàng loạt (Excel)',
   schema:   'Sơ đồ Database',
-  template: 'CSV Template',
+  template: 'Excel Template',
 };
 
 function switchPanel(panelId) {
@@ -209,63 +229,43 @@ function switchPanel(panelId) {
   document.getElementById('panel-title').textContent = PANEL_TITLES[panelId] || '';
 }
 
-// ── CSV ───────────────────────────────────────────────────────────────────────
-function parseCsv(text) {
-  const lines = text.trim().split('\n').map(l => l.trimEnd());
-  if (lines.length < 2) return { headers: [], rows: [] };
-
-  function parseLine(line) {
-    const result = [];
-    let current = '';
-    let inQuotes = false;
-    for (let i = 0; i < line.length; i++) {
-      const ch = line[i];
-      if (ch === '"') {
-        if (inQuotes && line[i + 1] === '"') { current += '"'; i++; }
-        else inQuotes = !inQuotes;
-      } else if (ch === ',' && !inQuotes) {
-        result.push(current.trim());
-        current = '';
-      } else {
-        current += ch;
-      }
-    }
-    result.push(current.trim());
-    return result;
-  }
-
-  const headers = parseLine(lines[0]);
-  const rows = lines.slice(1).filter(l => l.trim()).map(l => {
-    const vals = parseLine(l);
-    const row = {};
-    headers.forEach((h, i) => { row[h.trim()] = vals[i] ?? ''; });
-    return row;
-  });
-
-  return { headers, rows };
+// ── Excel (.xlsx) ─────────────────────────────────────────────────────────────
+/**
+ * Đọc workbook xlsx (ArrayBuffer) → mảng object, mỗi object là 1 dòng,
+ * key = tên cột (đúng theo header dòng đầu tiên của sheet).
+ */
+function parseXlsxWorkbook(arrayBuffer) {
+  const wb = XLSX.read(arrayBuffer, { type: 'array' });
+  const sheetName = wb.SheetNames[0];
+  const sheet = wb.Sheets[sheetName];
+  // defval: '' → ô trống vẫn có key với giá trị rỗng thay vì bị bỏ qua
+  // raw: false → ngày tháng/số được convert về string hiển thị thay vì serial number
+  const rows = XLSX.utils.sheet_to_json(sheet, { defval: '', raw: false });
+  return rows;
 }
 
+/** Chuẩn hoá 1 dòng dữ liệu (đến từ Excel) thành object dùng để sinh SQL */
 function normalizeRow(row) {
-  const tagStr = (row.tags || '').trim();
+  const tagStr = String(row.tags ?? '').trim();
   const tagKeys = tagStr ? tagStr.split(';').map(t => t.trim()).filter(Boolean) : [];
-  const viewUrl = row.drive_view_url?.trim() || '';
-  const downloadUrl = row.drive_download_url?.trim() || '';
+  const viewUrl = String(row.drive_view_url ?? '').trim();
+  const downloadUrl = String(row.drive_download_url ?? '').trim();
 
   return {
-    title:              row.title?.trim()              || '',
-    code:               row.code?.trim()               || '',
-    description:        row.description?.trim()        || '',
-    issued_date:        row.issued_date?.trim()        || '',
-    expiry_date:        row.expiry_date?.trim()        || '',
-    status:             row.status?.trim()             || 'hieu_luc',
+    title:              String(row.title ?? '').trim(),
+    code:               String(row.code ?? '').trim(),
+    description:        String(row.description ?? '').trim(),
+    issued_date:        String(row.issued_date ?? '').trim(),
+    expiry_date:        String(row.expiry_date ?? '').trim(),
+    status:             String(row.status ?? '').trim() || 'hieu_luc',
     tagKeys,
     drive_type:         normalizeDriveType(row.drive_type),
     drive_file_id:      resolveDriveFileId(row.drive_file_id, viewUrl, downloadUrl),
     drive_view_url:     viewUrl,
     drive_download_url: downloadUrl,
     mime_type:          normalizeMime(row.mime_type),
-    file_size:          row.file_size?.trim()          || '',
-    content:            row.content?.trim()            || '',
+    file_size:          String(row.file_size ?? '').trim(),
+    content:            String(row.content ?? '').trim(),
   };
 }
 
@@ -276,8 +276,16 @@ function rowToTagNames(tagKeys) {
   });
 }
 
-function renderPreview(rows) {
-  const tbody = document.getElementById('preview-tbody');
+/**
+ * Render bảng preview dùng chung cho cả panel "bulk" và panel "single".
+ * @param {Array} rows - danh sách record (đã normalize, có tagKeys)
+ * @param {string} tbodyId - id của <tbody> để render vào
+ * @param {Function} [onRemove] - callback(index) khi bấm nút xoá dòng
+ */
+function renderPreview(rows, tbodyId, onRemove) {
+  const tbody = document.getElementById(tbodyId);
+  if (!tbody) return;
+
   tbody.innerHTML = rows.map((r, i) => {
     const statusCls = `status-${r.status}`;
     const tagBadges = r.tagKeys.map(k => {
@@ -288,6 +296,9 @@ function renderPreview(rows) {
       ? `<span class="badge bg-info text-dark" style="font-size:10px">${r.drive_type}</span>`
       : '—';
     const textInfo = r.content ? '📝' : '—';
+    const removeBtn = onRemove
+      ? `<button type="button" class="btn btn-sm btn-outline-danger" data-remove-idx="${i}">✕</button>`
+      : '';
 
     return `<tr>
       <td class="text-muted">${i + 1}</td>
@@ -299,24 +310,69 @@ function renderPreview(rows) {
       <td>${tagBadges || '—'}</td>
       <td class="text-center">${fileInfo}</td>
       <td class="text-center">${textInfo}</td>
+      <td class="text-center">${removeBtn}</td>
     </tr>`;
   }).join('');
 
-  document.getElementById('preview-count').textContent = `${rows.length} văn bản`;
-  document.getElementById('gen-count').textContent = rows.length;
-  document.getElementById('bulk-preview').style.display = 'block';
+  if (onRemove) {
+    tbody.querySelectorAll('[data-remove-idx]').forEach(btn => {
+      btn.addEventListener('click', () => onRemove(parseInt(btn.dataset.removeIdx, 10)));
+    });
+  }
 }
 
-const CSV_HEADERS = [
-  'title', 'code', 'description', 'issued_date', 'expiry_date', 'status', 'tags',
-  'drive_type', 'drive_file_id', 'drive_view_url', 'drive_download_url', 'mime_type', 'file_size', 'content',
-].join(',');
+// ── Template Excel (download) ──────────────────────────────────────────────────
+/** Sinh workbook chỉ có header (1 sheet, mỗi cột = 1 property trong DB) */
+function buildTemplateWorkbook(withSample) {
+  const wb = XLSX.utils.book_new();
 
-const CSV_SAMPLE = `${CSV_HEADERS}
-"Nghị định 163/2017/NĐ-CP Quy định về kinh doanh dịch vụ Logistics",163/2017/NĐ-CP,"Quy định điều kiện kinh doanh dịch vụ logistics",2017-12-19,,hieu_luc,vat,google,1abcExampleFileId,https://drive.google.com/file/d/1abcExampleFileId/view,https://drive.google.com/uc?id=1abcExampleFileId&export=download,pdf,,
-"Thông tư 32/2017/TT-BTC hướng dẫn về hóa đơn điện tử",32/2017/TT-BTC,"Hướng dẫn thực hiện hóa đơn điện tử",2017-04-06,,hieu_luc,vat;ke-toan,,,,,pdf,,
-"Nghị định 105/2020/NĐ-CP",105/2020/NĐ-CP,"",2020-09-09,,hieu_luc,tncn,,,,,pdf,,"`;
+  const sampleRows = withSample ? [
+    {
+      title: 'Nghị định 163/2017/NĐ-CP Quy định về kinh doanh dịch vụ Logistics',
+      code: '163/2017/NĐ-CP',
+      description: 'Quy định điều kiện kinh doanh dịch vụ logistics',
+      issued_date: '2017-12-19',
+      expiry_date: '',
+      status: 'hieu_luc',
+      tags: 'vat',
+      drive_type: 'google',
+      drive_file_id: '1abcExampleFileId',
+      drive_view_url: 'https://drive.google.com/file/d/1abcExampleFileId/view',
+      drive_download_url: 'https://drive.google.com/uc?id=1abcExampleFileId&export=download',
+      mime_type: 'pdf',
+      file_size: '',
+      content: '',
+    },
+    {
+      title: 'Thông tư 32/2017/TT-BTC hướng dẫn về hóa đơn điện tử',
+      code: '32/2017/TT-BTC',
+      description: 'Hướng dẫn thực hiện hóa đơn điện tử',
+      issued_date: '2017-04-06',
+      expiry_date: '',
+      status: 'hieu_luc',
+      tags: 'vat;ke-toan',
+      drive_type: '', drive_file_id: '', drive_view_url: '', drive_download_url: '',
+      mime_type: 'pdf', file_size: '', content: '',
+    },
+  ] : [];
 
+  // Luôn có ít nhất 1 dòng để sheet có header đúng thứ tự cột;
+  // nếu không có sample, tạo sheet chỉ với header rỗng.
+  const sheet = sampleRows.length
+    ? XLSX.utils.json_to_sheet(sampleRows, { header: TEMPLATE_COLUMNS })
+    : XLSX.utils.aoa_to_sheet([TEMPLATE_COLUMNS]);
+
+  XLSX.utils.book_append_sheet(wb, sheet, 'Template');
+  return wb;
+}
+
+function downloadTemplateXlsx(withSample) {
+  const wb = buildTemplateWorkbook(withSample);
+  const filename = withSample ? 'notdore_sample.xlsx' : 'notdore_template.xlsx';
+  XLSX.writeFile(wb, filename);
+}
+
+// ── Form (panel "single" — nhập nhiều dòng) ───────────────────────────────────
 function readFormDoc() {
   const viewUrl = document.getElementById('f-view-url').value.trim();
   const downloadUrl = document.getElementById('f-download-url').value.trim();
@@ -325,6 +381,7 @@ function readFormDoc() {
     viewUrl,
     downloadUrl,
   );
+  const tagKeys = [...document.querySelectorAll('input[name="tags"]:checked')].map(cb => cb.value);
 
   return {
     title:              document.getElementById('f-title').value.trim(),
@@ -333,6 +390,7 @@ function readFormDoc() {
     issued_date:        document.getElementById('f-issued-date').value,
     expiry_date:        document.getElementById('f-expiry-date').value,
     status:             document.getElementById('f-status').value,
+    tagKeys,
     drive_type:         document.getElementById('f-drive-type').value,
     drive_file_id:      driveFileId,
     drive_view_url:     viewUrl,
@@ -367,6 +425,22 @@ function autoFillDriveFileId() {
   if (id) input.value = id;
 }
 
+function renderSingleEntriesPreview() {
+  const wrap = document.getElementById('single-preview');
+  if (wrap) wrap.style.display = singleEntries.length ? 'block' : 'none';
+
+  const countEl = document.getElementById('single-preview-count');
+  if (countEl) countEl.textContent = `${singleEntries.length} văn bản`;
+
+  const genCountEl = document.getElementById('single-gen-count');
+  if (genCountEl) genCountEl.textContent = singleEntries.length;
+
+  renderPreview(singleEntries, 'single-preview-tbody', idx => {
+    singleEntries.splice(idx, 1);
+    renderSingleEntriesPreview();
+  });
+}
+
 // ── Init ──────────────────────────────────────────────────────────────────────
 function initAdmin() {
   document.querySelectorAll('[data-panel]').forEach(btn => {
@@ -392,8 +466,10 @@ function initAdmin() {
     showToast('Đã trích xuất Drive File ID');
   });
 
+  // ── Panel "single": thêm nhiều record vào danh sách tạm ──────────────────
   let lastSqlSingle = '';
 
+  // Submit form = "Thêm vào danh sách" (không sinh SQL ngay)
   document.getElementById('form-single').addEventListener('submit', e => {
     e.preventDefault();
     autoFillDriveFileId();
@@ -401,16 +477,13 @@ function initAdmin() {
     const doc = readFormDoc();
     if (!validateDoc(doc)) return;
 
-    const tagNames = rowToTagNames(
-      [...document.querySelectorAll('input[name="tags"]:checked')].map(cb => cb.value),
-    );
+    singleEntries.push(doc);
+    renderSingleEntriesPreview();
+    showToast(`✅ Đã thêm "${doc.title}" (${singleEntries.length} văn bản trong danh sách)`);
 
-    lastSqlSingle = buildSqlHeader(1) + wrapInTransaction(generateSqlForDoc(doc, tagNames));
-
-    const el = document.getElementById('sql-code-single');
-    renderSqlHighlight(el, lastSqlSingle);
-    document.getElementById('sql-output-single').style.display = 'block';
-    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    document.getElementById('form-single').reset();
+    tagContainer.querySelectorAll('input[type="checkbox"]').forEach(cb => (cb.checked = false));
+    document.getElementById('sql-output-single').style.display = 'none';
   });
 
   document.getElementById('btn-clear-single').addEventListener('click', () => {
@@ -419,12 +492,48 @@ function initAdmin() {
     lastSqlSingle = '';
   });
 
-  document.getElementById('btn-copy-single').addEventListener('click', () => copyToClipboard(lastSqlSingle));
-  document.getElementById('btn-download-single').addEventListener('click', () => {
-    const code = document.getElementById('f-code').value.replace(/\//g, '-') || 'document';
-    downloadFile(lastSqlSingle, `insert_${code}.sql`);
+  // Xoá toàn bộ danh sách đã thêm
+  document.getElementById('btn-clear-single-list')?.addEventListener('click', () => {
+    singleEntries = [];
+    renderSingleEntriesPreview();
+    document.getElementById('sql-output-single').style.display = 'none';
+    lastSqlSingle = '';
   });
 
+  // Xác nhận nhập hoàn tất → sinh SQL cho toàn bộ danh sách
+  document.getElementById('btn-generate-single')?.addEventListener('click', () => {
+    if (!singleEntries.length) {
+      showToast('⚠ Danh sách đang trống, hãy thêm ít nhất 1 văn bản');
+      return;
+    }
+
+    const invalid = singleEntries.find(r => {
+      const hasFile = r.drive_file_id || r.drive_view_url || r.drive_download_url;
+      return hasFile && !r.drive_file_id;
+    });
+    if (invalid) {
+      showToast(`⚠ Văn bản "${invalid.title}" thiếu drive_file_id`);
+      return;
+    }
+
+    const body = singleEntries
+      .map(r => generateSqlForDoc(r, rowToTagNames(r.tagKeys)))
+      .join('\n');
+    lastSqlSingle = buildSqlHeader(singleEntries.length) + wrapInTransaction(body);
+
+    const el = document.getElementById('sql-code-single');
+    renderSqlHighlight(el, lastSqlSingle);
+    document.getElementById('sql-output-single').style.display = 'block';
+    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    showToast(`✅ Đã tạo SQL cho ${singleEntries.length} văn bản`);
+  });
+
+  document.getElementById('btn-copy-single').addEventListener('click', () => copyToClipboard(lastSqlSingle));
+  document.getElementById('btn-download-single').addEventListener('click', () => {
+    downloadFile(lastSqlSingle, `insert_${new Date().toISOString().slice(0, 10)}.sql`);
+  });
+
+  // ── Panel "bulk": import từ file Excel (.xlsx) ────────────────────────────
   let lastSqlBulk = '';
   const dropZone = document.getElementById('drop-zone');
   const fileInput = document.getElementById('file-input');
@@ -439,7 +548,7 @@ function initAdmin() {
   });
 
   fileInput.addEventListener('change', () => {
-    if (fileInput.files[0]) readFile(fileInput.files[0]);
+    if (fileInput.files[0]) readXlsxFile(fileInput.files[0]);
   });
 
   dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragover'); });
@@ -447,37 +556,44 @@ function initAdmin() {
   dropZone.addEventListener('drop', e => {
     e.preventDefault();
     dropZone.classList.remove('dragover');
-    if (e.dataTransfer.files[0]) readFile(e.dataTransfer.files[0]);
+    if (e.dataTransfer.files[0]) readXlsxFile(e.dataTransfer.files[0]);
   });
 
-  function readFile(file) {
+  function readXlsxFile(file) {
+    const okExt = /\.(xlsx|xls)$/i.test(file.name);
+    if (!okExt) {
+      showToast('⚠ Vui lòng chọn file Excel (.xlsx hoặc .xls)');
+      return;
+    }
     const reader = new FileReader();
     reader.onload = ev => {
-      document.getElementById('csv-paste').value = ev.target.result;
-      processCsv(ev.target.result);
+      try {
+        const rows = parseXlsxWorkbook(ev.target.result);
+        processRows(rows);
+      } catch (err) {
+        console.error(err);
+        showToast('⚠ Không đọc được file Excel, kiểm tra lại định dạng');
+      }
     };
-    reader.readAsText(file, 'UTF-8');
+    reader.onerror = () => showToast('⚠ Lỗi khi đọc file');
+    reader.readAsArrayBuffer(file);
   }
 
-  document.getElementById('btn-parse-csv').addEventListener('click', () => {
-    const text = document.getElementById('csv-paste').value.trim();
-    if (!text) { showToast('⚠ Vui lòng paste CSV hoặc upload file'); return; }
-    processCsv(text);
-  });
-
-  function processCsv(text) {
-    const { rows } = parseCsv(text);
-    if (!rows.length) { showToast('⚠ Không tìm thấy dữ liệu trong CSV'); return; }
+  function processRows(rows) {
+    if (!rows.length) { showToast('⚠ Không tìm thấy dữ liệu trong file Excel'); return; }
     parsedRows = rows.map(normalizeRow).filter(r => r.title);
-    if (!parsedRows.length) { showToast('⚠ Không có dòng hợp lệ (cần có title)'); return; }
-    renderPreview(parsedRows);
+    if (!parsedRows.length) { showToast('⚠ Không có dòng hợp lệ (cần có cột title)'); return; }
+    renderPreview(parsedRows, 'preview-tbody');
+    document.getElementById('preview-count').textContent = `${parsedRows.length} văn bản`;
+    document.getElementById('gen-count').textContent = parsedRows.length;
+    document.getElementById('bulk-preview').style.display = 'block';
     document.getElementById('sql-output-bulk').style.display = 'none';
-    showToast(`✅ Đã tải ${parsedRows.length} văn bản`);
+    showToast(`✅ Đã tải ${parsedRows.length} văn bản từ Excel`);
   }
 
   document.getElementById('btn-clear-bulk').addEventListener('click', () => {
     parsedRows = [];
-    document.getElementById('csv-paste').value = '';
+    fileInput.value = '';
     document.getElementById('bulk-preview').style.display = 'none';
     document.getElementById('sql-output-bulk').style.display = 'none';
     document.getElementById('preview-tbody').innerHTML = '';
@@ -511,11 +627,12 @@ function initAdmin() {
     downloadFile(lastSqlBulk, `bulk_insert_${new Date().toISOString().slice(0, 10)}.sql`);
   });
 
+  // ── Panel "template": tải file mẫu Excel ──────────────────────────────────
   document.getElementById('btn-dl-template').addEventListener('click', () => {
-    downloadFile(CSV_HEADERS + '\n', 'notdore_template.csv');
+    downloadTemplateXlsx(false);
   });
   document.getElementById('btn-dl-template-sample').addEventListener('click', () => {
-    downloadFile(CSV_SAMPLE, 'notdore_sample.csv');
+    downloadTemplateXlsx(true);
   });
 }
 
@@ -524,3 +641,40 @@ if (document.readyState === 'loading') {
 } else {
   initAdmin();
 }
+
+/**
+ * ── HTML CẦN THÊM ────────────────────────────────────────────────────────────
+ * 1. Trước thẻ <script src="assets/js/admin.js">, thêm SheetJS:
+ *    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+ *
+ * 2. panel "bulk": đổi input file:
+ *    <input type="file" id="file-input" accept=".xlsx,.xls" hidden />
+ *    → Có thể bỏ ô "csv-paste" (textarea) vì xlsx là file nhị phân, không paste được.
+ *
+ * 3. panel "single": thêm bên dưới form-single (giữ nguyên form/nút hiện có,
+ *    nút submit form đổi label thành "Thêm vào danh sách"):
+ *
+ *    <div id="single-preview" style="display:none">
+ *      <div class="d-flex justify-content-between align-items-center mb-2">
+ *        <span id="single-preview-count">0 văn bản</span>
+ *        <button type="button" id="btn-clear-single-list" class="btn btn-sm btn-outline-secondary">
+ *          Xoá danh sách
+ *        </button>
+ *      </div>
+ *      <table class="table table-sm">
+ *        <thead>
+ *          <tr>
+ *            <th>#</th><th>Code</th><th>Title</th><th>Issued</th><th>Expiry</th>
+ *            <th>Status</th><th>Tags</th><th>File</th><th>Text</th><th></th>
+ *          </tr>
+ *        </thead>
+ *        <tbody id="single-preview-tbody"></tbody>
+ *      </table>
+ *      <button type="button" id="btn-generate-single" class="btn btn-primary">
+ *        Xác nhận & Sinh SQL (<span id="single-gen-count">0</span> văn bản)
+ *      </button>
+ *    </div>
+ *
+ * 4. panel "template": nút tải template giữ nguyên id (btn-dl-template,
+ *    btn-dl-template-sample) nhưng giờ tải về file .xlsx thay vì .csv.
+ */
