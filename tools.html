@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <title>Công cụ làm việc - NotDore</title>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Bộ sưu tập công cụ Excel, Python, AI Templates và tài liệu hữu ích cho kế toán, thuế, nhân sự">
+    <link rel="shortcut icon" href="favicon.ico">
+    <link href="https://fonts.googleapis.com/css?family=Quicksand:700|Roboto:400,400i,700&display=swap" rel="stylesheet">
+    <script defer src="assets/fontawesome/js/all.min.js"></script>
+    <link id="theme-style" rel="stylesheet" href="assets/css/theme.css">
+    <style>
+        .tool-card {
+            transition: all 0.3s ease;
+        }
+        .tool-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 10px 25px rgba(237, 101, 36, 0.15) !important;
+        }
+        .youtube-embed {
+            position: relative;
+            padding-bottom: 56.25%;
+            height: 0;
+            overflow: hidden;
+        }
+        .youtube-embed iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+</head>
+<body>
+    <!-- HEADER giống index.html -->
+    <header class="header">
+        <div class="branding">
+            <div class="container-fluid position-relative py-3">
+                <div class="logo-wrapper">
+                    <div class="site-logo">
+                        <a class="navbar-brand" href="index.html">
+                            <img class="logo-icon me-2" src="assets/images/site-logo.svg" alt="logo">
+                            <span class="logo-text">NotDore</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- HERO -->
+    <section class="hero-section py-5" style="background: linear-gradient(135deg, #ed6524 0%, #f8b47a 100%); color: white;">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-12 col-lg-8">
+                    <h1 class="display-4 fw-bold mb-3">Công cụ làm việc</h1>
+                    <p class="lead mb-4">Bộ sưu tập các hàm Excel, file VBA/Power Query, script Python, AI Templates và tài liệu tham khảo hữu ích cho công việc.</p>
+                    <a href="#tools-grid" class="btn btn-light btn-lg">Khám phá ngay</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="tools-grid" class="py-5">
+        <div class="container">
+            <ul class="nav nav-pills justify-content-center mb-5" id="tool-tabs">
+                <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#all">Tất cả</a></li>
+                <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#excel">Excel & VBA</a></li>
+                <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#python">Python</a></li>
+                <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#ai">AI Templates</a></li>
+                <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#resources">Tài liệu tham khảo</a></li>
+            </ul>
+
+            <div class="tab-content">
+                <!-- TẤT CẢ / EXCEL -->
+                <div class="tab-pane fade show active" id="all">
+                    <div class="row g-4" id="tools-container">
+                        <!-- Các card sẽ được thêm bằng JS hoặc hardcode -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Ví dụ một số card (bạn có thể nhân bản và chỉnh sửa) -->
+    <div class="container">
+        <h2 class="section-heading text-center mb-4">Excel & Power Query</h2>
+        <div class="row g-4">
+            <!-- Card 1 -->
+            <div class="col-md-6 col-lg-4">
+                <div class="card tool-card h-100">
+                    <div class="card-body">
+                        <span class="badge bg-warning mb-2">Excel</span>
+                        <h5 class="card-title">Hàm Excel nâng cao cho Kế toán</h5>
+                        <p class="card-text">Tổng hợp INDEX+MATCH, XLOOKUP, Power Query tự động hóa báo cáo...</p>
+                        <div class="youtube-embed mb-3">
+                            <iframe src="https://www.youtube.com/embed/VIDEO_ID" title="YouTube video" frameborder="0" allowfullscreen></iframe>
+                        </div>
+                        <a href="#" class="btn btn-outline-primary btn-sm">Tải file mẫu.xlsx</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card VBA -->
+            <div class="col-md-6 col-lg-4">
+                <div class="card tool-card h-100">
+                    <div class="card-body">
+                        <span class="badge bg-danger mb-2">VBA</span>
+                        <h5 class="card-title">Macro tự động hóa hóa đơn VAT</h5>
+                        <p class="card-text">Script VBA xuất báo cáo, gửi email tự động...</p>
+                        <a href="assets/files/macro-vat.xlsm" class="btn btn-primary">Tải file .xlsm</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Thêm nhiều card tương tự -->
+        </div>
+
+        <h2 class="section-heading text-center mt-5 mb-4">Python Scripts</h2>
+        <div class="row g-4">
+            <div class="col-md-6 col-lg-4">
+                <div class="card tool-card h-100">
+                    <div class="card-body">
+                        <span class="badge bg-info mb-2">Python</span>
+                        <h5 class="card-title">Xử lý dữ liệu kế toán với Pandas</h5>
+                        <p class="card-text">Script đọc nhiều file Excel, tổng hợp, xuất báo cáo PDF...</p>
+                        <a href="assets/files/accounting_processor.py" class="btn btn-primary">Xem code & Tải</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <h2 class="section-heading text-center mt-5 mb-4">AI Templates</h2>
+        <div class="row g-4">
+            <!-- Card ChatGPT / Claude prompts -->
+            <div class="col-md-6 col-lg-4">
+                <div class="card tool-card h-100">
+                    <div class="card-body">
+                        <span class="badge bg-success mb-2">AI Prompt</span>
+                        <h5 class="card-title">Prompt Excel Automation</h5>
+                        <p class="card-text">Bộ template prompt ChatGPT/Claude giúp tự động tạo công thức, VBA...</p>
+                        <a href="#" class="btn btn-primary">Xem template</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <h2 class="section-heading text-center mt-5 mb-4">Tài liệu tham khảo</h2>
+        <div class="row g-4">
+            <div class="col-12">
+                <ul class="list-group">
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>GitHub Repository - Excel Tools</strong><br>
+                            <small>Bộ sưu tập macro và Power Query hay nhất</small>
+                        </div>
+                        <a href="https://github.com/..." target="_blank" class="btn btn-sm btn-outline-secondary">Truy cập →</a>
+                    </li>
+                    <!-- Thêm link khác -->
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Disclaimer -->
+    <section class="py-5 bg-light">
+        <div class="container text-center">
+            <p class="text-muted">Tất cả công cụ chỉ mang tính tham khảo cá nhân. Không thay thế tư vấn chuyên môn.</p>
+        </div>
+    </section>
+
+    <!-- FOOTER giống index.html -->
+    <footer class="footer">
+        <div class="footer-bottom text-center py-5">
+            <small class="copyright">Designed with ❤️ by Xiaoying Riley — Customized for NotDore</small>
+        </div>
+    </footer>
+
+    <script src="assets/plugins/popper.min.js"></script>
+    <script src="assets/plugins/bootstrap/js/bootstrap.min.js"></script>
+    <script src="assets/plugins/smoothscroll.min.js"></script>
+    <script src="assets/js/main.js"></script>
+</body>
+</html>
