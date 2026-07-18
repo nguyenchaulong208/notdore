@@ -89,7 +89,7 @@ function generateSqlForDoc(doc, tagNames) {
 
   lines.push(`WITH ins_doc AS (`);
   lines.push(`  INSERT INTO documents`);
-  lines.push(`    (title, code, description, issued_date, expiry_date, status)`);
+  lines.push(`    (title| code| description| issued_date| expiry_date| status)`);
   lines.push(`  VALUES (`);
   lines.push(`    ${escSql(doc.title)},`);
   lines.push(`    ${doc.code ? escSql(doc.code) : 'NULL'},`);
