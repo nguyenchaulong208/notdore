@@ -19,11 +19,6 @@ const API_URL = '/api/documents';
 const PAGE_SIZE    = 12; // Số văn bản mỗi lần hiển thị trong grid
 const RECENT_DAYS  = 30; // "Mới nhất" = issued_date trong N ngày qua
 
-const ICONS = [
-  'file-alt', 'gavel', 'book', 'file-invoice', 'exchange-alt', 'percent',
-  'file-contract', 'envelope', 'chart-line', 'hand-holding-heart', 'star', 'calculator',
-];
-
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 /** Escape HTML để chống XSS */
@@ -186,34 +181,25 @@ function renderGridPage() {
   const visible  = state.filtered.slice(0, state.page * PAGE_SIZE);
 
   if (!state.filtered.length) {
-    grid.innerHTML = '<div class="col-12"><p class="text-muted text-center py-4">Không tìm thấy văn bản phù hợp.</p></div>';
+    grid.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-4">Không tìm thấy văn bản phù hợp.</td></tr>';
     loadMore.style.display = 'none';
     return;
   }
 
-  grid.innerHTML = visible.map((d, i) => {
+  grid.innerHTML = visible.map(d => {
     const type        = detectDocType(d.code);
-    const issuedStr   = formatDate(d.issued_date);
-    const expiryStr   = formatDate(d.expiry_date);
+    const issuedStr   = formatDate(d.issued_date) || '—';
     const statusBadge = renderStatusBadge(d.status);
 
     return `
-      <div class="item col-12 col-md-6 col-lg-4">
-        <div class="item-inner p-3 p-lg-4">
-          <div class="item-header mb-3">
-            <div class="item-icon"><i class="fas fa-${ICONS[i % ICONS.length]}"></i></div>
-            <h3 class="item-heading">${esc(d.code || '—')}</h3>
-          </div>
-          <div class="item-desc">${esc(d.title)}</div>
-          <div class="doc-card__meta">
-            ${type      ? `<span><i class="fas fa-tag me-1"></i>${esc(type)}</span>` : ''}
-            ${issuedStr ? `<span class="ms-2"><i class="fas fa-calendar-alt me-1"></i>Ban hành: ${esc(issuedStr)}</span>` : ''}
-            ${expiryStr ? `<span class="ms-2 text-danger"><i class="fas fa-calendar-times me-1"></i>Hết hiệu lực: ${esc(expiryStr)}</span>` : ''}
-            ${statusBadge ? `<div class="mt-1">${statusBadge}</div>` : ''}
-          </div>
-          ${renderFileButtons(d.file)}
-        </div>
-      </div>`;
+      <tr>
+        <td><span class="doc-table__code">${esc(d.code || '—')}</span></td>
+        <td><span class="doc-table__title">${esc(d.title)}</span></td>
+        <td><span class="doc-table__type">${esc(type)}</span></td>
+        <td><span class="doc-table__date">${esc(issuedStr)}</span></td>
+        <td>${statusBadge || '—'}</td>
+        <td>${renderFileButtons(d.file)}</td>
+      </tr>`;
   }).join('');
 
   loadMore.style.display = visible.length < state.filtered.length ? 'block' : 'none';
@@ -231,18 +217,16 @@ function renderStatusBadge(status) {
 }
 
 function renderFileButtons(file) {
-  if (!file?.drive_view_url) return '';
+  if (!file?.drive_view_url) return '—';
   const viewBtn = `
-    <a href="${esc(file.drive_view_url)}" class="btn btn-sm btn-outline-primary"
-       target="_blank" rel="noopener">
+    <a href="${esc(file.drive_view_url)}" target="_blank" rel="noopener">
       <i class="fas fa-eye me-1"></i>Xem online
     </a>`;
   const downloadBtn = file.drive_download_url ? `
-    <a href="${esc(file.drive_download_url)}" class="btn btn-sm btn-outline-secondary"
-       target="_blank" rel="noopener">
+    <a href="${esc(file.drive_download_url)}" class="text-secondary" target="_blank" rel="noopener">
       <i class="fas fa-download me-1"></i>Tải xuống
     </a>` : '';
-  return `<div class="doc-card__actions">${viewBtn}${downloadBtn}</div>`;
+  return `<div class="doc-table__actions">${viewBtn}${downloadBtn}</div>`;
 }
 
 function updateFilterCount() {
@@ -269,18 +253,17 @@ function renderError(message) {
   document.getElementById('sidebar-content').innerHTML =
     `<p class="sb-state sb-state--error"><i class="fas fa-exclamation-circle me-1"></i>Không thể tải dữ liệu.</p>`;
 
-  const loadingEl = document.getElementById('docs-loading');
-  if (loadingEl) loadingEl.remove();
-
   document.getElementById('documents-grid').innerHTML = `
-    <div class="col-12">
-      <div class="alert alert-danger" role="alert">
-        <i class="fas fa-exclamation-triangle me-2"></i>
-        <strong>Không thể tải danh sách văn bản.</strong>
-        ${esc(message)}
-        Vui lòng thử lại sau.
-      </div>
-    </div>`;
+    <tr>
+      <td colspan="6">
+        <div class="alert alert-danger mb-0" role="alert">
+          <i class="fas fa-exclamation-triangle me-2"></i>
+          <strong>Không thể tải danh sách văn bản.</strong>
+          ${esc(message)}
+          Vui lòng thử lại sau.
+        </div>
+      </td>
+    </tr>`;
 }
 
 // ── Khởi chạy ─────────────────────────────────────────────────────────────────
