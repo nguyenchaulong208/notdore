@@ -1,10 +1,11 @@
 /**
  * assets/js/home.js — Logic trang chủ (index.html)
  *
- * Dữ liệu lấy từ MỘT bảng `documents` duy nhất (không tách theo danh mục).
+ * Dữ liệu lấy từ endpoint api/documents.js — trả về toàn bộ bảng `documents`
+ * trong Supabase (không lọc theo danh mục/tag).
  *
  * Luồng:
- *  1. Fetch toàn bộ văn bản từ API.
+ *  1. Fetch toàn bộ văn bản từ /api/documents.
  *  2. Sidebar "Văn bản mới nhất": lọc theo issued_date trong vòng 30 ngày
  *     gần đây so với thời điểm hiện tại (không dùng created_at).
  *  3. Grid "VĂN BẢN": hiển thị toàn bộ văn bản với filter (loại, năm,
@@ -13,8 +14,6 @@
 
 // ── Cấu hình ──────────────────────────────────────────────────────────────────
 
-// TODO: đổi lại đường dẫn API nếu khác — hiện giả định trả về { docs: [...] }
-// chứa toàn bộ bảng documents.
 const API_URL = '/api/documents';
 
 const PAGE_SIZE    = 12; // Số văn bản mỗi lần hiển thị trong grid
@@ -62,16 +61,19 @@ function detectYear(doc) {
   return m ? parseInt(m[1]) : null;
 }
 
-/** Trả về true nếu văn bản mới được thêm vào trong vòng 30 ngày. */
-function isNew(created_at) {
-  if (!created_at) return false;
-  return Date.now() - new Date(created_at).getTime() < 30 * 24 * 60 * 60 * 1000;
-}
-
 /** Format ngày theo vi-VN, trả về '' nếu không có. */
 function formatDate(dateStr) {
   if (!dateStr) return '';
   return new Date(dateStr).toLocaleDateString('vi-VN');
+}
+
+/** true nếu issued_date nằm trong RECENT_DAYS ngày gần đây so với hiện tại. */
+function isRecentByIssuedDate(issued_date) {
+  if (!issued_date) return false;
+  const issued = new Date(issued_date).getTime();
+  if (Number.isNaN(issued)) return false;
+  const cutoff = Date.now() - RECENT_DAYS * 24 * 60 * 60 * 1000;
+  return issued >= cutoff && issued <= Date.now();
 }
 
 // ── Sidebar "Văn bản mới nhất" ──────────────────────────────────────────────
