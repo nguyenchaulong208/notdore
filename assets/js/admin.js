@@ -50,6 +50,7 @@ const TEMPLATE_COLUMNS = [
 
 let parsedRows = [];   // dữ liệu từ file xlsx import hàng loạt (panel "bulk")
 let singleEntries = []; // danh sách record được thêm thủ công (panel "single")
+let toolEntries = [];   // catalog tools chờ sinh SQL (panel "tools")
 
 // ── SQL helpers ───────────────────────────────────────────────────────────────
 function escSql(str) {
@@ -219,6 +220,7 @@ const PANEL_TITLES = {
   bulk:     'Import hàng loạt (Excel)',
   schema:   'Sơ đồ Database',
   template: 'Excel Template',
+  tools:    'Nhập công cụ (nhiều dòng)',
 };
 
 function switchPanel(panelId) {
@@ -441,6 +443,154 @@ function renderSingleEntriesPreview() {
   });
 }
 
+// ── Catalog tools (panel "tools") ───────────────────────────────────────────
+function readToolForm() {
+  return {
+    name: document.getElementById('tool-name').value.trim(),
+    category: document.getElementById('tool-category').value.trim(),
+    description: document.getElementById('tool-description').value.trim(),
+    tags: document.getElementById('tool-tags').value.split(';').map(tag => tag.trim()).filter(Boolean),
+    sourceName: document.getElementById('tool-source-name').value.trim(),
+    sourceType: document.getElementById('tool-source-type').value,
+    displayName: document.getElementById('tool-display-name').value.trim(),
+    url: document.getElementById('tool-url').value.trim(),
+  };
+}
+
+function isHttpUrl(value) {
+  try {
+    const url = new URL(value);
+    return url.protocol === 'https:' || url.protocol === 'http:';
+  } catch {
+    return false;
+  }
+}
+
+function validateTool(entry) {
+  if (!entry.name || !entry.category || !entry.sourceName || !entry.url) {
+    showToast('⚠ Vui lòng điền tên công cụ, danh mục, nguồn và URL');
+    return false;
+  }
+  if (!isHttpUrl(entry.url)) {
+    showToast('⚠ URL phải bắt đầu bằng http:// hoặc https://');
+    return false;
+  }
+  if (entry.sourceType === 'video' && !/^(https?:\/\/)(www\.)?(youtube\.com|youtube-nocookie\.com)\/embed\//i.test(entry.url)) {
+    showToast('⚠ Video YouTube cần dùng URL dạng https://www.youtube.com/embed/VIDEO_ID');
+    return false;
+  }
+  return true;
+}
+
+function renderToolEntriesPreview() {
+  const preview = document.getElementById('tool-preview');
+  preview.style.display = toolEntries.length ? 'block' : 'none';
+  document.getElementById('tool-preview-count').textContent = `${toolEntries.length} mục`;
+  document.getElementById('tool-gen-count').textContent = toolEntries.length;
+
+  document.getElementById('tool-preview-tbody').innerHTML = toolEntries.map((entry, index) => `
+    <tr>
+      <td class="text-muted">${index + 1}</td>
+      <td><strong>${escHtml(entry.name)}</strong></td>
+      <td>${escHtml(entry.category)}</td>
+      <td>${escHtml(entry.tags.join('; ') || '—')}</td>
+      <td>${escHtml(entry.sourceName)} <span class="badge bg-secondary">${escHtml(entry.sourceType)}</span></td>
+      <td title="${escHtml(entry.url)}">${escHtml(entry.url)}</td>
+      <td><button type="button" class="btn btn-sm btn-outline-danger" data-remove-tool="${index}">✕</button></td>
+    </tr>`).join('');
+
+  document.querySelectorAll('[data-remove-tool]').forEach(button => {
+    button.addEventListener('click', () => {
+      toolEntries.splice(Number(button.dataset.removeTool), 1);
+      renderToolEntriesPreview();
+    });
+  });
+}
+
+function escHtml(value) {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function generateSqlForTool(entry) {
+  const tags = entry.tags.map(escSql).join(', ') || 'NULL';
+  const description = entry.description ? escSql(entry.description) : 'NULL';
+  const displayName = entry.displayName ? escSql(entry.displayName) : 'NULL';
+  const commentName = entry.name.replace(/[\r\n]+/g, ' ');
+
+  return [
+    `-- Công cụ: ${commentName} (${entry.category.replace(/[\r\n]+/g, ' ')})`,
+    `WITH`,
+    `category_existing AS (`,
+    `  SELECT category_id FROM categories WHERE category_name = ${escSql(entry.category)} LIMIT 1`,
+    `),`,
+    `category_inserted AS (`,
+    `  INSERT INTO categories (category_name)`,
+    `  SELECT ${escSql(entry.category)} WHERE NOT EXISTS (SELECT 1 FROM category_existing)`,
+    `  RETURNING category_id`,
+    `),`,
+    `category_row AS (`,
+    `  SELECT category_id FROM category_existing UNION ALL SELECT category_id FROM category_inserted`,
+    `),`,
+    `source_existing AS (`,
+    `  SELECT source_id FROM external_sources`,
+    `  WHERE source_name = ${escSql(entry.sourceName)} AND source_type = ${escSql(entry.sourceType)}`,
+    `  LIMIT 1`,
+    `),`,
+    `source_inserted AS (`,
+    `  INSERT INTO external_sources (source_name, source_type)`,
+    `  SELECT ${escSql(entry.sourceName)}, ${escSql(entry.sourceType)}`,
+    `  WHERE NOT EXISTS (SELECT 1 FROM source_existing)`,
+    `  RETURNING source_id`,
+    `),`,
+    `source_row AS (`,
+    `  SELECT source_id FROM source_existing UNION ALL SELECT source_id FROM source_inserted`,
+    `),`,
+    `tool_existing AS (`,
+    `  SELECT t.tool_id FROM tools t JOIN category_row c ON c.category_id = t.category_id`,
+    `  WHERE t.tool_name = ${escSql(entry.name)} LIMIT 1`,
+    `),`,
+    `tool_inserted AS (`,
+    `  INSERT INTO tools (tool_name, category_id, description)`,
+    `  SELECT ${escSql(entry.name)}, category_id, ${description} FROM category_row`,
+    `  WHERE NOT EXISTS (SELECT 1 FROM tool_existing)`,
+    `  RETURNING tool_id`,
+    `),`,
+    `tool_row AS (`,
+    `  SELECT tool_id FROM tool_existing UNION ALL SELECT tool_id FROM tool_inserted`,
+    `),`,
+    `link_inserted AS (`,
+    `  INSERT INTO tool_links (tool_id, source_id, embed_url, display_name)`,
+    `  SELECT t.tool_id, s.source_id, ${escSql(entry.url)}, ${displayName}`,
+    `  FROM tool_row t CROSS JOIN source_row s`,
+    `  WHERE NOT EXISTS (`,
+    `    SELECT 1 FROM tool_links l WHERE l.tool_id = t.tool_id AND l.source_id = s.source_id AND l.embed_url = ${escSql(entry.url)}`,
+    `  )`,
+    `  RETURNING link_id`,
+    `),`,
+    `tags_inserted AS (`,
+    `  INSERT INTO tags (tag_name)`,
+    `  SELECT tag_name FROM unnest(ARRAY[${tags}]::text[]) AS tag_values(tag_name)`,
+    `  WHERE tag_name IS NOT NULL`,
+    `  ON CONFLICT (tag_name) DO NOTHING`,
+    `  RETURNING tag_id`,
+    `),`,
+    `tag_map_inserted AS (`,
+    `  INSERT INTO tool_tags (tool_id, tag_id)`,
+    `  SELECT t.tool_id, g.tag_id FROM tool_row t`,
+    `  CROSS JOIN tags g WHERE g.tag_name = ANY(ARRAY[${tags}]::text[])`,
+    `  ON CONFLICT DO NOTHING`,
+    `  RETURNING tool_id`,
+    `)`,
+    `SELECT 'OK: ${entry.name}' AS result;`,
+    ``,
+  ].join('\n');
+}
+
 // ── Init ──────────────────────────────────────────────────────────────────────
 function initAdmin() {
   document.querySelectorAll('[data-panel]').forEach(btn => {
@@ -625,6 +775,66 @@ function initAdmin() {
   document.getElementById('btn-copy-bulk').addEventListener('click', () => copyToClipboard(lastSqlBulk));
   document.getElementById('btn-download-bulk').addEventListener('click', () => {
     downloadFile(lastSqlBulk, `bulk_insert_${new Date().toISOString().slice(0, 10)}.sql`);
+  });
+
+  // ── Panel "tools": nhập nhiều công cụ và sinh SQL ───────────────────────
+  let lastSqlTools = '';
+  const toolForm = document.getElementById('form-tool');
+
+  toolForm?.addEventListener('submit', event => {
+    event.preventDefault();
+    const entry = readToolForm();
+    if (!validateTool(entry)) return;
+
+    toolEntries.push(entry);
+    renderToolEntriesPreview();
+    toolForm.reset();
+    document.getElementById('tool-source-type').value = 'cloud';
+    document.getElementById('sql-output-tools').style.display = 'none';
+    lastSqlTools = '';
+    showToast(`✅ Đã thêm "${entry.name}" (${toolEntries.length} mục trong danh sách)`);
+  });
+
+  document.getElementById('btn-clear-tool')?.addEventListener('click', () => {
+    toolForm.reset();
+    document.getElementById('tool-source-type').value = 'cloud';
+  });
+
+  document.getElementById('btn-clear-tool-list')?.addEventListener('click', () => {
+    toolEntries = [];
+    renderToolEntriesPreview();
+    document.getElementById('sql-output-tools').style.display = 'none';
+    lastSqlTools = '';
+  });
+
+  document.getElementById('btn-generate-tools')?.addEventListener('click', () => {
+    if (!toolEntries.length) {
+      showToast('⚠ Danh sách đang trống, hãy thêm ít nhất 1 công cụ');
+      return;
+    }
+
+    const body = toolEntries.map(generateSqlForTool).join('\n');
+    lastSqlTools = [
+      '-- =============================================================',
+      '-- NotDore — Tools catalog SQL Script',
+      `-- Ngày tạo: ${new Date().toLocaleString('vi-VN')}`,
+      `-- Số mục: ${toolEntries.length}`,
+      '-- Chạy sau db/migration_add_tools.sql trong Supabase SQL Editor',
+      '-- =============================================================',
+      '',
+      wrapInTransaction(body),
+    ].join('\n');
+
+    const output = document.getElementById('sql-code-tools');
+    renderSqlHighlight(output, lastSqlTools);
+    document.getElementById('sql-output-tools').style.display = 'block';
+    output.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    showToast(`✅ Đã tạo SQL cho ${toolEntries.length} mục`);
+  });
+
+  document.getElementById('btn-copy-tools')?.addEventListener('click', () => copyToClipboard(lastSqlTools));
+  document.getElementById('btn-download-tools')?.addEventListener('click', () => {
+    downloadFile(lastSqlTools, `tools_${new Date().toISOString().slice(0, 10)}.sql`);
   });
 
   // ── Panel "template": tải file mẫu Excel ──────────────────────────────────
