@@ -200,9 +200,11 @@
 			background: #fff;
 			border-radius: 0.5rem;
 			box-shadow: 0 5px 20px -4px rgba(0,0,0,0.08);
-			overflow: hidden;
+			overflow-x: auto;
+			overflow-y: hidden;
+			-webkit-overflow-scrolling: touch;
 		}
-		.doc-table { font-size: 0.875rem; margin-bottom: 0; }
+		.doc-table { font-size: 0.875rem; margin-bottom: 0; min-width: 760px; }
 		.doc-table thead th {
 			background: #f8f7fc;
 			color: #1c1e2e;
@@ -226,6 +228,14 @@
 			font-family: 'Quicksand', sans-serif;
 			color: #1c1e2e;
 			white-space: nowrap;
+		}
+		a.doc-table__code--link {
+			text-decoration: none;
+			cursor: pointer;
+		}
+		a.doc-table__code--link:hover {
+			color: #ed6524;
+			text-decoration: underline;
 		}
 		.doc-table__title {
 			color: #4c527d;
@@ -274,7 +284,7 @@
 <!-- Left: tiêu đề danh mục -->
 <div class="col-12 col-md-7 pt-5 mb-5 align-self-center">
     <div class="promo pe-md-3 pe-lg-5">
-        <h1 class="headline mb-3" id="category-title">Kho Tài Liệu Pháp Luật Cho Kế Toán – Thuế – Nhân Sự & Công Cụ Làm Việc Tổng Hợp Cho Nhiều Lĩnh Vực</h1>
+        <h1 class="headline mb-3" id="category-title">Kho Tài Liệu Pháp Luật & Công Cụ Làm Việc Cho Kế Toán – Thuế – Nhân Sự</h1>
         <div class="subheadline mb-4" id="category-desc">
             Nơi lưu trữ tài liệu pháp luật và công cụ hỗ trợ cho kế toán - thuế - nhân sự. 
             Văn bản pháp luật + Bộ công cụ Excel, Python, AI Templates được tổng hợp ở nhiều lĩnh vực và cập nhật thường xuyên.
@@ -489,7 +499,7 @@
 	<script src="assets/plugins/bootstrap/js/bootstrap.min.js"></script>
 	<script src="assets/plugins/smoothscroll.min.js"></script>
 	<script src="assets/js/main.js"></script>
-	<script src="assets/js/index.js"></script>
+	<script src="assets/js/home.js"></script>
 </body>
 
 </html>

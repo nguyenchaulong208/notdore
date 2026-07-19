@@ -190,10 +190,11 @@ function renderGridPage() {
     const type        = detectDocType(d.code);
     const issuedStr   = formatDate(d.issued_date) || '—';
     const statusBadge = renderStatusBadge(d.status);
+    const codeCell     = renderCodeCell(d);
 
     return `
       <tr>
-        <td><span class="doc-table__code">${esc(d.code || '—')}</span></td>
+        <td>${codeCell}</td>
         <td><span class="doc-table__title">${esc(d.title)}</span></td>
         <td><span class="doc-table__type">${esc(type)}</span></td>
         <td><span class="doc-table__date">${esc(issuedStr)}</span></td>
@@ -203,6 +204,16 @@ function renderGridPage() {
   }).join('');
 
   loadMore.style.display = visible.length < state.filtered.length ? 'block' : 'none';
+}
+
+/** Số hiệu clickable nếu có link xem online, ngược lại chỉ hiện text. */
+function renderCodeCell(d) {
+  const codeText = esc(d.code || '—');
+  if (d.file?.drive_view_url) {
+    return `<a class="doc-table__code doc-table__code--link" href="${esc(d.file.drive_view_url)}"
+      target="_blank" rel="noopener" title="Xem văn bản ${codeText}">${codeText}</a>`;
+  }
+  return `<span class="doc-table__code">${codeText}</span>`;
 }
 
 function renderStatusBadge(status) {
