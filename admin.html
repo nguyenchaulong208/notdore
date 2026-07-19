@@ -339,6 +339,10 @@
     <i class="bi bi-table"></i>
     Import hàng loạt
   </button>
+  <button class="nav-item-link" data-panel="tools">
+    <i class="bi bi-tools"></i>
+    Nhập công cụ
+  </button>
 
   <div class="nav-section">Công cụ</div>
   <button class="nav-item-link" data-panel="schema">
@@ -613,6 +617,77 @@
       </div>
 
     </div><!-- /panel-bulk -->
+
+    <!-- ── Panel: Công cụ ───────────────────────────────────── -->
+    <div id="panel-tools" class="panel">
+      <div class="alert-info-custom mb-4">
+        <i class="bi bi-info-circle me-1"></i>
+        Nhập từng công cụ và liên kết nguồn ngoài. Bấm <strong>Thêm vào danh sách</strong>, sau đó sinh SQL để chạy trong
+        <code>Supabase → SQL Editor</code>. Dùng lại cùng tên công cụ và danh mục để thêm nhiều liên kết cho một công cụ.
+      </div>
+
+      <form id="form-tool" novalidate>
+        <div class="form-card">
+          <h5><i class="bi bi-tools me-2"></i>Thông tin công cụ</h5>
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label" for="tool-name">Tên công cụ <span class="text-danger">*</span></label>
+              <input class="form-control" id="tool-name" required placeholder="VD: Hàm Excel nâng cao cho Kế toán">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label" for="tool-category">Danh mục <span class="text-danger">*</span></label>
+              <input class="form-control" id="tool-category" required placeholder="VD: Excel & VBA">
+            </div>
+            <div class="col-12">
+              <label class="form-label" for="tool-description">Mô tả</label>
+              <textarea class="form-control" id="tool-description" rows="2" placeholder="Mô tả ngắn hiển thị trên thẻ công cụ…"></textarea>
+            </div>
+            <div class="col-12">
+              <label class="form-label" for="tool-tags">Tags</label>
+              <input class="form-control" id="tool-tags" placeholder="VD: excel; power-query; kế-toán">
+              <div class="form-text">Ngăn cách các tag bằng dấu chấm phẩy (;). Tag chưa có sẽ được tạo tự động.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-card">
+          <h5><i class="bi bi-link-45deg me-2"></i>Nguồn và liên kết</h5>
+          <div class="row g-3">
+            <div class="col-md-4">
+              <label class="form-label" for="tool-source-name">Tên nguồn <span class="text-danger">*</span></label>
+              <input class="form-control" id="tool-source-name" required list="tool-source-options" placeholder="VD: YouTube">
+              <datalist id="tool-source-options"><option>Google Drive</option><option>OneDrive</option><option>YouTube</option><option>GitHub</option></datalist>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label" for="tool-source-type">Loại nguồn <span class="text-danger">*</span></label>
+              <select class="form-select" id="tool-source-type"><option value="file">File</option><option value="video">Video</option><option value="repo">Repository</option><option value="cloud" selected>Cloud</option><option value="social">Social</option></select>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label" for="tool-display-name">Nhãn nút hiển thị</label>
+              <input class="form-control" id="tool-display-name" placeholder="VD: Tải file mẫu.xlsx">
+            </div>
+            <div class="col-12">
+              <label class="form-label" for="tool-url">URL <span class="text-danger">*</span></label>
+              <input type="url" class="form-control" id="tool-url" required placeholder="YouTube: https://www.youtube.com/embed/VIDEO_ID; Drive/OneDrive/GitHub: URL mở ngoài">
+              <div class="form-text">YouTube phải dùng URL <code>/embed/VIDEO_ID</code> để hiển thị video trên website.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="d-flex gap-3 align-items-center mb-2">
+          <button type="submit" class="btn btn-brand px-4"><i class="bi bi-plus-circle me-2"></i>Thêm vào danh sách</button>
+          <button type="button" class="btn btn-outline-secondary" id="btn-clear-tool"><i class="bi bi-arrow-counterclockwise me-1"></i>Xoá form</button>
+        </div>
+      </form>
+
+      <div id="tool-preview" class="form-card" style="display:none">
+        <h5 class="d-flex align-items-center justify-content-between"><span><i class="bi bi-list-check me-2"></i>Danh sách công cụ <span id="tool-preview-count" class="ms-2 badge bg-secondary fw-normal">0 công cụ</span></span><button type="button" class="btn btn-sm btn-outline-danger" id="btn-clear-tool-list"><i class="bi bi-x me-1"></i>Xoá danh sách</button></h5>
+        <div style="overflow-x:auto"><table class="preview-table"><thead><tr><th>#</th><th>Công cụ</th><th>Danh mục</th><th>Tags</th><th>Nguồn</th><th>URL</th><th></th></tr></thead><tbody id="tool-preview-tbody"></tbody></table></div>
+        <button type="button" class="btn btn-brand mt-3" id="btn-generate-tools"><i class="bi bi-code-slash me-2"></i>Xác nhận &amp; Sinh SQL cho <span id="tool-gen-count">0</span> mục</button>
+      </div>
+
+      <div id="sql-output-tools" style="display:none"><div class="sql-panel"><div class="sql-toolbar"><span><i class="bi bi-terminal me-2"></i>SQL Script — catalog công cụ</span><div class="actions"><button class="btn btn-sm btn-outline-secondary text-white border-secondary" id="btn-copy-tools"><i class="bi bi-clipboard me-1"></i>Copy</button><button class="btn btn-sm btn-outline-secondary text-white border-secondary" id="btn-download-tools"><i class="bi bi-download me-1"></i>Tải .sql</button></div></div><div class="sql-output" id="sql-code-tools"></div></div></div>
+    </div><!-- /panel-tools -->
 
     <!-- ── Panel 3: Schema ───────────────────────────────────── -->
     <div id="panel-schema" class="panel">
