@@ -11,6 +11,7 @@ import express from 'express';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import categoryHandler from './api/category.js';
+import toolsHandler from './api/tools.js';
 import { listDocs, updateDoc } from './api/admin/docs.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -37,6 +38,7 @@ function localOnly(req, res, next) {
 
 // ── API routes ────────────────────────────────────────────────────────────────
 app.get('/api/category', categoryHandler);
+app.get('/api/tools', toolsHandler);
 
 // ── Admin (local only) ────────────────────────────────────────────────────────
 app.get('/admin', localOnly, (_req, res) => {
