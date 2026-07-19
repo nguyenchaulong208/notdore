@@ -11,30 +11,80 @@
     <script defer src="assets/fontawesome/js/all.min.js"></script>
     <link id="theme-style" rel="stylesheet" href="assets/css/theme.css">
     <style>
+        .sidebar-box {
+            background: #fff;
+            border-radius: 0.5rem;
+            box-shadow: 0 5px 20px -4px rgba(0, 0, 0, 0.08);
+            padding: 1rem;
+        }
+        .sidebar-box__title {
+            color: #ed6524;
+            font-family: 'Quicksand', sans-serif;
+            font-size: 0.95rem;
+            font-weight: 700;
+            margin-bottom: 0.75rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #ed6524;
+        }
+        #tool-tabs { gap: 0.5rem; }
+        #tool-tabs .nav-link {
+            color: #4c527d;
+            font-size: 0.875rem;
+            font-weight: 700;
+            padding: 0.5rem 0.75rem;
+        }
+        #tool-tabs .nav-link.active,
+        #tool-tabs .nav-link:hover,
+        #tool-tabs .nav-link:focus {
+            background: #ed6524;
+            color: #fff;
+        }
         .tool-card {
-            transition: all 0.3s ease;
+            border: 0;
+            border-radius: 0.5rem;
+            box-shadow: 0 5px 20px -4px rgba(0, 0, 0, 0.08);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
         .tool-card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 10px 25px rgba(237, 101, 36, 0.15) !important;
+            box-shadow: 0 10px 25px rgba(237, 101, 36, 0.15);
+            transform: translateY(-5px);
+        }
+        .tool-card .card-body { padding: 1.5rem; }
+        .tool-card .card-title { font-family: 'Quicksand', sans-serif; }
+        .tool-card .card-text { color: #4c527d; }
+        .badge-cat {
+            border-radius: 3px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            padding: 2px 7px;
         }
         .youtube-embed {
-            position: relative;
-            padding-bottom: 56.25%;
             height: 0;
             overflow: hidden;
+            padding-bottom: 56.25%;
+            position: relative;
         }
         .youtube-embed iframe {
+            height: 100%;
+            left: 0;
             position: absolute;
             top: 0;
-            left: 0;
             width: 100%;
-            height: 100%;
+        }
+        .resource-list {
+            border-radius: 0.5rem;
+            box-shadow: 0 5px 20px -4px rgba(0, 0, 0, 0.08);
+            overflow-x: auto;
+            overflow-y: hidden;
+        }
+        .resource-list .list-group-item { min-width: 420px; }
+        @media (max-width: 575.98px) {
+            .tool-card .card-body { padding: 1.25rem; }
+            #tool-tabs .nav-link { padding: 0.45rem 0.65rem; }
         }
     </style>
 </head>
 <body>
-    <!-- HEADER giống index.html -->
     <header class="header">
         <div class="branding">
             <div class="container-fluid position-relative py-3">
@@ -50,128 +100,125 @@
         </div>
     </header>
 
-    <!-- HERO -->
-    <section class="hero-section py-5" style="background: linear-gradient(135deg, #ed6524 0%, #f8b47a 100%); color: white;">
+    <section class="hero-section" id="hero-section">
         <div class="container">
-            <div class="row align-items-center">
-                <div class="col-12 col-lg-8">
-                    <h1 class="display-4 fw-bold mb-3">Công cụ làm việc</h1>
-                    <p class="lead mb-4">Bộ sưu tập các hàm Excel, file VBA, Power Query, script Python, AI Templates và tài liệu tham khảo hữu ích cho công việc.</p>
-                    <a href="#tools-grid" class="btn btn-light btn-lg">Khám phá ngay</a>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <section id="tools-grid" class="py-5">
-        <div class="container">
-            <ul class="nav nav-pills justify-content-center mb-5" id="tool-tabs">
-                <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#all">Tất cả</a></li>
-                <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#excel">Excel & VBA</a></li>
-                <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#python">Python</a></li>
-                <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#ai">AI Templates</a></li>
-                <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#resources">Tài liệu tham khảo</a></li>
-            </ul>
-
-            <div class="tab-content">
-                <!-- TẤT CẢ / EXCEL -->
-                <div class="tab-pane fade show active" id="all">
-                    <div class="row g-4" id="tools-container">
-                        <!-- Các card sẽ được thêm bằng JS hoặc hardcode -->
+            <div class="row">
+                <div class="col-12 col-lg-8 pt-5 mb-5 align-self-center">
+                    <div class="promo pe-md-3 pe-lg-5">
+                        <h1 class="headline mb-3">Công cụ làm việc</h1>
+                        <div class="subheadline mb-4">Bộ sưu tập các hàm Excel, file VBA, Power Query, script Python, AI Templates và tài liệu tham khảo hữu ích cho công việc.</div>
+                        <div class="cta-holder row gx-md-3 gy-3 gy-md-0">
+                            <div class="col-12 col-md-auto">
+                                <a href="#tools-grid" class="btn btn-primary w-100 scrollto">Khám phá ngay</a>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Ví dụ một số card (bạn có thể nhân bản và chỉnh sửa) -->
-    <div class="container">
-        <h2 class="section-heading text-center mb-4">Excel & Power Query</h2>
-        <div class="row g-4">
-            <!-- Card 1 -->
-            <div class="col-md-6 col-lg-4">
-                <div class="card tool-card h-100">
-                    <div class="card-body">
-                        <span class="badge bg-warning mb-2">Excel</span>
-                        <h5 class="card-title">Hàm Excel nâng cao cho Kế toán</h5>
-                        <p class="card-text">Tổng hợp INDEX+MATCH, XLOOKUP, Power Query tự động hóa báo cáo...</p>
-                        <div class="youtube-embed mb-3">
-                            <iframe src="https://www.youtube.com/embed/VIDEO_ID" title="YouTube video" frameborder="0" allowfullscreen></iframe>
-                        </div>
-                        <a href="#" class="btn btn-outline-primary btn-sm">Tải file mẫu.xlsx</a>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Card VBA -->
-            <div class="col-md-6 col-lg-4">
-                <div class="card tool-card h-100">
-                    <div class="card-body">
-                        <span class="badge bg-danger mb-2">VBA</span>
-                        <h5 class="card-title">Macro tự động hóa hóa đơn VAT</h5>
-                        <p class="card-text">Script VBA xuất báo cáo, gửi email tự động...</p>
-                        <a href="assets/files/macro-vat.xlsm" class="btn btn-primary">Tải file .xlsm</a>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Thêm nhiều card tương tự -->
-        </div>
-
-        <h2 class="section-heading text-center mt-5 mb-4">Python Scripts</h2>
-        <div class="row g-4">
-            <div class="col-md-6 col-lg-4">
-                <div class="card tool-card h-100">
-                    <div class="card-body">
-                        <span class="badge bg-info mb-2">Python</span>
-                        <h5 class="card-title">Xử lý dữ liệu kế toán với Pandas</h5>
-                        <p class="card-text">Script đọc nhiều file Excel, tổng hợp, xuất báo cáo PDF...</p>
-                        <a href="assets/files/accounting_processor.py" class="btn btn-primary">Xem code & Tải</a>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <h2 class="section-heading text-center mt-5 mb-4">AI Templates</h2>
-        <div class="row g-4">
-            <!-- Card ChatGPT / Claude prompts -->
-            <div class="col-md-6 col-lg-4">
-                <div class="card tool-card h-100">
-                    <div class="card-body">
-                        <span class="badge bg-success mb-2">AI Prompt</span>
-                        <h5 class="card-title">Prompt Excel Automation</h5>
-                        <p class="card-text">Bộ template prompt ChatGPT/Claude giúp tự động tạo công thức, VBA...</p>
-                        <a href="#" class="btn btn-primary">Xem template</a>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <h2 class="section-heading text-center mt-5 mb-4">Tài liệu tham khảo</h2>
-        <div class="row g-4">
-            <div class="col-12">
-                <ul class="list-group">
-                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                        <div>
-                            <strong>GitHub Repository - Excel Tools</strong><br>
-                            <small>Bộ sưu tập macro và Power Query hay nhất</small>
-                        </div>
-                        <a href="https://github.com/..." target="_blank" class="btn btn-sm btn-outline-secondary">Truy cập →</a>
-                    </li>
-                    <!-- Thêm link khác -->
+    <section id="tools-grid" class="benefits-section theme-bg-light-gradient py-5">
+        <div class="container py-5">
+            <h2 class="section-heading text-center mb-3">Công cụ làm việc</h2>
+            <div class="sidebar-box single-col-max mx-auto mb-5">
+                <div class="sidebar-box__title"><i class="fas fa-toolbox me-2"></i>Lọc theo chủ đề</div>
+                <ul class="nav nav-pills justify-content-center flex-wrap" id="tool-tabs">
+                    <li class="nav-item"><a class="nav-link active" href="#all">Tất cả</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#excel">Excel &amp; VBA</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#python">Python</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#ai">AI Templates</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#resources">Tài liệu tham khảo</a></li>
                 </ul>
             </div>
-        </div>
-    </div>
+            <div class="tab-content d-none" aria-hidden="true">
+                <div class="tab-pane fade show active" id="all"><div class="row g-4" id="tools-container"></div></div>
+            </div>
 
-    <!-- Disclaimer -->
-    <section class="py-5 bg-light">
-        <div class="container text-center">
-            <p class="text-muted">Tất cả công cụ chỉ mang tính tham khảo cá nhân. Không thay thế tư vấn chuyên môn.</p>
+            <div id="excel" class="mb-5">
+                <h2 class="section-heading text-center mb-4">Excel &amp; Power Query</h2>
+                <div class="row g-4 justify-content-center">
+                    <div class="col-12 col-md-6 col-lg-4">
+                        <article class="card tool-card h-100">
+                            <div class="card-body d-flex flex-column">
+                                <span class="badge bg-warning text-dark badge-cat align-self-start mb-3">Excel</span>
+                                <h3 class="card-title h5">Hàm Excel nâng cao cho Kế toán</h3>
+                                <p class="card-text">Tổng hợp INDEX+MATCH, XLOOKUP, Power Query tự động hóa báo cáo...</p>
+                                <div class="youtube-embed mb-3">
+                                    <iframe src="https://www.youtube.com/embed/VIDEO_ID" title="YouTube video" frameborder="0" allowfullscreen></iframe>
+                                </div>
+                                <a href="#" class="btn btn-secondary btn-sm mt-auto">Tải file mẫu.xlsx</a>
+                            </div>
+                        </article>
+                    </div>
+                    <div class="col-12 col-md-6 col-lg-4">
+                        <article class="card tool-card h-100">
+                            <div class="card-body d-flex flex-column">
+                                <span class="badge bg-danger badge-cat align-self-start mb-3">VBA</span>
+                                <h3 class="card-title h5">Macro tự động hóa hóa đơn VAT</h3>
+                                <p class="card-text">Script VBA xuất báo cáo, gửi email tự động...</p>
+                                <a href="assets/files/macro-vat.xlsm" class="btn btn-primary mt-auto">Tải file .xlsm</a>
+                            </div>
+                        </article>
+                    </div>
+                </div>
+            </div>
+
+            <div id="python" class="mb-5">
+                <h2 class="section-heading text-center mb-4">Python Scripts</h2>
+                <div class="row g-4 justify-content-center">
+                    <div class="col-12 col-md-6 col-lg-4">
+                        <article class="card tool-card h-100">
+                            <div class="card-body d-flex flex-column">
+                                <span class="badge bg-info text-dark badge-cat align-self-start mb-3">Python</span>
+                                <h3 class="card-title h5">Xử lý dữ liệu kế toán với Pandas</h3>
+                                <p class="card-text">Script đọc nhiều file Excel, tổng hợp, xuất báo cáo PDF...</p>
+                                <a href="assets/files/accounting_processor.py" class="btn btn-primary mt-auto">Xem code &amp; Tải</a>
+                            </div>
+                        </article>
+                    </div>
+                </div>
+            </div>
+
+            <div id="ai" class="mb-5">
+                <h2 class="section-heading text-center mb-4">AI Templates</h2>
+                <div class="row g-4 justify-content-center">
+                    <div class="col-12 col-md-6 col-lg-4">
+                        <article class="card tool-card h-100">
+                            <div class="card-body d-flex flex-column">
+                                <span class="badge bg-success badge-cat align-self-start mb-3">AI Prompt</span>
+                                <h3 class="card-title h5">Prompt Excel Automation</h3>
+                                <p class="card-text">Bộ template prompt ChatGPT/Claude giúp tự động tạo công thức, VBA...</p>
+                                <a href="#" class="btn btn-primary mt-auto">Xem template</a>
+                            </div>
+                        </article>
+                    </div>
+                </div>
+            </div>
+
+            <div id="resources">
+                <h2 class="section-heading text-center mb-4">Tài liệu tham khảo</h2>
+                <div class="resource-list">
+                    <ul class="list-group list-group-flush mb-0">
+                        <li class="list-group-item d-flex justify-content-between align-items-center gap-3 p-3 p-lg-4">
+                            <div>
+                                <strong>GitHub Repository - Excel Tools</strong><br>
+                                <small>Bộ sưu tập macro và Power Query hay nhất</small>
+                            </div>
+                            <a href="https://github.com/..." target="_blank" class="btn btn-secondary btn-sm flex-shrink-0">Truy cập →</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
         </div>
     </section>
 
-    <!-- FOOTER giống index.html -->
+    <section class="audience-section py-5">
+        <div class="container">
+            <div class="section-intro single-col-max mx-auto text-center">Tất cả công cụ chỉ mang tính tham khảo cá nhân. Không thay thế tư vấn chuyên môn.</div>
+        </div>
+    </section>
+
     <footer class="footer">
         <div class="footer-bottom text-center py-5">
             <small class="copyright">Designed with ❤️ by Xiaoying Riley — Customized for NotDore</small>
