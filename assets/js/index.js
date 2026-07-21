@@ -39,7 +39,7 @@ function detectDocType(code) {
   if (!code) return 'Khác';
 
   // Nghị quyết: code có chữ "Nghị quyết"
-  if (/Nghị quyết/i.test(code)) return 'Nghị quyết';
+  if (/Nghị quyết số:\d+/i.test(code)) return 'Nghị quyết';
 
   // Nghị định
   if (/\/NĐ-|\/ND-/i.test(code)) return 'Nghị định';
