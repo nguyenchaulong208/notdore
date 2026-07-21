@@ -36,7 +36,7 @@ function esc(str) {
  * Ví dụ: "163/2017/NĐ-CP" → "Nghị định", "13/2008/QH12" → "Luật"
  */
 function detectDocType(title, code) {
-  if (!title && !code) return 'Khác';
+
 
   const t = (title || '').toLowerCase().trim();
   const c = (code || '').toLowerCase().trim();
