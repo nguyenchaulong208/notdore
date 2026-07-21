@@ -41,13 +41,13 @@ function detectDocType(title, code) {
   const t = (title || '').toLowerCase().trim();
   const c = (code || '').toLowerCase().trim();
 
-  // 1. Nghị quyết - ưu tiên cao nhất vì bạn đã đưa vào title
+  // 1. Nghị quyết
   if (/nghị quyết/i.test(t) || /nghị quyết/i.test(c)) {
     return 'Nghị quyết';
   }
 
-  // 2. Luật
-  if (/luật/i.test(t) || /\/qh\d+/i.test(c)) {
+  // 2. Luật (ưu tiên cao vì rất phổ biến trong dữ liệu)
+  if (/^luật/i.test(t) || /luật/i.test(t) || /\/qh\d+/i.test(c)) {
     return 'Luật';
   }
 
@@ -71,8 +71,8 @@ function detectDocType(title, code) {
     return 'Công văn';
   }
 
-  // 7. Trường hợp đặc biệt khác
-  if (/quy định/i.test(t) && !/nghị định|luật|thông tư/i.test(t)) {
+  // 7. Quy định (trường hợp không nằm trong các loại trên)
+  if (/quy định/i.test(t)) {
     return 'Quy định';
   }
 
