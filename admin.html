@@ -732,6 +732,14 @@
         <li class="nav-item"><button type="button" class="nav-link" data-qtab="document_tags">document_tags</button></li>
         <li class="nav-item"><button type="button" class="nav-link" data-qtab="document_tag_map">document_tag_map</button></li>
         <li class="nav-item"><button type="button" class="nav-link" data-qtab="document_texts">document_texts</button></li>
+        <li class="nav-item align-self-center px-2 text-muted small">|</li>
+        <li class="nav-item"><button type="button" class="nav-link" data-qtab="merged_tools">Theo công cụ</button></li>
+        <li class="nav-item"><button type="button" class="nav-link" data-qtab="categories">categories</button></li>
+        <li class="nav-item"><button type="button" class="nav-link" data-qtab="tools">tools</button></li>
+        <li class="nav-item"><button type="button" class="nav-link" data-qtab="external_sources">external_sources</button></li>
+        <li class="nav-item"><button type="button" class="nav-link" data-qtab="tool_links">tool_links</button></li>
+        <li class="nav-item"><button type="button" class="nav-link" data-qtab="tags">tags</button></li>
+        <li class="nav-item"><button type="button" class="nav-link" data-qtab="tool_tags">tool_tags</button></li>
       </ul>
 
       <!-- Tab: gộp theo văn bản -->
@@ -781,6 +789,55 @@
       <div class="qtab-panel" data-qtab-panel="document_tags" id="qtab-document_tags" style="display:none"></div>
       <div class="qtab-panel" data-qtab-panel="document_tag_map" id="qtab-document_tag_map" style="display:none"></div>
       <div class="qtab-panel" data-qtab-panel="document_texts" id="qtab-document_texts" style="display:none"></div>
+
+      <!-- Tab: gộp theo công cụ (tools + categories + tool_links + external_sources + tags) -->
+      <div class="qtab-panel" data-qtab-panel="merged_tools" style="display:none">
+        <div class="form-card">
+          <div class="d-flex flex-wrap gap-2 justify-content-between align-items-center mb-2">
+            <h5 class="mb-0"><i class="bi bi-tools me-2"></i>Danh sách công cụ (gộp)</h5>
+            <div class="d-flex gap-2">
+              <input type="text" class="form-control form-control-sm" id="mt-search" placeholder="Tìm theo tên công cụ…" style="width:220px">
+              <button class="btn btn-sm btn-brand" id="btn-load-mt"><i class="bi bi-cloud-download me-1"></i>Tải dữ liệu</button>
+            </div>
+          </div>
+          <div id="mt-summary" class="small text-muted mb-2"></div>
+          <div style="overflow-x:auto; max-height:480px; overflow-y:auto">
+            <table class="preview-table" id="mt-table">
+              <thead>
+                <tr>
+                  <th>tool_id</th><th>Tên công cụ</th><th>Danh mục</th><th>Mô tả</th><th>Tags</th>
+                  <th>Nguồn</th><th>Loại nguồn</th><th>URL</th><th>Tên hiển thị</th><th></th>
+                </tr>
+              </thead>
+              <tbody id="mt-tbody"><tr><td colspan="10" class="text-center text-muted py-4">Chưa có dữ liệu — bấm "Tải dữ liệu"</td></tr></tbody>
+            </table>
+          </div>
+          <div class="form-text mb-2"><i class="bi bi-pencil me-1"></i>Sửa trực tiếp các ô (tags cách nhau bởi <code>;</code>, tag chưa có sẽ tự tạo). <i class="bi bi-link-45deg"></i> xoá liên kết này, <i class="bi bi-trash3"></i> xoá cả công cụ (mọi liên kết + tags).</div>
+          <div class="d-flex flex-wrap gap-2 mt-2">
+            <button class="btn btn-brand" id="btn-gen-mt-sql"><i class="bi bi-code-slash me-2"></i>Sinh SQL UPDATE (<span id="mt-dirty-count">0</span> thay đổi)</button>
+            <button class="btn btn-outline-danger" id="btn-apply-mt"><i class="bi bi-cloud-upload me-2"></i>Xem trước &amp; Ghi vào Supabase</button>
+          </div>
+        </div>
+        <div id="sql-output-mt" style="display:none">
+          <div class="sql-panel">
+            <div class="sql-toolbar">
+              <span><i class="bi bi-terminal me-2"></i>SQL UPDATE — công cụ đã sửa</span>
+              <div class="actions">
+                <button class="btn btn-sm btn-outline-secondary text-white border-secondary" id="btn-copy-mt"><i class="bi bi-clipboard me-1"></i>Copy</button>
+                <button class="btn btn-sm btn-outline-secondary text-white border-secondary" id="btn-download-mt"><i class="bi bi-download me-1"></i>Tải .sql</button>
+              </div>
+            </div>
+            <div class="sql-output" id="sql-code-mt"></div>
+          </div>
+        </div>
+      </div><!-- /qtab merged_tools -->
+
+      <div class="qtab-panel" data-qtab-panel="categories" id="qtab-categories" style="display:none"></div>
+      <div class="qtab-panel" data-qtab-panel="tools" id="qtab-tools" style="display:none"></div>
+      <div class="qtab-panel" data-qtab-panel="external_sources" id="qtab-external_sources" style="display:none"></div>
+      <div class="qtab-panel" data-qtab-panel="tool_links" id="qtab-tool_links" style="display:none"></div>
+      <div class="qtab-panel" data-qtab-panel="tags" id="qtab-tags" style="display:none"></div>
+      <div class="qtab-panel" data-qtab-panel="tool_tags" id="qtab-tool_tags" style="display:none"></div>
     </div><!-- /panel-query -->
 
     <!-- Modal: sửa chi tiết 1 văn bản (documents + document_files + document_texts + tags) -->

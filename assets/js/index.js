@@ -42,7 +42,8 @@ function detectDocType(code) {
   if (/\/QH\d+$/i.test(code))              return 'Luật';
   if (/\/QĐ-|\/QD-/i.test(code))          return 'Quyết định';
   if (/\/CT-/i.test(code))                 return 'Công văn';
-  if (/^\d+\/[A-ZÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚĂĐĨŨƠƯẠ-]+/i.test(code)) return 'Công văn';
+  if (/\/NQ-/i.test(code))                 return 'Nghị quyết';
+  if (/^\d+\/[A-ZÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚĂĐĨŨƠƯẠ-]+/i.test(code)) return 'Chưa nhận diện được loại văn bản';
   return 'Khác';
 }
 
