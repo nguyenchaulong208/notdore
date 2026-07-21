@@ -344,6 +344,12 @@
     Nhập công cụ
   </button>
 
+  <div class="nav-section">Database</div>
+  <button class="nav-item-link" data-panel="query">
+    <i class="bi bi-cloud-arrow-down"></i>
+    Query &amp; Sửa dữ liệu
+  </button>
+
   <div class="nav-section">Công cụ</div>
   <button class="nav-item-link" data-panel="schema">
     <i class="bi bi-diagram-3"></i>
@@ -689,6 +695,211 @@
       <div id="sql-output-tools" style="display:none"><div class="sql-panel"><div class="sql-toolbar"><span><i class="bi bi-terminal me-2"></i>SQL Script — catalog công cụ</span><div class="actions"><button class="btn btn-sm btn-outline-secondary text-white border-secondary" id="btn-copy-tools"><i class="bi bi-clipboard me-1"></i>Copy</button><button class="btn btn-sm btn-outline-secondary text-white border-secondary" id="btn-download-tools"><i class="bi bi-download me-1"></i>Tải .sql</button></div></div><div class="sql-output" id="sql-code-tools"></div></div></div>
     </div><!-- /panel-tools -->
 
+    <!-- ── Panel: Query & Sửa dữ liệu ──────────────────────── -->
+    <div id="panel-query" class="panel">
+      <div class="form-card" id="sb-connect-card">
+        <h5><i class="bi bi-plug me-2"></i>Kết nối Supabase</h5>
+        <div class="alert-info-custom mb-3">
+          <i class="bi bi-shield-exclamation me-1"></i>
+          Chỉ dùng <strong>anon key</strong> ở đây, <u>không</u> dùng <code>service_role</code> key trong file chạy trên trình duyệt.
+          Vì admin.html chạy phía client, hãy đảm bảo đã bật <strong>Row Level Security (RLS)</strong> với policy phù hợp
+          (VD: giới hạn ghi/xoá theo Supabase Auth, hoặc ít nhất không public policy insert/update/delete cho anon nếu file này
+          có thể bị truy cập ngoài ý muốn) cho các bảng <code>documents, document_files, document_texts, document_tags, document_tag_map</code>.
+        </div>
+        <div class="row g-3 align-items-end">
+          <div class="col-md-5">
+            <label class="form-label" for="sb-key-file">File key (.txt)</label>
+            <input type="file" class="form-control" id="sb-key-file" accept=".txt">
+            <div class="form-text">File 2 dòng: <code>SUPABASE_URL=...</code> và <code>SUPABASE_ANON_KEY=...</code></div>
+          </div>
+          <div class="col-md-3 d-flex gap-2">
+            <button type="button" class="btn btn-brand flex-fill" id="btn-sb-connect"><i class="bi bi-plug-fill me-1"></i>Kết nối</button>
+            <button type="button" class="btn btn-outline-secondary" id="btn-sb-disconnect" title="Ngắt kết nối / xoá key khỏi bộ nhớ"><i class="bi bi-x-lg"></i></button>
+          </div>
+          <div class="col-md-4">
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" id="sb-remember">
+              <label class="form-check-label small" for="sb-remember">Ghi nhớ trên trình duyệt này (localStorage)</label>
+            </div>
+          </div>
+        </div>
+        <div id="sb-status" class="mt-3 small text-muted">Chưa kết nối.</div>
+      </div>
+
+      <ul class="nav nav-pills mb-3" id="query-tabs">
+        <li class="nav-item"><button type="button" class="nav-link active" data-qtab="merged">Theo văn bản</button></li>
+        <li class="nav-item"><button type="button" class="nav-link" data-qtab="document_files">document_files</button></li>
+        <li class="nav-item"><button type="button" class="nav-link" data-qtab="document_tags">document_tags</button></li>
+        <li class="nav-item"><button type="button" class="nav-link" data-qtab="document_tag_map">document_tag_map</button></li>
+        <li class="nav-item"><button type="button" class="nav-link" data-qtab="document_texts">document_texts</button></li>
+      </ul>
+
+      <!-- Tab: gộp theo văn bản -->
+      <div class="qtab-panel" data-qtab-panel="merged">
+        <div class="form-card">
+          <div class="d-flex flex-wrap gap-2 justify-content-between align-items-center mb-2">
+            <h5 class="mb-0"><i class="bi bi-table me-2"></i>Danh sách văn bản (gộp)</h5>
+            <div class="d-flex gap-2">
+              <input type="text" class="form-control form-control-sm" id="merged-search" placeholder="Tìm theo tên/số hiệu…" style="width:220px">
+              <button class="btn btn-sm btn-brand" id="btn-load-merged"><i class="bi bi-cloud-download me-1"></i>Tải dữ liệu</button>
+            </div>
+          </div>
+          <div id="merged-summary" class="small text-muted mb-2"></div>
+          <div style="overflow-x:auto; max-height:480px; overflow-y:auto">
+            <table class="preview-table" id="merged-table">
+              <thead>
+                <tr>
+                  <th>ID</th><th>Số hiệu</th><th>Tên văn bản</th><th>Ngày ban hành</th><th>Ngày hết hiệu lực</th>
+                  <th>Trạng thái</th><th>Tags</th><th>File</th><th>Text</th><th></th>
+                </tr>
+              </thead>
+              <tbody id="merged-tbody"><tr><td colspan="10" class="text-center text-muted py-4">Chưa có dữ liệu — bấm "Tải dữ liệu"</td></tr></tbody>
+            </table>
+          </div>
+          <div class="form-text mb-2"><i class="bi bi-pencil me-1"></i>Sửa trực tiếp các ô, hoặc bấm <i class="bi bi-pencil-square"></i> để sửa mô tả/tags/file/nội dung. Bấm <i class="bi bi-trash"></i> để đánh dấu xoá cả văn bản.</div>
+          <div class="d-flex flex-wrap gap-2 mt-2">
+            <button class="btn btn-brand" id="btn-gen-merged-sql"><i class="bi bi-code-slash me-2"></i>Sinh SQL UPDATE (<span id="merged-dirty-count">0</span> thay đổi)</button>
+            <button class="btn btn-outline-danger" id="btn-apply-merged"><i class="bi bi-cloud-upload me-2"></i>Xem trước &amp; Ghi vào Supabase</button>
+          </div>
+        </div>
+        <div id="sql-output-merged" style="display:none">
+          <div class="sql-panel">
+            <div class="sql-toolbar">
+              <span><i class="bi bi-terminal me-2"></i>SQL UPDATE — văn bản đã sửa</span>
+              <div class="actions">
+                <button class="btn btn-sm btn-outline-secondary text-white border-secondary" id="btn-copy-merged"><i class="bi bi-clipboard me-1"></i>Copy</button>
+                <button class="btn btn-sm btn-outline-secondary text-white border-secondary" id="btn-download-merged"><i class="bi bi-download me-1"></i>Tải .sql</button>
+              </div>
+            </div>
+            <div class="sql-output" id="sql-code-merged"></div>
+          </div>
+        </div>
+      </div><!-- /qtab merged -->
+
+      <!-- Tab: các bảng raw (nội dung được JS sinh ra) -->
+      <div class="qtab-panel" data-qtab-panel="document_files" id="qtab-document_files" style="display:none"></div>
+      <div class="qtab-panel" data-qtab-panel="document_tags" id="qtab-document_tags" style="display:none"></div>
+      <div class="qtab-panel" data-qtab-panel="document_tag_map" id="qtab-document_tag_map" style="display:none"></div>
+      <div class="qtab-panel" data-qtab-panel="document_texts" id="qtab-document_texts" style="display:none"></div>
+    </div><!-- /panel-query -->
+
+    <!-- Modal: sửa chi tiết 1 văn bản (documents + document_files + document_texts + tags) -->
+    <div class="modal fade" id="doc-edit-modal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title"><i class="bi bi-pencil-square me-2"></i>Sửa chi tiết văn bản <span id="edit-doc-id-label" class="text-muted small"></span></h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+          </div>
+          <div class="modal-body">
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label">Tên văn bản</label>
+                <input class="form-control" id="edit-title">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Số hiệu</label>
+                <input class="form-control" id="edit-code">
+              </div>
+              <div class="col-12">
+                <label class="form-label">Mô tả</label>
+                <textarea class="form-control" id="edit-description" rows="2"></textarea>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Ngày ban hành</label>
+                <input type="date" class="form-control" id="edit-issued-date">
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Ngày hết hiệu lực</label>
+                <input type="date" class="form-control" id="edit-expiry-date">
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Trạng thái</label>
+                <select class="form-select" id="edit-status">
+                  <option value="hieu_luc">Còn hiệu lực</option>
+                  <option value="het_hieu_luc">Hết hiệu lực</option>
+                  <option value="chua_hieu_luc">Chưa có hiệu lực</option>
+                </select>
+              </div>
+              <div class="col-12">
+                <label class="form-label">Tags</label>
+                <div class="tag-grid" id="edit-tag-checkboxes"></div>
+              </div>
+            </div>
+            <hr>
+            <h6 class="text-muted text-uppercase small fw-bold">File đính kèm (document_files)</h6>
+            <div class="row g-3">
+              <div class="col-md-3">
+                <label class="form-label">Loại</label>
+                <select class="form-select" id="edit-drive-type">
+                  <option value="google">google</option>
+                  <option value="onedrive">onedrive</option>
+                </select>
+              </div>
+              <div class="col-md-5">
+                <label class="form-label">Drive File ID</label>
+                <input class="form-control font-monospace" id="edit-drive-file-id">
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">MIME</label>
+                <select class="form-select" id="edit-mime">
+                  <option value="application/pdf">PDF</option>
+                  <option value="application/vnd.openxmlformats-officedocument.wordprocessingml.document">DOCX</option>
+                  <option value="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">XLSX</option>
+                  <option value="application/msword">DOC</option>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Link xem online</label>
+                <input type="url" class="form-control" id="edit-view-url">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Link tải xuống</label>
+                <input type="url" class="form-control" id="edit-download-url">
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Size (bytes)</label>
+                <input type="number" class="form-control" id="edit-file-size">
+              </div>
+              <div class="col-md-8 d-flex align-items-end">
+                <button type="button" class="btn btn-sm btn-outline-danger" id="btn-edit-remove-file"><i class="bi bi-trash me-1"></i>Xoá file khỏi văn bản này</button>
+              </div>
+            </div>
+            <hr>
+            <h6 class="text-muted text-uppercase small fw-bold">Nội dung (document_texts)</h6>
+            <textarea class="form-control font-monospace" id="edit-content" rows="4" placeholder="Để trống nếu không có nội dung"></textarea>
+          </div>
+          <div class="modal-footer d-flex justify-content-between">
+            <button type="button" class="btn btn-outline-danger" id="btn-edit-delete-doc"><i class="bi bi-trash3 me-1"></i>Xoá cả văn bản</button>
+            <div>
+              <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Huỷ</button>
+              <button type="button" class="btn btn-brand" id="btn-edit-save">Lưu thay đổi (tạm)</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal: xem trước SQL trước khi ghi thẳng vào Supabase -->
+    <div class="modal fade" id="apply-preview-modal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title"><i class="bi bi-cloud-upload me-2"></i>Xem trước trước khi ghi vào Supabase</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+          </div>
+          <div class="modal-body">
+            <div class="alert-info-custom mb-3" id="apply-preview-summary"></div>
+            <div class="sql-panel"><div class="sql-output" id="apply-preview-sql" style="max-height:400px"></div></div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Huỷ</button>
+            <button type="button" class="btn btn-danger" id="btn-apply-confirm"><i class="bi bi-check2-circle me-1"></i>Xác nhận ghi vào Supabase</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- ── Panel 3: Schema ───────────────────────────────────── -->
     <div id="panel-schema" class="panel">
       <div class="form-card">
@@ -808,6 +1019,8 @@ lib/
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="assets/js/admin.js" defer></script>
+<script src="assets/js/admin-query.js" defer></script>
 </body>
 </html>
