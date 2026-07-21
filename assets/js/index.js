@@ -39,19 +39,17 @@ function detectDocType(code, title = '') {
   if (!code) return 'Khác';
 
   // Trường hợp code bị trộn title
-  if (/Nghị quyết/i.test(code)) return 'Nghị quyết';
-  if (/QH/i.test(code)) return 'Luật';
+  if (/\/QH\d+$/i.test(code)) {
+    if (/Nghị quyết/i.test(title)) return 'Nghị quyết';
+    return 'Luật';  
+  }
   if (/\/NĐ-|\/ND-/i.test(code)) return 'Nghị định';
   if (/\/TT-|\/TT$/i.test(code)) return 'Thông tư';
   if (/\/QĐ-|\/QD-/i.test(code)) return 'Quyết định';
   if (/\/CT-/i.test(code)) return 'Công văn';
 
   // Văn bản của Quốc hội
-  if (/\/QH\d+$/i.test(code)) {
-    if (/Nghị quyết/i.test(title)) return 'Nghị quyết';
-    if (/Luật/i.test(title)) return 'Luật';
-    return 'Chưa nhận diện được loại văn bản';
-  }
+  
 
   return 'Khác';
 }
