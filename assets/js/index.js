@@ -40,7 +40,7 @@ function detectDocType(code, title = '') {
 
   // Trường hợp code bị trộn title
   if (/Nghị quyết/i.test(code)) return 'Nghị quyết';
-  if (/Luật/i.test(title)) return 'Luật';
+  if (/QH/i.test(code)) return 'Luật';
   if (/\/NĐ-|\/ND-/i.test(code)) return 'Nghị định';
   if (/\/TT-|\/TT$/i.test(code)) return 'Thông tư';
   if (/\/QĐ-|\/QD-/i.test(code)) return 'Quyết định';
