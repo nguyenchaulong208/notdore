@@ -38,42 +38,46 @@ function esc(str) {
 function detectDocType(title, code) {
   if (!title && !code) return 'Khác';
 
-  const titleStr = (title || '').toLowerCase();
-  const codeStr = (code || '').toLowerCase();
+  const t = (title || '').toLowerCase().trim();
+  const c = (code || '').toLowerCase().trim();
 
-  // 1. Nghị quyết (ưu tiên kiểm tra title trước)
-  if (/nghị quyết/i.test(titleStr) || /nghị quyết/i.test(codeStr)) {
+  // 1. Nghị quyết - ưu tiên cao nhất vì bạn đã đưa vào title
+  if (/nghị quyết/i.test(t) || /nghị quyết/i.test(c)) {
     return 'Nghị quyết';
   }
 
-  // 2. Nghị định
-  if (/\/nđ-|\/nd-/i.test(codeStr)) {
+  // 2. Luật
+  if (/luật/i.test(t) || /\/qh\d+/i.test(c)) {
+    return 'Luật';
+  }
+
+  // 3. Nghị định
+  if (/\/nđ-|\/nd-/i.test(c)) {
     return 'Nghị định';
   }
 
-  // 3. Thông tư
-  if (/\/tt-|\/tt$/i.test(codeStr)) {
+  // 4. Thông tư
+  if (/\/tt-/i.test(c) || /\/tt$/i.test(c)) {
     return 'Thông tư';
   }
 
-  // 4. Quyết định
-  if (/\/qđ-|\/qd-/i.test(codeStr)) {
+  // 5. Quyết định
+  if (/\/qđ-|\/qd-/i.test(c)) {
     return 'Quyết định';
   }
 
-  // 5. Công văn
-  if (/\/ct-/i.test(codeStr)) {
+  // 6. Công văn
+  if (/\/ct-/i.test(c)) {
     return 'Công văn';
   }
 
-  // 6. Luật (mã QHxx)
-  if (/\/qh\d+/i.test(codeStr) && !/nghị quyết/i.test(titleStr)) {
-    return 'Luật';
+  // 7. Trường hợp đặc biệt khác
+  if (/quy định/i.test(t) && !/nghị định|luật|thông tư/i.test(t)) {
+    return 'Quy định';
   }
 
   return 'Khác';
 }
-
 
 
 /**
