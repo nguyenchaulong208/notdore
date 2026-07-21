@@ -41,7 +41,7 @@ function detectDocType(code) {
   if (/\/TT-|\/TT$/i.test(code))           return 'Thông tư';
   if (/\/QH\d+$/i.test(code))              return 'Luật';
   if (/\/QĐ-|\/QD-/i.test(code))          return 'Quyết định';
-  if (/\/CT-/i.test(code))                 return 'Chỉ thị';
+  if (/\/CT-/i.test(code))                 return 'Công văn';
   if (/^\d+\/[A-ZÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚĂĐĨŨƠƯẠ-]+/i.test(code)) return 'Công văn';
   return 'Khác';
 }

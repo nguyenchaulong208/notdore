@@ -221,6 +221,7 @@ const PANEL_TITLES = {
   schema:   'Sơ đồ Database',
   template: 'Excel Template',
   tools:    'Nhập công cụ (nhiều dòng)',
+  query:    'Query & Sửa dữ liệu (Supabase)',
 };
 
 function switchPanel(panelId) {
