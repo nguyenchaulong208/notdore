@@ -39,10 +39,11 @@ function detectDocType(code) {
   if (!code) return 'Khác';
   if (/\/NĐ-|\/ND-/i.test(code))          return 'Nghị định';
   if (/\/TT-|\/TT$/i.test(code))           return 'Thông tư';
+  if (/\/Nghị quyết/i.test(code))                 return 'Nghị quyết';
   if (/\/QH\d+$/i.test(code))              return 'Luật';
   if (/\/QĐ-|\/QD-/i.test(code))          return 'Quyết định';
   if (/\/CT-/i.test(code))                 return 'Công văn';
-  if (/^\d+\/[A-ZÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚĂĐĨŨƠƯẠ-]+/i.test(code)) return 'Công văn';
+  if (/^\d+\/[A-ZÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚĂĐĨŨƠƯẠ-]+/i.test(code)) return 'Chưa nhận diện được loại văn bản';
   return 'Khác';
 }
 
