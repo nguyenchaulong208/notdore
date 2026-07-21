@@ -35,7 +35,7 @@ function esc(str) {
  * Phát hiện loại văn bản từ số hiệu.
  * Ví dụ: "163/2017/NĐ-CP" → "Nghị định", "13/2008/QH12" → "Luật"
  */
-function detectDocType(code, title = '') {
+function detectDocType(code, title) {
   if (!code) return 'Khác';
 
   // Trường hợp code bị trộn title
