@@ -35,29 +35,44 @@ function esc(str) {
  * Phát hiện loại văn bản từ số hiệu.
  * Ví dụ: "163/2017/NĐ-CP" → "Nghị định", "13/2008/QH12" → "Luật"
  */
-function detectDocType(code) {
-  if (!code) return 'Khác';
+function detectDocType(title, code) {
+  if (!title && !code) return 'Khác';
 
-  // Nghị quyết: code có chữ "Nghị quyết"
-  if (/Nghị quyết số:\d+/i.test(code)) return 'Nghị quyết';
-  // Nghị định
-  if (/\/NĐ-|\/ND-/i.test(code)) return 'Nghị định';
+  const titleStr = (title || '').toLowerCase();
+  const codeStr = (code || '').toLowerCase();
 
-  // Thông tư
-  if (/\/TT-|\/TT$/i.test(code)) return 'Thông tư';
+  // 1. Nghị quyết (ưu tiên kiểm tra title trước)
+  if (/nghị quyết/i.test(titleStr) || /nghị quyết/i.test(codeStr)) {
+    return 'Nghị quyết';
+  }
 
-  // Quyết định
-  if (/\/QĐ-|\/QD-/i.test(code)) return 'Quyết định';
+  // 2. Nghị định
+  if (/\/nđ-|\/nd-/i.test(codeStr)) {
+    return 'Nghị định';
+  }
 
-  // Công văn
-  if (/\/CT-/i.test(code)) return 'Công văn';
+  // 3. Thông tư
+  if (/\/tt-|\/tt$/i.test(codeStr)) {
+    return 'Thông tư';
+  }
 
-  // Luật: văn bản của Quốc hội, không có chữ "Nghị quyết" trong code
-  if (/\/QH\d+$/i.test(code)) return 'Luật';
+  // 4. Quyết định
+  if (/\/qđ-|\/qd-/i.test(codeStr)) {
+    return 'Quyết định';
+  }
+
+  // 5. Công văn
+  if (/\/ct-/i.test(codeStr)) {
+    return 'Công văn';
+  }
+
+  // 6. Luật (mã QHxx)
+  if (/\/qh\d+/i.test(codeStr) && !/nghị quyết/i.test(titleStr)) {
+    return 'Luật';
+  }
 
   return 'Khác';
 }
-
 
 
 
