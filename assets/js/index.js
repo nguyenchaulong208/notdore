@@ -35,49 +35,19 @@ function esc(str) {
  * Phát hiện loại văn bản từ số hiệu.
  * Ví dụ: "163/2017/NĐ-CP" → "Nghị định", "13/2008/QH12" → "Luật"
  */
-function detectDocType(title, code) {
 
-
-  const t = (title || '').toLowerCase().trim();
-  const c = (code || '').toLowerCase().trim();
-
-  // 1. Nghị quyết
-  if (/nghị quyết/i.test(t) || /nghị quyết/i.test(c)) {
-    return 'Nghị quyết';
-  }
-
-  // 2. Luật (ưu tiên cao vì rất phổ biến trong dữ liệu)
-  if (/^luật/i.test(t) || /luật/i.test(t) || /\/qh\d+/i.test(c)) {
-    return 'Luật';
-  }
-
-  // 3. Nghị định
-  if (/\/nđ-|\/nd-/i.test(c)) {
-    return 'Nghị định';
-  }
-
-  // 4. Thông tư
-  if (/\/tt-/i.test(c) || /\/tt$/i.test(c)) {
-    return 'Thông tư';
-  }
-
-  // 5. Quyết định
-  if (/\/qđ-|\/qd-/i.test(c)) {
-    return 'Quyết định';
-  }
-
-  // 6. Công văn
-  if (/\/ct-/i.test(c)) {
-    return 'Công văn';
-  }
-
-  // 7. Quy định (trường hợp không nằm trong các loại trên)
-  if (/quy định/i.test(t)) {
-    return 'Quy định';
-  }
-
+function detectDocType(code) {
+  if (!code) return 'Khác';
+  if (/\/NĐ-|\/ND-/i.test(code))          return 'Nghị định';
+  if (/\/TT-|\/TT$/i.test(code))           return 'Thông tư';
+  if (/Nghị quyết/i.test(code))                 return 'Nghị quyết';
+  if (/\/QH\d+$/i.test(code))              return 'Luật';
+  if (/\/QĐ-|\/QD-/i.test(code))          return 'Quyết định';
+  if (/\/CT-/i.test(code))                 return 'Công văn';
+  if (/^\d+\/[A-ZÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚĂĐĨŨƠƯẠ-]+/i.test(code)) return 'Chưa nhận diện được loại văn bản';
   return 'Khác';
 }
+
 
 
 /**
