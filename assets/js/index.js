@@ -36,9 +36,9 @@ function esc(str) {
  * Ví dụ: "163/2017/NĐ-CP" → "Nghị định", "13/2008/QH12" → "Luật"
  */
 function detectDocType(code, title = '') {
-  if (!code) return 'Chưa nhận diện được loại văn bản';
+  if (!code) return 'Khác';
 
-  // Trường hợp code chứa cả tên văn bản
+  // Trường hợp code bị trộn title
   if (/Nghị quyết/i.test(code)) return 'Nghị quyết';
 
   if (/\/NĐ-|\/ND-/i.test(code)) return 'Nghị định';
@@ -53,8 +53,9 @@ function detectDocType(code, title = '') {
     return 'Chưa nhận diện được loại văn bản';
   }
 
-  return 'Chưa nhận diện được loại văn bản';
+  return 'Khác';
 }
+
 
 
 /**
