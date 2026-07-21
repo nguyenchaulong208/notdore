@@ -40,7 +40,6 @@ function detectDocType(code) {
 
   // Nghị quyết: code có chữ "Nghị quyết"
   if (/Nghị quyết số:\d+/i.test(code)) return 'Nghị quyết';
-
   // Nghị định
   if (/\/NĐ-|\/ND-/i.test(code)) return 'Nghị định';
 
