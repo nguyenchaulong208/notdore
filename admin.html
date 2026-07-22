@@ -1077,7 +1077,16 @@ lib/
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="assets/js/admin.js" defer></script>
+<!-- Thứ tự load bên dưới BẮT BUỘC giữ nguyên vì các file phụ thuộc lẫn nhau
+     (biến/hàm dùng chung ở global scope, không dùng ES modules). -->
+<script src="assets/js/admin-constants.js" defer></script>
+<script src="assets/js/admin-sql-utils.js" defer></script>
+<script src="assets/js/admin-ui-utils.js" defer></script>
+<script src="assets/js/admin-parsers.js" defer></script>
+<script src="assets/js/admin-excel.js" defer></script>
+<script src="assets/js/admin-doc-entry.js" defer></script>
+<script src="assets/js/admin-tool-entry.js" defer></script>
+<script src="assets/js/admin-init.js" defer></script>
 <script src="assets/js/admin-query.js" defer></script>
 </body>
 </html>
