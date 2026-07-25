@@ -7,18 +7,25 @@
 const pageNavLinks = document.querySelectorAll('.scrollto');
 
 pageNavLinks.forEach((pageNavLink) => {
-	
-	pageNavLink.addEventListener('click', (e) => {
-		
-		e.preventDefault();
-		
-		var target = pageNavLink.getAttribute("href").replace('#', '');
-		
-		//console.log(target);
-		
-        document.getElementById(target).scrollIntoView({ behavior: 'smooth' });
 
-		
-    });
-	
+	pageNavLink.addEventListener('click', (e) => {
+
+		const href = pageNavLink.getAttribute('href');
+
+		// Chỉ xử lý smooth-scroll khi href là anchor trong cùng trang (#...)
+		if (!href || !href.startsWith('#')) {
+			return; // để trình duyệt điều hướng bình thường (chuyển trang)
+		}
+
+		e.preventDefault();
+
+		const target = href.replace('#', '');
+		const targetEl = document.getElementById(target);
+
+		if (targetEl) {
+			targetEl.scrollIntoView({ behavior: 'smooth' });
+		}
+
+	});
+
 });

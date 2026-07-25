@@ -4,7 +4,7 @@
  * documents + document_files + document_texts + document_tag_map, sửa
  * trực tiếp / qua modal chi tiết, sinh SQL UPDATE hoặc ghi thẳng Supabase.
  * Cần: admin-query-core.js (requireClient, openApplyPreview, pendingApply),
- *      admin-constants.js (TAGS, STATUS_LABEL), admin-sql-utils.js,
+ *      admin-constants.js (TAGS, STATUS_LABEL, LOAI_VAN_BAN), admin-sql-utils.js,
  *      admin-ui-utils.js, admin-parsers.js (parseDriveFileId).
  */
 
@@ -27,6 +27,7 @@ function docStateFromApi(d) {
     issued_date: d.issued_date || '',
     expiry_date: d.expiry_date || '',
     status: d.status || 'hieu_luc',
+    loai_van_ban: d.loai_van_ban || '',
     tagNames,
     file: file ? {
       id: file.id,
@@ -45,12 +46,12 @@ function docStateFromApi(d) {
 async function loadMergedData() {
   if (!requireClient()) return;
   const tbody = document.getElementById('merged-tbody');
-  tbody.innerHTML = `<tr><td colspan="10" class="text-center text-muted py-4">Đang tải…</td></tr>`;
+  tbody.innerHTML = `<tr><td colspan="11" class="text-center text-muted py-4">Đang tải…</td></tr>`;
 
   const { data, error } = await sbClient
     .from('documents')
     .select(`
-      id, title, code, description, issued_date, expiry_date, status,
+      id, title, code, description, issued_date, expiry_date, status, loai_van_ban,
       document_files(id, drive_type, drive_file_id, drive_view_url, drive_download_url, mime_type, size),
       document_texts(id, content),
       document_tag_map(document_tags(id, name, label))
@@ -59,7 +60,7 @@ async function loadMergedData() {
 
   if (error) {
     console.error(error);
-    tbody.innerHTML = `<tr><td colspan="10" class="text-center text-danger py-4">Lỗi: ${escHtml(error.message)}</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="11" class="text-center text-danger py-4">Lỗi: ${escHtml(error.message)}</td></tr>`;
     showToast('⚠ Lỗi khi tải dữ liệu — kiểm tra RLS/policy cho anon key');
     return;
   }
@@ -84,7 +85,7 @@ function renderMergedTable() {
   const rows = mergedRows.filter(r => !q || r.title.toLowerCase().includes(q) || r.code.toLowerCase().includes(q));
 
   if (!rows.length) {
-    tbody.innerHTML = `<tr><td colspan="10" class="text-center text-muted py-4">${mergedRows.length ? 'Không có dòng phù hợp' : 'Chưa có dữ liệu — bấm "Tải dữ liệu"'}</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="11" class="text-center text-muted py-4">${mergedRows.length ? 'Không có dòng phù hợp' : 'Chưa có dữ liệu — bấm "Tải dữ liệu"'}</td></tr>`;
     updateMergedDirtyCount();
     return;
   }
@@ -106,6 +107,12 @@ function renderMergedTable() {
       <td>
         <select class="form-select form-select-sm" data-field="status" ${r._deleted ? 'disabled' : ''}>
           ${Object.entries(STATUS_LABEL).map(([v, l]) => `<option value="${v}" ${r.status === v ? 'selected' : ''}>${l}</option>`).join('')}
+        </select>
+      </td>
+      <td>
+        <select class="form-select form-select-sm" data-field="loai_van_ban" ${r._deleted ? 'disabled' : ''}>
+          <option value="" ${!r.loai_van_ban ? 'selected' : ''}>—</option>
+          ${LOAI_VAN_BAN.map(v => `<option value="${v}" ${r.loai_van_ban === v ? 'selected' : ''}>${v}</option>`).join('')}
         </select>
       </td>
       <td>${tagBadges}</td>
@@ -166,6 +173,7 @@ function openDocEditModal(id) {
   document.getElementById('edit-issued-date').value = row.issued_date;
   document.getElementById('edit-expiry-date').value = row.expiry_date;
   document.getElementById('edit-status').value = row.status;
+  document.getElementById('edit-loai-van-ban').value = row.loai_van_ban || '';
 
   const tagWrap = document.getElementById('edit-tag-checkboxes');
   tagWrap.innerHTML = TAGS.map(t => `
@@ -188,6 +196,12 @@ function openDocEditModal(id) {
 }
 
 function initDocEditModal() {
+  const editLoaiVanBanSelect = document.getElementById('edit-loai-van-ban');
+  if (editLoaiVanBanSelect) {
+    editLoaiVanBanSelect.innerHTML = '<option value="">— Chọn loại văn bản —</option>' +
+      LOAI_VAN_BAN.map(v => `<option value="${escHtml(v)}">${escHtml(v)}</option>`).join('');
+  }
+
   document.getElementById('btn-edit-remove-file').addEventListener('click', () => {
     ['edit-drive-file-id', 'edit-view-url', 'edit-download-url', 'edit-file-size'].forEach(id => {
       document.getElementById(id).value = '';
@@ -205,6 +219,7 @@ function initDocEditModal() {
     row.issued_date = document.getElementById('edit-issued-date').value;
     row.expiry_date = document.getElementById('edit-expiry-date').value;
     row.status = document.getElementById('edit-status').value;
+    row.loai_van_ban = document.getElementById('edit-loai-van-ban').value;
     row.tagNames = [...document.querySelectorAll('#edit-tag-checkboxes input:checked')].map(cb => cb.value);
 
     const driveFileId = document.getElementById('edit-drive-file-id').value.trim();
@@ -290,7 +305,7 @@ function buildMergedUpdateSql(changes) {
     const { row, orig } = ch;
     parts.push(`-- Cập nhật văn bản #${row.id}: ${row.title}`);
 
-    const docFieldsChanged = ['title', 'code', 'description', 'issued_date', 'expiry_date', 'status']
+    const docFieldsChanged = ['title', 'code', 'description', 'issued_date', 'expiry_date', 'status', 'loai_van_ban']
       .filter(f => (row[f] || '') !== (orig[f] || ''));
     if (docFieldsChanged.length) {
       const setClauses = docFieldsChanged.map(f => {
@@ -358,7 +373,7 @@ async function applyMergedChanges(changes) {
 
       const { row, orig } = ch;
 
-      const docFieldsChanged = ['title', 'code', 'description', 'issued_date', 'expiry_date', 'status']
+      const docFieldsChanged = ['title', 'code', 'description', 'issued_date', 'expiry_date', 'status', 'loai_van_ban']
         .filter(f => (row[f] || '') !== (orig[f] || ''));
       if (docFieldsChanged.length) {
         const payload = {};

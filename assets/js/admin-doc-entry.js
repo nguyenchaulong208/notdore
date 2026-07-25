@@ -19,14 +19,15 @@ function generateSqlForDoc(doc, tagNames) {
 
   lines.push(`WITH ins_doc AS (`);
   lines.push(`  INSERT INTO documents`);
-  lines.push(`    (title, code, description, issued_date, expiry_date, status)`);
+  lines.push(`    (title, code, description, issued_date, expiry_date, status, loai_van_ban)`);
   lines.push(`  VALUES (`);
   lines.push(`    ${escSql(doc.title)},`);
   lines.push(`    ${doc.code ? escSql(doc.code) : 'NULL'},`);
   lines.push(`    ${doc.description ? escSql(doc.description) : 'NULL'},`);
   lines.push(`    ${dateOrNull(doc.issued_date)},`);
   lines.push(`    ${dateOrNull(doc.expiry_date)},`);
-  lines.push(`    ${escSql(doc.status || 'hieu_luc')}`);
+  lines.push(`    ${escSql(doc.status || 'hieu_luc')},`);
+  lines.push(`    ${doc.loai_van_ban ? escSql(doc.loai_van_ban) : 'NULL'}`);
   lines.push(`  )`);
   lines.push(`  RETURNING id`);
   lines.push(`)`);
@@ -92,6 +93,7 @@ function readFormDoc() {
     issued_date:        document.getElementById('f-issued-date').value,
     expiry_date:        document.getElementById('f-expiry-date').value,
     status:             document.getElementById('f-status').value,
+    loai_van_ban:       document.getElementById('f-loai-van-ban').value,
     tagKeys,
     drive_type:         document.getElementById('f-drive-type').value,
     drive_file_id:      driveFileId,

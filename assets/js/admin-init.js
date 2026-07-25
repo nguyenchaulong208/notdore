@@ -22,6 +22,14 @@ function initAdmin() {
     tagContainer.appendChild(div);
   });
 
+  // "Loại văn bản" (danh mục/nhãn ghi vào documents.loai_van_ban) — đổ option
+  // động từ LOAI_VAN_BAN, tương tự cách tag-checkboxes được dựng ở trên.
+  const loaiVanBanSelect = document.getElementById('f-loai-van-ban');
+  if (loaiVanBanSelect) {
+    loaiVanBanSelect.innerHTML = '<option value="">— Chọn loại văn bản —</option>' +
+      LOAI_VAN_BAN.map(v => `<option value="${escHtml(v)}">${escHtml(v)}</option>`).join('');
+  }
+
   ['f-view-url', 'f-download-url'].forEach(id => {
     document.getElementById(id).addEventListener('blur', autoFillDriveFileId);
   });
