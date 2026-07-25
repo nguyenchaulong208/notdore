@@ -20,6 +20,21 @@ const STATUS_LABEL = {
   chua_hieu_luc: 'Chưa có hiệu lực',
 };
 
+// Danh mục/nhãn "Loại văn bản" — lưu trực tiếp vào cột documents.loai_van_ban.
+// Giá trị = nhãn hiển thị (không dùng slug) để đồng bộ với logic phân loại
+// (detectDocType) đang dùng ở phía trang chủ/category.
+const LOAI_VAN_BAN = [
+  'Luật',
+  'Nghị quyết',
+  'Nghị định',
+  'Thông tư',
+  'Thông tư liên tịch',
+  'Quyết định',
+  'Chỉ thị',
+  'Công văn',
+  'Khác',
+];
+
 const MIME_SHORT = {
   pdf:  'application/pdf',
   docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
@@ -30,7 +45,7 @@ const MIME_SHORT = {
 // Mỗi phần tử ứng với đúng 1 cột trong file Excel import/template.
 // Thứ tự này quyết định thứ tự cột khi sinh file template.
 const TEMPLATE_COLUMNS = [
-  'title', 'code', 'description', 'issued_date', 'expiry_date', 'status', 'tags',
+  'title', 'code', 'description', 'issued_date', 'expiry_date', 'status', 'loai_van_ban', 'tags',
   'drive_type', 'drive_file_id', 'drive_view_url', 'drive_download_url',
   'mime_type', 'file_size', 'content',
 ];

@@ -32,6 +32,7 @@ function normalizeRow(row) {
     issued_date:        String(row.issued_date ?? '').trim(),
     expiry_date:        String(row.expiry_date ?? '').trim(),
     status:             String(row.status ?? '').trim() || 'hieu_luc',
+    loai_van_ban:       String(row.loai_van_ban ?? '').trim(),
     tagKeys,
     drive_type:         normalizeDriveType(row.drive_type),
     drive_file_id:      resolveDriveFileId(row.drive_file_id, viewUrl, downloadUrl),
@@ -81,6 +82,7 @@ function renderPreview(rows, tbodyId, onRemove) {
       <td>${r.issued_date || '—'}</td>
       <td>${r.expiry_date || '—'}</td>
       <td><span class="status-badge ${statusCls}">${STATUS_LABEL[r.status] || r.status}</span></td>
+      <td>${r.loai_van_ban || '—'}</td>
       <td>${tagBadges || '—'}</td>
       <td class="text-center">${fileInfo}</td>
       <td class="text-center">${textInfo}</td>
@@ -107,6 +109,7 @@ function buildTemplateWorkbook(withSample) {
       issued_date: '2017-12-19',
       expiry_date: '',
       status: 'hieu_luc',
+      loai_van_ban: 'Nghị định',
       tags: 'vat',
       drive_type: 'google',
       drive_file_id: '1abcExampleFileId',
@@ -123,6 +126,7 @@ function buildTemplateWorkbook(withSample) {
       issued_date: '2017-04-06',
       expiry_date: '',
       status: 'hieu_luc',
+      loai_van_ban: 'Thông tư',
       tags: 'vat;ke-toan',
       drive_type: '', drive_file_id: '', drive_view_url: '', drive_download_url: '',
       mime_type: 'pdf', file_size: '', content: '',
