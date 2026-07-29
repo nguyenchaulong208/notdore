@@ -6,7 +6,7 @@
  * Response:
  *   { docs: Doc[], total: number }
  *
- * Mỗi Doc: { id, code, title, description, issued_date, expiry_date, status, created_at, file }
+ * Mỗi Doc: { id, code, title, description, issued_date, expiry_date, status, loai_van_ban, created_at, file }
  * file:    { drive_view_url, drive_download_url, mime_type } | null
  */
 import { supabase } from '../lib/supabase.js';
@@ -19,7 +19,7 @@ export default async function handler(req, res) {
     const [docsResult, filesResult] = await Promise.all([
       supabase
         .from('documents')
-        .select('id, code, title, description, issued_date, expiry_date, status, created_at')
+        .select('id, code, title, description, issued_date, expiry_date, status, loai_van_ban, created_at')
         .order('created_at', { ascending: false }),
       supabase
         .from('document_files')
@@ -35,15 +35,16 @@ export default async function handler(req, res) {
     );
 
     const docs = (docsResult.data || []).map(d => ({
-      id:          d.id,
-      code:        d.code,
-      title:       d.title,
-      description: d.description,
-      issued_date: d.issued_date,
-      expiry_date: d.expiry_date,
-      status:      d.status,
-      created_at:  d.created_at,
-      file:        fileByDocId[d.id] ?? null,
+      id:           d.id,
+      code:         d.code,
+      title:        d.title,
+      description:  d.description,
+      issued_date:  d.issued_date,
+      expiry_date:  d.expiry_date,
+      status:       d.status,
+      loai_van_ban: d.loai_van_ban,
+      created_at:   d.created_at,
+      file:         fileByDocId[d.id] ?? null,
     }));
 
     res.json({ docs, total: docs.length });

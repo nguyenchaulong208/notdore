@@ -6,10 +6,15 @@
  *
  * Luồng:
  *  1. Fetch toàn bộ văn bản từ /api/documents.
- *  2. Sidebar "Văn bản mới nhất": lọc theo issued_date trong vòng 30 ngày
+ *  2. Sắp xếp toàn bộ văn bản theo issued_date (Ngày ban hành) giảm dần —
+ *     văn bản mới nhất luôn hiển thị trước, áp dụng cho cả sidebar lẫn grid.
+ *  3. Sidebar "Văn bản mới nhất": lọc theo issued_date trong vòng 30 ngày
  *     gần đây so với thời điểm hiện tại (không dùng created_at).
- *  3. Grid "VĂN BẢN": hiển thị toàn bộ văn bản với filter (loại, năm,
+ *  4. Grid "VĂN BẢN": hiển thị toàn bộ văn bản với filter (loại, năm,
  *     trạng thái, tìm kiếm) + phân trang "Xem thêm".
+ *
+ * LƯU Ý: "Loại văn bản" LẤY THẲNG từ cột documents.loai_van_ban (do admin
+ * tool ghi vào khi nhập/sửa) — KHÔNG còn tự suy đoán từ số hiệu (code) nữa.
  */
 
 // ── Cấu hình ──────────────────────────────────────────────────────────────────
@@ -30,25 +35,6 @@ function esc(str) {
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;');
 }
-
-/**
- * Phát hiện loại văn bản từ số hiệu.
- * Ví dụ: "163/2017/NĐ-CP" → "Nghị định", "13/2008/QH12" → "Luật"
- */
-
-function detectDocType(code) {
-  if (!code) return 'Khác';
-  if (/\/NĐ-|\/ND-/i.test(code))          return 'Nghị định';
-  if (/\/TT-|\/TT$/i.test(code))           return 'Thông tư';
-  if (/Nghị quyết/i.test(code))                 return 'Nghị quyết';
-  if (/\/QH\d+$/i.test(code))              return 'Luật';
-  if (/\/QĐ-|\/QD-/i.test(code))          return 'Quyết định';
-  if (/\/CT-/i.test(code))                 return 'Công văn';
-  if (/^\d+\/[A-ZÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚĂĐĨŨƠƯẠ-]+/i.test(code)) return 'Chưa nhận diện được loại văn bản';
-  return 'Khác';
-}
-
-
 
 /**
  * Lấy năm ban hành: ưu tiên issued_date, rồi created_at, fallback từ số hiệu.
@@ -75,6 +61,21 @@ function isRecentByIssuedDate(issued_date) {
   return issued >= cutoff && issued <= Date.now();
 }
 
+/**
+ * So sánh 2 văn bản theo issued_date giảm dần (mới nhất trước).
+ * Văn bản không có issued_date bị đẩy xuống cuối danh sách.
+ */
+function compareByIssuedDateDesc(a, b) {
+  const aTime = a.issued_date ? new Date(a.issued_date).getTime() : NaN;
+  const bTime = b.issued_date ? new Date(b.issued_date).getTime() : NaN;
+  const aValid = !Number.isNaN(aTime);
+  const bValid = !Number.isNaN(bTime);
+  if (aValid && bValid) return bTime - aTime;
+  if (aValid) return -1;   // a có ngày, b không → a lên trước
+  if (bValid) return 1;    // b có ngày, a không → b lên trước
+  return 0;                 // cả 2 đều không có ngày → giữ nguyên thứ tự
+}
+
 // ── Sidebar "Văn bản mới nhất" ──────────────────────────────────────────────
 
 /**
@@ -87,9 +88,9 @@ function isRecentByIssuedDate(issued_date) {
 function renderSidebar(allDocs) {
   const container = document.getElementById('sidebar-content');
 
-  const recent = allDocs
-    .filter(d => isRecentByIssuedDate(d.issued_date))
-    .sort((a, b) => new Date(b.issued_date) - new Date(a.issued_date));
+  // allDocs đã được sort theo issued_date giảm dần từ trước (xem init), nên
+  // chỉ cần filter, không cần sort lại ở đây.
+  const recent = allDocs.filter(d => isRecentByIssuedDate(d.issued_date));
 
   if (!recent.length) {
     container.innerHTML = `<p class="sb-state">Không có văn bản mới trong ${RECENT_DAYS} ngày qua.</p>`;
@@ -163,10 +164,12 @@ function getFilters() {
 function applyFilters() {
   const f = getFilters();
 
+  // state.allDocs đã sort theo issued_date giảm dần; .filter() giữ nguyên
+  // thứ tự phần tử nên state.filtered vẫn đúng thứ tự sau khi lọc.
   state.filtered = state.allDocs.filter(d => {
-    if (f.type   && detectDocType(d.code) !== f.type)   return false;
-    if (f.year   && String(detectYear(d)) !== f.year)   return false;
-    if (f.status && d.status && d.status !== f.status)  return false;
+    if (f.type   && (d.loai_van_ban || 'Khác') !== f.type)  return false;
+    if (f.year   && String(detectYear(d)) !== f.year)       return false;
+    if (f.status && d.status && d.status !== f.status)      return false;
     if (f.search) {
       const haystack = `${d.code} ${d.title}`.toLowerCase();
       if (!haystack.includes(f.search)) return false;
@@ -191,7 +194,7 @@ function renderGridPage() {
   }
 
   grid.innerHTML = visible.map(d => {
-    const type        = detectDocType(d.code);
+    const type        = d.loai_van_ban || 'Khác';
     const issuedStr   = formatDate(d.issued_date) || '—';
     const statusBadge = renderStatusBadge(d.status);
     const codeCell     = renderCodeCell(d);
@@ -290,6 +293,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (!res.ok) throw new Error(data.error || 'Lỗi không xác định từ máy chủ.');
 
     const docs = data.docs || [];
+
+    // Sort tự động theo Ngày ban hành (issued_date) giảm dần — áp dụng 1 lần
+    // ở đây là đủ, vì sidebar + grid đều dùng lại state.allDocs/allDocs này.
+    docs.sort(compareByIssuedDateDesc);
 
     const loadingEl = document.getElementById('docs-loading');
     if (loadingEl) loadingEl.remove();
