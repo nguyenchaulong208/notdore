@@ -62,7 +62,6 @@ function renderLink(link) {
 function renderToolCard(tool, category) {
   const video = tool.links.find(isYouTubeEmbed);
   const links = tool.links.filter(link => link !== video).map(renderLink).filter(Boolean).join('');
-  const tags = tool.tags.map(tag => `<span class="badge badge-cat">${esc(tag.tag_name)}</span>`).join('');
 
   return `
     <div class="col-12 col-md-6 col-lg-4">
@@ -71,7 +70,6 @@ function renderToolCard(tool, category) {
           <span class="badge bg-primary badge-cat align-self-start mb-3">${esc(category.category_name)}</span>
           <h3 class="card-title h5">${esc(tool.name)}</h3>
           ${tool.description ? `<p class="card-text">${esc(tool.description)}</p>` : ''}
-          ${tags ? `<div class="tool-tags mb-3">${tags}</div>` : ''}
           ${video ? `<div class="youtube-embed mb-3"><iframe src="${esc(video.url)}" title="${esc(tool.name)}" loading="lazy" allowfullscreen></iframe></div>` : ''}
           ${links ? `<div class="tool-actions mt-auto">${links}</div>` : ''}
         </div>
