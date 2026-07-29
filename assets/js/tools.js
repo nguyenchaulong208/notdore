@@ -36,6 +36,10 @@ function isReferenceCategory(category) {
     .includes('tai lieu tham khao');
 }
 
+function toolDetailUrl(tool) {
+  return `tool-detail.html?id=${encodeURIComponent(tool.id)}`;
+}
+
 function renderTabs() {
   const tabs = document.getElementById('tool-tabs');
   const items = [
@@ -62,16 +66,20 @@ function renderLink(link) {
 function renderToolCard(tool, category) {
   const video = tool.links.find(isYouTubeEmbed);
   const links = tool.links.filter(link => link !== video).map(renderLink).filter(Boolean).join('');
+  const detailUrl = toolDetailUrl(tool);
 
   return `
     <div class="col-12 col-md-6 col-lg-4">
       <article class="card tool-card h-100">
         <div class="card-body d-flex flex-column">
           <span class="badge bg-primary badge-cat align-self-start mb-3">${esc(category.category_name)}</span>
-          <h3 class="card-title h5">${esc(tool.name)}</h3>
+          <h3 class="card-title h5"><a href="${esc(detailUrl)}" class="tool-title-link">${esc(tool.name)}</a></h3>
           ${tool.description ? `<p class="card-text">${esc(tool.description)}</p>` : ''}
           ${video ? `<div class="youtube-embed mb-3"><iframe src="${esc(video.url)}" title="${esc(tool.name)}" loading="lazy" allowfullscreen></iframe></div>` : ''}
-          ${links ? `<div class="tool-actions mt-auto">${links}</div>` : ''}
+          <div class="tool-actions mt-auto">
+            <a href="${esc(detailUrl)}" class="btn btn-primary btn-sm"><i class="fas fa-circle-info me-1"></i>Xem chi tiết</a>
+            ${links}
+          </div>
         </div>
       </article>
     </div>`;
@@ -79,10 +87,11 @@ function renderToolCard(tool, category) {
 
 function renderReferenceItem(tool) {
   const links = tool.links.map(renderLink).filter(Boolean).join('');
+  const detailUrl = toolDetailUrl(tool);
   return `
     <li class="list-group-item d-flex justify-content-between align-items-center gap-3 p-3 p-lg-4">
       <div>
-        <strong>${esc(tool.name)}</strong>
+        <strong><a href="${esc(detailUrl)}" class="tool-title-link">${esc(tool.name)}</a></strong>
         ${tool.description ? `<br><small>${esc(tool.description)}</small>` : ''}
       </div>
       ${links ? `<div class="tool-actions flex-shrink-0">${links}</div>` : ''}
