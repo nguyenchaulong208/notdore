@@ -31,6 +31,7 @@ function toolStateFromApi(t) {
     tool_name: t.tool_name || '',
     category_name: t.categories?.category_name || '',
     description: t.description || '',
+    article_url: t.article_url || '',
     tags: tagNames.join('; '),
     source_name: link?.external_sources?.source_name || '',
     source_type: link?.external_sources?.source_type || 'cloud',
@@ -42,12 +43,12 @@ function toolStateFromApi(t) {
 async function loadMtData() {
   if (!requireClient()) return;
   const tbody = document.getElementById('mt-tbody');
-  tbody.innerHTML = `<tr><td colspan="10" class="text-center text-muted py-4">Đang tải…</td></tr>`;
+  tbody.innerHTML = `<tr><td colspan="11" class="text-center text-muted py-4">Đang tải…</td></tr>`;
 
   const { data, error } = await sbClient
     .from('tools')
     .select(`
-      tool_id, tool_name, description,
+      tool_id, tool_name, description, article_url,
       categories(category_id, category_name),
       tool_links(link_id, embed_url, display_name, external_sources(source_id, source_name, source_type)),
       tool_tags(tags(tag_id, tag_name))
@@ -56,7 +57,7 @@ async function loadMtData() {
 
   if (error) {
     console.error(error);
-    tbody.innerHTML = `<tr><td colspan="10" class="text-center text-danger py-4">Lỗi: ${escHtml(error.message)}</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="11" class="text-center text-danger py-4">Lỗi: ${escHtml(error.message)}</td></tr>`;
     showToast('⚠ Lỗi khi tải dữ liệu công cụ — kiểm tra RLS/policy cho anon key');
     return;
   }
@@ -85,7 +86,7 @@ function renderMtTable() {
   const rows = mtRows.filter(r => !q || r.tool_name.toLowerCase().includes(q));
 
   if (!rows.length) {
-    tbody.innerHTML = `<tr><td colspan="10" class="text-center text-muted py-4">${mtRows.length ? 'Không có dòng phù hợp' : 'Chưa có dữ liệu — bấm "Tải dữ liệu"'}</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="11" class="text-center text-muted py-4">${mtRows.length ? 'Không có dòng phù hợp' : 'Chưa có dữ liệu — bấm "Tải dữ liệu"'}</td></tr>`;
     updateMtDirtyCount();
     return;
   }
@@ -104,6 +105,7 @@ function renderMtTable() {
       <td><input class="form-control form-control-sm" data-field="category_name" value="${escHtml(r.category_name)}" style="min-width:120px" ${disabled}></td>
       <td><textarea class="form-control form-control-sm" data-field="description" rows="1" style="min-width:200px" ${disabled}>${escHtml(r.description)}</textarea></td>
       <td><input class="form-control form-control-sm" data-field="tags" value="${escHtml(r.tags)}" style="min-width:140px" ${disabled}></td>
+      <td><input class="form-control form-control-sm" data-field="article_url" value="${escHtml(r.article_url)}" placeholder="https://raw.githubusercontent.com/..." style="min-width:220px" ${disabled}></td>
       <td><input class="form-control form-control-sm" data-field="source_name" value="${escHtml(r.source_name)}" style="min-width:120px" ${disabled}></td>
       <td>
         <select class="form-select form-select-sm" data-field="source_type" ${disabled}>
@@ -209,7 +211,7 @@ function buildMtUpdateSql(changes) {
     const { row, orig } = ch;
     parts.push(`-- Cập nhật công cụ #${row.tool_id}: ${row.tool_name}`);
 
-    if (row.tool_name !== orig.tool_name || row.description !== orig.description || row.category_name !== orig.category_name) {
+    if (row.tool_name !== orig.tool_name || row.description !== orig.description || row.category_name !== orig.category_name || row.article_url !== orig.article_url) {
       parts.push(`WITH`);
       parts.push(`category_existing AS (`);
       parts.push(`  SELECT category_id FROM categories WHERE category_name = ${escSql(row.category_name)} LIMIT 1`);
@@ -224,7 +226,8 @@ function buildMtUpdateSql(changes) {
       parts.push(`)`);
       parts.push(`UPDATE tools SET`);
       parts.push(`  tool_name = ${escSql(row.tool_name)},`);
-      parts.push(`  description = ${row.description ? escSql(row.description) : 'NULL'},`);
+      parts.push(`  description = ${escSql(row.description)},`);
+      parts.push(`  article_url = ${escSql(row.article_url)},`);
       parts.push(`  category_id = (SELECT category_id FROM category_row),`);
       parts.push(`  updated_at = CURRENT_TIMESTAMP`);
       parts.push(`WHERE tool_id = ${row.tool_id};`);
@@ -327,11 +330,12 @@ async function applyMtChanges(changes) {
 
       const { row, orig } = ch;
 
-      if (row.tool_name !== orig.tool_name || row.description !== orig.description || row.category_name !== orig.category_name) {
+      if (row.tool_name !== orig.tool_name || row.description !== orig.description || row.category_name !== orig.category_name || row.article_url !== orig.article_url) {
         const categoryId = await resolveCategoryId(row.category_name);
         const { error } = await sbClient.from('tools').update({
           tool_name: row.tool_name,
           description: row.description || null,
+          article_url: row.article_url || null,
           category_id: categoryId,
           updated_at: new Date().toISOString(),
         }).eq('tool_id', row.tool_id);
@@ -392,8 +396,9 @@ async function applyMtChanges(changes) {
 let lastSqlMt = '';
 
 function findInvalidMtUrl(changes) {
-  // tool_links.embed_url có CHECK constraint bắt buộc bắt đầu http:// hoặc https://
-  return changes.find(ch => ch.type === 'update' && ch.row.embed_url && !isHttpUrl(ch.row.embed_url));
+  // tool_links.embed_url có CHECK constraint bắt buộc bắt đầu http:// hoặc https://; article_url áp cùng quy tắc.
+  return changes.find(ch => ch.type === 'update' &&
+    ((ch.row.embed_url && !isHttpUrl(ch.row.embed_url)) || (ch.row.article_url && !isHttpUrl(ch.row.article_url))));
 }
 
 function findInvalidMtRow(changes) {
@@ -413,7 +418,7 @@ function initMtTabButtons() {
     const invalidRow = findInvalidMtRow(changes);
     if (invalidRow) { showToast(`⚠ ${invalidRow}`); return; }
     const invalid = findInvalidMtUrl(changes);
-    if (invalid) { showToast(`⚠ URL "${invalid.row.embed_url}" phải bắt đầu bằng http:// hoặc https://`); return; }
+    if (invalid) { showToast(`⚠ URL "${invalid.row.embed_url || invalid.row.article_url}" phải bắt đầu bằng http:// hoặc https://`); return; }
 
     const body = buildMtUpdateSql(changes);
     lastSqlMt = buildSqlHeader(changes.length) + wrapInTransaction(body);
@@ -437,7 +442,7 @@ function initMtTabButtons() {
     const invalidRow = findInvalidMtRow(changes);
     if (invalidRow) { showToast(`⚠ ${invalidRow}`); return; }
     const invalid = findInvalidMtUrl(changes);
-    if (invalid) { showToast(`⚠ URL "${invalid.row.embed_url}" phải bắt đầu bằng http:// hoặc https://`); return; }
+    if (invalid) { showToast(`⚠ URL "${invalid.row.embed_url || invalid.row.article_url}" phải bắt đầu bằng http:// hoặc https://`); return; }
 
     const sql = buildMtUpdateSql(changes);
     pendingApply = { type: 'tools', changes };
