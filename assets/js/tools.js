@@ -1,83 +1,41 @@
 const API_URL = '/api/tools';
+const $ = (id) => document.getElementById(id);
+const state = { categories: [], tools: [], activeCategoryId: null };
 
-const state = {
-  categories: [],
-  tools: [],
-  activeCategoryId: null,
+const esc = (v) => String(v ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const isHttp = (u) => { try { return ['http:', 'https:'].includes(new URL(u).protocol); } catch { return false; } };
+const isYouTube = (l) => {
+  if (l.source?.source_type !== 'video' || !isHttp(l.url)) return false;
+  const u = new URL(l.url);
+  return ['www.youtube.com', 'youtube.com', 'www.youtube-nocookie.com'].includes(u.hostname) && u.pathname.startsWith('/embed/');
 };
-
-function esc(value) {
-  return String(value ?? '')
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
-}
-
-function isSafeHttpUrl(value) {
-  try {
-    const url = new URL(value);
-    return url.protocol === 'https:' || url.protocol === 'http:';
-  } catch {
-    return false;
-  }
-}
-
-function isYouTubeEmbed(link) {
-  if (link.source?.source_type !== 'video' || !isSafeHttpUrl(link.url)) return false;
-  const url = new URL(link.url);
-  return ['www.youtube.com', 'youtube.com', 'www.youtube-nocookie.com'].includes(url.hostname)
-    && url.pathname.startsWith('/embed/');
-}
-
-function isReferenceCategory(category) {
-  return category.category_name.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
-    .includes('tai lieu tham khao');
-}
-
-function toolDetailUrl(tool) {
-  return `tool-detail.html?id=${encodeURIComponent(tool.id)}`;
-}
+const isReferenceCategory = (c) => c.category_name.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().includes('tai lieu tham khao');
+const detailUrl = (t) => `tool-detail.html?id=${encodeURIComponent(t.id)}`;
+const linkBtn = (l) => isHttp(l.url)
+  ? `<a class="btn btn-secondary btn-sm" href="${esc(l.url)}" target="_blank" rel="noopener noreferrer">${esc(l.display_name || `Mở ${l.source.source_name}`)}</a>`
+  : '';
 
 function renderTabs() {
-  const tabs = document.getElementById('tool-tabs');
-  const items = [
-    { id: null, name: 'Tất cả' },
-    ...state.categories.map(category => ({ id: category.category_id, name: category.category_name })),
-  ];
-
-  tabs.innerHTML = items.map(item => `
+  const items = [{ id: null, name: 'Tất cả' }, ...state.categories.map((c) => ({ id: c.category_id, name: c.category_name }))];
+  $('tool-tabs').innerHTML = items.map((i) => `
     <li class="nav-item">
-      <button class="nav-link ${state.activeCategoryId === item.id ? 'active' : ''}"
-        type="button" data-category-id="${item.id ?? ''}"
-        ${state.activeCategoryId === item.id ? 'aria-current="page"' : ''}>
-        ${esc(item.name)}
-      </button>
+      <button class="nav-link ${state.activeCategoryId === i.id ? 'active' : ''}" type="button" data-category-id="${i.id ?? ''}" ${state.activeCategoryId === i.id ? 'aria-current="page"' : ''}>${esc(i.name)}</button>
     </li>`).join('');
 }
 
-function renderLink(link) {
-  if (!isSafeHttpUrl(link.url)) return '';
-  const label = link.display_name || `Mở ${link.source.source_name}`;
-  return `<a class="btn btn-secondary btn-sm" href="${esc(link.url)}" target="_blank" rel="noopener noreferrer">${esc(label)}</a>`;
-}
-
 function renderToolCard(tool, category) {
-  const video = tool.links.find(isYouTubeEmbed);
-  const links = tool.links.filter(link => link !== video).map(renderLink).filter(Boolean).join('');
-  const detailUrl = toolDetailUrl(tool);
-
+  const video = tool.links.find(isYouTube);
+  const links = tool.links.filter((l) => l !== video).map(linkBtn).join('');
   return `
     <div class="col-12 col-md-6 col-lg-4">
       <article class="card tool-card h-100">
         <div class="card-body d-flex flex-column">
           <span class="badge bg-primary badge-cat align-self-start mb-3">${esc(category.category_name)}</span>
-          <h3 class="card-title h5"><a href="${esc(detailUrl)}" class="tool-title-link">${esc(tool.name)}</a></h3>
+          <h3 class="card-title h5"><a href="${detailUrl(tool)}" class="tool-title-link">${esc(tool.name)}</a></h3>
           ${tool.description ? `<p class="card-text">${esc(tool.description)}</p>` : ''}
           ${video ? `<div class="youtube-embed mb-3"><iframe src="${esc(video.url)}" title="${esc(tool.name)}" loading="lazy" allowfullscreen></iframe></div>` : ''}
           <div class="tool-actions mt-auto">
-            <a href="${esc(detailUrl)}" class="btn btn-primary btn-sm"><i class="fas fa-circle-info me-1"></i>Xem chi tiết</a>
+            <a href="${detailUrl(tool)}" class="btn btn-primary btn-sm"><i class="fas fa-circle-info me-1"></i>Xem chi tiết</a>
             ${links}
           </div>
         </div>
@@ -86,12 +44,11 @@ function renderToolCard(tool, category) {
 }
 
 function renderReferenceItem(tool) {
-  const links = tool.links.map(renderLink).filter(Boolean).join('');
-  const detailUrl = toolDetailUrl(tool);
+  const links = tool.links.map(linkBtn).join('');
   return `
     <li class="list-group-item d-flex justify-content-between align-items-center gap-3 p-3 p-lg-4">
       <div>
-        <strong><a href="${esc(detailUrl)}" class="tool-title-link">${esc(tool.name)}</a></strong>
+        <strong><a href="${detailUrl(tool)}" class="tool-title-link">${esc(tool.name)}</a></strong>
         ${tool.description ? `<br><small>${esc(tool.description)}</small>` : ''}
       </div>
       ${links ? `<div class="tool-actions flex-shrink-0">${links}</div>` : ''}
@@ -99,61 +56,36 @@ function renderReferenceItem(tool) {
 }
 
 function renderContent() {
-  const container = document.getElementById('tools-content');
-  const categories = state.activeCategoryId === null
-    ? state.categories
-    : state.categories.filter(category => category.category_id === state.activeCategoryId);
-
-  const sections = categories.map(category => {
-    const tools = state.tools.filter(tool => tool.category_id === category.category_id);
+  const categories = state.activeCategoryId === null ? state.categories : state.categories.filter((c) => c.category_id === state.activeCategoryId);
+  const sections = categories.map((category) => {
+    const tools = state.tools.filter((t) => t.category_id === category.category_id);
     if (!tools.length) return '';
-
-    if (isReferenceCategory(category)) {
-      return `
-        <section id="category-${category.category_id}" class="tool-category mb-5">
-          <h2 class="section-heading text-center mb-4">${esc(category.category_name)}</h2>
-          <div class="resource-list"><ul class="list-group list-group-flush mb-0">${tools.map(renderReferenceItem).join('')}</ul></div>
-        </section>`;
-    }
-
-    return `
-      <section id="category-${category.category_id}" class="tool-category mb-5">
-        <h2 class="section-heading text-center mb-4">${esc(category.category_name)}</h2>
-        <div class="row g-4 justify-content-center">${tools.map(tool => renderToolCard(tool, category)).join('')}</div>
-      </section>`;
+    const body = isReferenceCategory(category)
+      ? `<div class="resource-list"><ul class="list-group list-group-flush mb-0">${tools.map(renderReferenceItem).join('')}</ul></div>`
+      : `<div class="row g-4 justify-content-center">${tools.map((t) => renderToolCard(t, category)).join('')}</div>`;
+    return `<section id="category-${category.category_id}" class="tool-category mb-5"><h2 class="section-heading text-center mb-4">${esc(category.category_name)}</h2>${body}</section>`;
   }).filter(Boolean).join('');
 
-  container.innerHTML = sections || '<p class="tool-state text-center">Chưa có công cụ phù hợp trong danh mục này.</p>';
-}
-
-function renderError() {
-  document.getElementById('tools-content').innerHTML = `
-    <div class="alert alert-danger single-col-max mx-auto mb-0" role="alert">
-      <i class="fas fa-exclamation-triangle me-2"></i>Không thể tải danh sách công cụ. Vui lòng thử lại sau.
-    </div>`;
+  $('tools-content').innerHTML = sections || '<p class="tool-state text-center">Chưa có công cụ phù hợp trong danh mục này.</p>';
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
-  const tabs = document.getElementById('tool-tabs');
-  tabs.addEventListener('click', (event) => {
-    const button = event.target.closest('[data-category-id]');
-    if (!button) return;
-    state.activeCategoryId = button.dataset.categoryId === '' ? null : Number(button.dataset.categoryId);
+  $('tool-tabs').addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-category-id]');
+    if (!btn) return;
+    state.activeCategoryId = btn.dataset.categoryId === '' ? null : Number(btn.dataset.categoryId);
     renderTabs();
     renderContent();
   });
 
   try {
-    const response = await fetch(API_URL);
-    const data = await response.json();
-    if (!response.ok) throw new Error(data.error || 'Request failed');
-
+    const data = await (await fetch(API_URL)).json();
     state.categories = data.categories || [];
     state.tools = data.tools || [];
     renderTabs();
     renderContent();
-  } catch (error) {
-    console.error('[tools] Fetch error:', error);
-    renderError();
+  } catch (err) {
+    console.error('[tools] Fetch error:', err);
+    $('tools-content').innerHTML = '<div class="alert alert-danger single-col-max mx-auto mb-0" role="alert"><i class="fas fa-exclamation-triangle me-2"></i>Không thể tải danh sách công cụ. Vui lòng thử lại sau.</div>';
   }
 });
