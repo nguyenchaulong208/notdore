@@ -13,7 +13,7 @@ export default async function handler(_req, res) {
   try {
     const [categoriesResult, toolsResult, linksResult, sourcesResult] = await Promise.all([
       supabase.from('categories').select('category_id, category_name, description').order('category_id'),
-      supabase.from('tools').select('tool_id, tool_name, category_id, description, created_at, updated_at').order('created_at', { ascending: false }),
+      supabase.from('tools').select('tool_id, tool_name, category_id, description, article_url, created_at, updated_at').order('created_at', { ascending: false }),
       supabase.from('tool_links').select('link_id, tool_id, source_id, embed_url, display_name, is_active, created_at').eq('is_active', true).order('created_at'),
       supabase.from('external_sources').select('source_id, source_name, source_type, base_url, icon_url'),
     ]);
@@ -38,6 +38,7 @@ export default async function handler(_req, res) {
       name: tool.tool_name,
       category_id: tool.category_id,
       description: tool.description,
+      article_url: tool.article_url,
       created_at: tool.created_at,
       updated_at: tool.updated_at,
       links: linksByToolId.get(tool.tool_id) || [],
