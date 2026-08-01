@@ -12,13 +12,30 @@ const linkBtn = (l) => isHttp(l.url)
   ? `<a class="btn btn-secondary btn-sm me-2 mb-2" href="${esc(l.url)}" target="_blank" rel="noopener noreferrer">${esc(l.display_name || `Mở ${l.source.source_name}`)}</a>`
   : '';
 
-// Suy ra link file gốc trên GitHub (dạng /blob/) + "chủ/repo" từ raw.githubusercontent.com URL,
-// dùng để ghi nguồn khi bài viết được lấy nguyên văn từ repo khác (trang chia sẻ nên luôn dẫn nguồn).
-function githubSourceFromRawUrl(url) {
+// Parse https://raw.githubusercontent.com/<owner>/<repo>/<branch|refs/heads/branch>/<path> — dùng chung cho
+// việc ghi nguồn (blob URL) và quy đổi ảnh/link tương đối trong bài viết về đúng thư mục trên repo gốc.
+function parseGithubRawUrl(url) {
   const m = String(url || '').match(/^https:\/\/raw\.githubusercontent\.com\/([^/]+)\/([^/]+)\/(?:refs\/heads\/)?([^/]+)\/(.+)$/);
   if (!m) return null;
   const [, owner, repo, branch, path] = m;
-  return { label: `${owner}/${repo}`, href: `https://github.com/${owner}/${repo}/blob/${branch}/${path}` };
+  return { owner, repo, branch, path, base: `https://raw.githubusercontent.com/${owner}/${repo}/${branch}` };
+}
+
+// Dùng để ghi nguồn khi bài viết được lấy nguyên văn từ repo khác (trang chia sẻ nên luôn dẫn nguồn).
+function githubSourceFromRawUrl(url) {
+  const p = parseGithubRawUrl(url);
+  return p ? { label: `${p.owner}/${p.repo}`, href: `https://github.com/${p.owner}/${p.repo}/blob/${p.branch}/${p.path}` } : null;
+}
+
+// README thường dùng ảnh/link tương đối (VD: images/dashboard.png hoặc /images/dashboard.png) — chỉ đúng
+// khi đọc trực tiếp trên GitHub. Quy đổi về URL tuyệt đối trỏ đúng thư mục trên repo gốc để hiển thị được.
+function resolveRelativeAsset(value, articleUrl) {
+  if (!value || /^([a-z]+:)?\/\//i.test(value) || value.startsWith('#') || value.startsWith('data:')) return value;
+  const p = parseGithubRawUrl(articleUrl);
+  if (!p) return value;
+  if (value.startsWith('/')) return `${p.base}${value}`;
+  const dir = p.path.includes('/') ? p.path.slice(0, p.path.lastIndexOf('/')) : '';
+  return new URL(value, dir ? `${p.base}/${dir}/` : `${p.base}/`).href;
 }
 
 // Bài viết Markdown được lưu công khai trên GitHub (tool.article_url = raw URL), fetch + render client-side để tối ưu chi phí lưu trữ.
@@ -30,6 +47,8 @@ async function fetchArticle(url) {
     const doc = new DOMParser().parseFromString(html, 'text/html');
     // Trang đã tự hiển thị tiêu đề từ tool.name ở trên — bỏ H1 đầu tiên trong bài viết để tránh lặp lại.
     doc.body.querySelector('h1')?.remove();
+    doc.body.querySelectorAll('img[src]').forEach((img) => img.setAttribute('src', resolveRelativeAsset(img.getAttribute('src'), url)));
+    doc.body.querySelectorAll('a[href]').forEach((a) => a.setAttribute('href', resolveRelativeAsset(a.getAttribute('href'), url)));
     return doc.body.innerHTML;
   } catch {
     return '<p class="text-muted">Không thể tải nội dung bài viết.</p>';
