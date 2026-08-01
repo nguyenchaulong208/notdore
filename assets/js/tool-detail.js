@@ -12,12 +12,25 @@ const linkBtn = (l) => isHttp(l.url)
   ? `<a class="btn btn-secondary btn-sm me-2 mb-2" href="${esc(l.url)}" target="_blank" rel="noopener noreferrer">${esc(l.display_name || `Mở ${l.source.source_name}`)}</a>`
   : '';
 
+// Suy ra link file gốc trên GitHub (dạng /blob/) + "chủ/repo" từ raw.githubusercontent.com URL,
+// dùng để ghi nguồn khi bài viết được lấy nguyên văn từ repo khác (trang chia sẻ nên luôn dẫn nguồn).
+function githubSourceFromRawUrl(url) {
+  const m = String(url || '').match(/^https:\/\/raw\.githubusercontent\.com\/([^/]+)\/([^/]+)\/(?:refs\/heads\/)?([^/]+)\/(.+)$/);
+  if (!m) return null;
+  const [, owner, repo, branch, path] = m;
+  return { label: `${owner}/${repo}`, href: `https://github.com/${owner}/${repo}/blob/${branch}/${path}` };
+}
+
 // Bài viết Markdown được lưu công khai trên GitHub (tool.article_url = raw URL), fetch + render client-side để tối ưu chi phí lưu trữ.
 async function fetchArticle(url) {
   if (!url) return '';
   try {
     const md = await (await fetch(url)).text();
-    return DOMPurify.sanitize(marked.parse(md));
+    const html = DOMPurify.sanitize(marked.parse(md));
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+    // Trang đã tự hiển thị tiêu đề từ tool.name ở trên — bỏ H1 đầu tiên trong bài viết để tránh lặp lại.
+    doc.body.querySelector('h1')?.remove();
+    return doc.body.innerHTML;
   } catch {
     return '<p class="text-muted">Không thể tải nội dung bài viết.</p>';
   }
@@ -42,6 +55,7 @@ async function renderMainPanel(tool, category) {
   const video = tool.links.find(isYouTube);
   const links = tool.links.filter((l) => l !== video).map(linkBtn).join('');
   const article = await fetchArticle(tool.article_url);
+  const source = article ? githubSourceFromRawUrl(tool.article_url) : null;
 
   $('tool-main-panel').innerHTML = `
     <span class="badge bg-primary badge-cat mb-3">${esc(category?.category_name || '')}</span>
@@ -49,6 +63,7 @@ async function renderMainPanel(tool, category) {
     ${tool.description ? `<p class="lead">${esc(tool.description)}</p>` : ''}
     ${video ? `<div class="youtube-embed my-4"><iframe src="${esc(video.url)}" title="${esc(tool.name)}" loading="lazy" allowfullscreen></iframe></div>` : ''}
     ${article ? `<div class="tool-article">${article}</div>` : ''}
+    ${source ? `<p class="tool-article-source">Nguồn bài viết: <a href="${esc(source.href)}" target="_blank" rel="noopener noreferrer">${esc(source.label)}</a> trên GitHub</p>` : ''}
     ${links ? `<div class="tool-actions mt-4">${links}</div>` : ''}
   `;
 }
