@@ -6,7 +6,7 @@
  *
  * Chỉ được mount khi chạy local (xem localOnly middleware trong server.js).
  */
-import { supabase } from '../../lib/supabase.js';
+import { getSupabase } from '../../lib/supabase.js';
 
 const VALID_STATUS = ['hieu_luc', 'het_hieu_luc', 'chua_hieu_luc'];
 const VALID_DRIVE_TYPE = ['google', 'onedrive'];
@@ -14,6 +14,7 @@ const VALID_DRIVE_TYPE = ['google', 'onedrive'];
 // GET /api/admin/docs
 export async function listDocs(req, res) {
   try {
+    const supabase = getSupabase();
     const selectFields =
       'id|code|title|description|issued_date|expiry_date|status|created_at|updated_at';
 
@@ -66,6 +67,7 @@ export async function listDocs(req, res) {
 
 // PATCH /api/admin/docs/:id
 export async function updateDoc(req, res) {
+  const supabase = getSupabase();
   const { id } = req.params;
   const {
     issued_date,

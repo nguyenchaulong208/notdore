@@ -10,7 +10,7 @@
  * Mỗi Doc: { id, code, title, description, created_at, file }
  * file:    { drive_view_url, drive_download_url, mime_type } | null
  */
-import { supabase } from '../lib/supabase.js';
+import { getSupabase } from '../lib/supabase.js';
 
 // Ánh xạ mã danh mục → tên tag trong bảng document_tags
 const TAG_MAP = {
@@ -31,6 +31,7 @@ export default async function handler(req, res) {
   }
 
   try {
+    const supabase = getSupabase();
     const tagName = TAG_MAP[cat];
 
     // Bước 1: Lấy tag ID theo tên

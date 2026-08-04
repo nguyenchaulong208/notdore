@@ -9,12 +9,12 @@
  * Mỗi Doc: { id, code, title, description, issued_date, expiry_date, status, loai_van_ban, created_at, file }
  * file:    { drive_view_url, drive_download_url, mime_type } | null
  */
-import { supabase } from '../lib/supabase.js';
+import { getSupabase } from '../lib/supabase.js';
 
 export default async function handler(req, res) {
   res.setHeader('Cache-Control', 's-maxage=300, stale-while-revalidate=3600');
-
   try {
+    const supabase = getSupabase();
     // Lấy toàn bộ documents + files song song
     const [docsResult, filesResult] = await Promise.all([
       supabase
