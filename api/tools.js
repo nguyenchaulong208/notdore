@@ -1,4 +1,4 @@
-import { getSupabase } from '../lib/supabase.js';
+import { supabase } from '../lib/supabase.js';
 /**
  * GET /api/tools
  * Trả về catalog công cụ, danh mục và các liên kết đang hoạt động.
@@ -11,7 +11,6 @@ import { getSupabase } from '../lib/supabase.js';
 export default async function handler(_req, res) {
   res.setHeader('Cache-Control', 's-maxage=300, stale-while-revalidate=3600');
   try {
-    const supabase = getSupabase();
     const [categoriesResult, toolsResult, linksResult, sourcesResult] = await Promise.all([
       supabase.from('categories').select('category_id, category_name, description').order('category_id'),
       supabase.from('tools').select('tool_id, tool_name, category_id, description, article_url, created_at, updated_at').order('created_at', { ascending: false }),
