@@ -13,7 +13,6 @@ import { supabase } from '../lib/supabase.js';
 
 export default async function handler(req, res) {
   res.setHeader('Cache-Control', 's-maxage=300, stale-while-revalidate=3600');
-
   try {
     // Lấy toàn bộ documents + files song song
     const [docsResult, filesResult] = await Promise.all([
