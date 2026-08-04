@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <title>Tổng hợp XML Hóa đơn → Excel - NotDore</title>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Công cụ đọc nhiều file XML hóa đơn điện tử và xuất ra Excel tổng hợp ngay trên trình duyệt.">
+    <link rel="shortcut icon" href="favicon.ico">
+    <link href="https://fonts.googleapis.com/css?family=Quicksand:700|Roboto:400,400i,700&display=swap" rel="stylesheet">
+    <script defer src="assets/fontawesome/js/all.min.js"></script>
+    <link id="theme-style" rel="stylesheet" href="assets/css/theme.css">
+    <link rel="stylesheet" href="assets/css/tools.css">
+    <style>
+        /* ── Layout ── */
+        .tool-page { padding: 2.5rem 0 5rem; }
+        .back-link { display: inline-flex; align-items: center; gap: .4rem; margin-bottom: 1.5rem; font-size: .9rem; color: inherit; text-decoration: none; }
+        .back-link:hover { color: #ed6524; }
+        .tool-header { margin-bottom: 2rem; }
+        .tool-header h1 { font-family: 'Quicksand', sans-serif; font-size: 1.75rem; font-weight: 700; margin-bottom: .5rem; }
+        .tool-header p { color: #4c527d; max-width: 640px; }
+
+        /* ── Drop zone ── */
+        .drop-zone {
+            border: 2.5px dashed #c9b8f5;
+            border-radius: .75rem;
+            background: #f9f7ff;
+            padding: 2.5rem 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: border-color .2s, background .2s;
+            position: relative;
+        }
+        .drop-zone.drag-over { border-color: #ed6524; background: #fff8f4; }
+        .drop-zone input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+        .drop-zone .drop-icon { font-size: 2.5rem; color: #c9b8f5; margin-bottom: .75rem; }
+        .drop-zone .drop-label { font-size: 1rem; color: #4c527d; font-weight: 600; }
+        .drop-zone .drop-hint { font-size: .82rem; color: #9194ab; margin-top: .35rem; }
+
+        /* ── File list ── */
+        #file-list-wrap { margin-top: 1.25rem; }
+        .file-chip {
+            display: inline-flex; align-items: center; gap: .4rem;
+            background: #ede9fe; color: #5b21b6;
+            border-radius: 3rem; padding: .28rem .75rem;
+            font-size: .8rem; font-weight: 600; margin: .2rem;
+        }
+        .file-chip.error { background: #fee2e2; color: #b91c1c; }
+        .file-chip.ok    { background: #dcfce7; color: #15803d; }
+
+        /* ── Action bar ── */
+        .action-bar { display: flex; flex-wrap: wrap; gap: .75rem; align-items: center; margin-top: 1.5rem; }
+        .action-bar .btn { min-width: 140px; }
+        #status-msg { font-size: .9rem; color: #4c527d; }
+        #status-msg.text-danger { color: #dc2626 !important; }
+        #status-msg.text-success { color: #15803d !important; }
+
+        /* ── Summary stats ── */
+        #summary-bar {
+            display: none;
+            gap: 1rem;
+            flex-wrap: wrap;
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            border-radius: .6rem;
+            padding: .85rem 1.25rem;
+            margin-top: 1.25rem;
+        }
+        .stat-item { font-size: .88rem; color: #15803d; }
+        .stat-item strong { font-size: 1.1rem; }
+
+        /* ── Preview table ── */
+        #preview-wrap { display: none; margin-top: 2rem; }
+        #preview-wrap h2 { font-size: 1.1rem; font-family: 'Quicksand', sans-serif; font-weight: 700; margin-bottom: .75rem; }
+        .table-scroller { overflow-x: auto; border-radius: .6rem; box-shadow: 0 2px 8px rgba(0,0,0,.06); }
+        #preview-table { min-width: 900px; font-size: .82rem; margin: 0; }
+        #preview-table thead th { background: #5029ce; color: #fff; white-space: nowrap; border: none; padding: .55rem .75rem; }
+        #preview-table tbody tr:hover { background: #f5f3ff; }
+        #preview-table td { vertical-align: middle; padding: .45rem .75rem; border-color: #ede9fe; white-space: nowrap; max-width: 240px; overflow: hidden; text-overflow: ellipsis; }
+        .preview-more { font-size: .82rem; color: #9194ab; text-align: center; padding: .6rem 0 0; }
+
+        /* ── How-to card ── */
+        .howto-card {
+            background: #fff;
+            border-radius: .75rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,.06);
+            padding: 1.5rem;
+            margin-top: 2.5rem;
+        }
+        .howto-card h3 { font-family: 'Quicksand', sans-serif; font-size: 1rem; font-weight: 700; color: #ed6524; margin-bottom: 1rem; }
+        .howto-step { display: flex; gap: .75rem; margin-bottom: .85rem; align-items: flex-start; }
+        .step-num {
+            flex: 0 0 28px; height: 28px; border-radius: 50%;
+            background: #ed6524; color: #fff;
+            display: flex; align-items: center; justify-content: center;
+            font-size: .8rem; font-weight: 700;
+        }
+        .step-text { font-size: .9rem; color: #4c527d; padding-top: .15rem; }
+
+        /* ── Responsive ── */
+        @media (max-width: 575.98px) {
+            .drop-zone { padding: 1.75rem 1rem; }
+            .tool-header h1 { font-size: 1.4rem; }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="branding">
+            <div class="container-fluid position-relative py-3">
+                <div class="logo-wrapper"><div class="site-logo">
+                    <a class="navbar-brand" href="index.html">
+                        <img class="logo-icon me-2" src="assets/images/site-logo.svg" alt="logo">
+                        <span class="logo-text">NotDore</span>
+                    </a>
+                </div></div>
+            </div>
+        </div>
+    </header>
+
+    <section class="tool-page">
+        <div class="container">
+
+            <a href="tools.html" class="back-link"><i class="fas fa-arrow-left"></i> Quay lại danh sách công cụ</a>
+
+            <div class="tool-header">
+                <h1><i class="fas fa-file-invoice me-2" style="color:#ed6524"></i>Tổng hợp XML Hóa đơn → Excel</h1>
+                <p>Tải lên nhiều file XML hóa đơn điện tử (ký hiệu <code>.xml</code>). Công cụ phân tích từng dòng hàng, ghép thông tin chung và xuất ra file <strong>.xlsx</strong> ngay trên trình duyệt — không cần cài đặt, không gửi dữ liệu lên server.</p>
+            </div>
+
+            <!-- Drop zone -->
+            <div class="drop-zone" id="drop-zone">
+                <input type="file" id="file-input" accept=".xml" multiple>
+                <div class="drop-icon"><i class="fas fa-cloud-upload-alt"></i></div>
+                <div class="drop-label">Kéo thả file XML vào đây, hoặc nhấn để chọn</div>
+                <div class="drop-hint">Hỗ trợ nhiều file cùng lúc · Chỉ đọc trên máy bạn, không gửi đi đâu</div>
+            </div>
+
+            <!-- Selected files -->
+            <div id="file-list-wrap"></div>
+
+            <!-- Stats -->
+            <div id="summary-bar">
+                <div class="stat-item">📄 File: <strong id="stat-files">0</strong></div>
+                <div class="stat-item">📋 Dòng hàng: <strong id="stat-rows">0</strong></div>
+                <div class="stat-item">⚠️ Lỗi: <strong id="stat-errors">0</strong></div>
+            </div>
+
+            <!-- Actions -->
+            <div class="action-bar" id="action-bar" style="display:none!important">
+                <button class="btn btn-primary" id="btn-export" disabled>
+                    <i class="fas fa-file-excel me-1"></i> Tải xuống Excel
+                </button>
+                <button class="btn btn-outline-secondary" id="btn-clear">
+                    <i class="fas fa-trash-alt me-1"></i> Xóa tất cả
+                </button>
+                <span id="status-msg"></span>
+            </div>
+
+            <!-- Preview -->
+            <div id="preview-wrap">
+                <h2><i class="fas fa-table me-2" style="color:#5029ce"></i>Xem trước dữ liệu</h2>
+                <div class="table-scroller">
+                    <table class="table table-bordered table-sm" id="preview-table">
+                        <thead id="preview-head"></thead>
+                        <tbody id="preview-body"></tbody>
+                    </table>
+                </div>
+                <p class="preview-more" id="preview-more"></p>
+            </div>
+
+            <!-- How to -->
+            <div class="howto-card">
+                <h3><i class="fas fa-info-circle me-2"></i>Hướng dẫn sử dụng</h3>
+                <div class="howto-step">
+                    <div class="step-num">1</div>
+                    <div class="step-text">Tải file XML hóa đơn điện tử từ cổng thuế hoặc phần mềm phát hành về máy.</div>
+                </div>
+                <div class="howto-step">
+                    <div class="step-num">2</div>
+                    <div class="step-text">Kéo thả tất cả file <code>.xml</code> vào ô trên (có thể chọn nhiều file cùng lúc bằng Ctrl+Click).</div>
+                </div>
+                <div class="howto-step">
+                    <div class="step-num">3</div>
+                    <div class="step-text">Nhấn <strong>Tải xuống Excel</strong> — file <code>tong_hop_hoa_don.xlsx</code> sẽ tải về ngay lập tức.</div>
+                </div>
+                <div class="howto-step" style="margin-bottom:0">
+                    <div class="step-num">4</div>
+                    <div class="step-text">Mỗi dòng hàng trong hóa đơn tương ứng một hàng trong Excel, kèm đầy đủ thông tin chung (số hóa đơn, MST, ngày…).</div>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <section class="audience-section py-4">
+        <div class="container">
+            <div class="section-intro single-col-max mx-auto text-center" style="font-size:.85rem">
+                Dữ liệu được xử lý hoàn toàn trên trình duyệt của bạn. Không file nào được gửi lên server.
+            </div>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <div class="footer-bottom text-center py-5">
+            <small class="copyright">Designed with ❤️ by Xiaoying Riley — Customized for NotDore</small>
+        </div>
+    </footer>
+
+    <!-- SheetJS (xlsx) from CDN -->
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+    <script src="assets/plugins/popper.min.js"></script>
+    <script src="assets/plugins/bootstrap/js/bootstrap.min.js"></script>
+    <script src="assets/js/main.js"></script>
+
+    <script>
+    (() => {
+        'use strict';
+
+        // ── Columns (same order as Python script) ──
+        const COMMON_COLS = [
+            'File', 'Số hóa đơn', 'Ngày hóa đơn', 'Ký hiệu hóa đơn',
+            'Đơn vị bán hàng', 'MST người bán', 'Địa chỉ người bán',
+            'Biển số xe', 'Hình thức thanh toán',
+            'Tổng tiền (trước thuế)', 'Tiền thuế GTGT (tổng)', 'Tổng tiền thanh toán'
+        ];
+        const ITEM_COLS = [
+            'Tên hàng hóa dịch vụ', 'Đơn vị tính', 'Số lượng', 'Đơn giá',
+            'Thành tiền (dòng)', 'Thuế suất',
+            'Tiền thuế GTGT (dòng)', 'Tổng tiền dòng (Amount)'
+        ];
+        const ALL_COLS = [...COMMON_COLS, ...ITEM_COLS];
+
+        // ── XML helpers ──
+        function getText(node, tag) {
+            const el = node.getElementsByTagName(tag)[0];
+            return el && el.textContent ? el.textContent.trim() : '';
+        }
+
+        function getTTin(node, ttruong) {
+            const items = node.getElementsByTagName('TTin');
+            for (const item of items) {
+                const t = item.getElementsByTagName('TTruong')[0];
+                if (t && t.textContent.trim() === ttruong) {
+                    const d = item.getElementsByTagName('DLieu')[0];
+                    return d ? d.textContent.trim() : '';
+                }
+            }
+            return '';
+        }
+
+        function parseXML(xmlText, filename) {
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(xmlText, 'text/xml');
+            const root = doc.documentElement;
+
+            if (root.querySelector && root.querySelector('parsererror')) {
+                throw new Error('File XML không hợp lệ');
+            }
+
+            const nban  = root.getElementsByTagName('NBan')[0]  || null;
+            const ttoan = root.getElementsByTagName('TToan')[0] || null;
+
+            const common = {
+                'File': filename,
+                'Số hóa đơn':              getText(root, 'SHDon'),
+                'Ngày hóa đơn':            getText(root, 'NLap'),
+                'Ký hiệu hóa đơn':         getText(root, 'KHHDon'),
+                'Đơn vị bán hàng':         nban  ? getText(nban, 'Ten')   : '',
+                'MST người bán':           nban  ? getText(nban, 'MST')   : '',
+                'Địa chỉ người bán':       nban  ? getText(nban, 'DChi')  : '',
+                'Biển số xe':              nban  ? getTTin(nban, 'SoPhuongTien') : '',
+                'Hình thức thanh toán':    getText(root, 'HTTToan'),
+                'Tổng tiền (trước thuế)':  ttoan ? getText(ttoan, 'TgTCThue')   : '',
+                'Tiền thuế GTGT (tổng)':   ttoan ? getText(ttoan, 'TgTThue')    : '',
+                'Tổng tiền thanh toán':    ttoan ? getText(ttoan, 'TgTTTBSo')   : '',
+            };
+
+            const items = root.getElementsByTagName('HHDVu');
+            if (!items.length) {
+                // No line items — return one row with blanks for item cols
+                const row = { ...common };
+                ITEM_COLS.forEach(c => { row[c] = ''; });
+                return [row];
+            }
+
+            const rows = [];
+            for (const item of items) {
+                rows.push({
+                    ...common,
+                    'Tên hàng hóa dịch vụ':   getText(item, 'THHDVu'),
+                    'Đơn vị tính':             getText(item, 'DVTinh'),
+                    'Số lượng':                getText(item, 'SLuong'),
+                    'Đơn giá':                 getText(item, 'DGia'),
+                    'Thành tiền (dòng)':       getText(item, 'ThTien'),
+                    'Thuế suất':               getText(item, 'TSuat'),
+                    'Tiền thuế GTGT (dòng)':   getTTin(item, 'VATAmount'),
+                    'Tổng tiền dòng (Amount)': getTTin(item, 'Amount'),
+                });
+            }
+            return rows;
+        }
+
+        // ── State ──
+        let allRows    = [];
+        let errorFiles = [];
+        let okFiles    = [];
+
+        // ── DOM refs ──
+        const dropZone      = document.getElementById('drop-zone');
+        const fileInput     = document.getElementById('file-input');
+        const fileListWrap  = document.getElementById('file-list-wrap');
+        const actionBar     = document.getElementById('action-bar');
+        const btnExport     = document.getElementById('btn-export');
+        const btnClear      = document.getElementById('btn-clear');
+        const statusMsg     = document.getElementById('status-msg');
+        const summaryBar    = document.getElementById('summary-bar');
+        const statFiles     = document.getElementById('stat-files');
+        const statRows      = document.getElementById('stat-rows');
+        const statErrors    = document.getElementById('stat-errors');
+        const previewWrap   = document.getElementById('preview-wrap');
+        const previewHead   = document.getElementById('preview-head');
+        const previewBody   = document.getElementById('preview-body');
+        const previewMore   = document.getElementById('preview-more');
+
+        // ── Drag-over styling ──
+        dropZone.addEventListener('dragover',  e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+        dropZone.addEventListener('dragleave', ()  => dropZone.classList.remove('drag-over'));
+        dropZone.addEventListener('drop', e => {
+            e.preventDefault();
+            dropZone.classList.remove('drag-over');
+            handleFiles(e.dataTransfer.files);
+        });
+        fileInput.addEventListener('change', () => handleFiles(fileInput.files));
+
+        btnClear.addEventListener('click', () => {
+            allRows = []; errorFiles = []; okFiles = [];
+            fileInput.value = '';
+            fileListWrap.innerHTML = '';
+            actionBar.style.setProperty('display', 'none', 'important');
+            summaryBar.style.display = 'none';
+            previewWrap.style.display = 'none';
+        });
+
+        btnExport.addEventListener('click', exportExcel);
+
+        // ── Process uploaded files ──
+        async function handleFiles(fileList) {
+            if (!fileList || !fileList.length) return;
+
+            // Reset
+            allRows = []; errorFiles = []; okFiles = [];
+            fileListWrap.innerHTML = '';
+            statusMsg.textContent = 'Đang xử lý…';
+            statusMsg.className = '';
+            btnExport.disabled = true;
+
+            const xmlFiles = Array.from(fileList).filter(f => f.name.toLowerCase().endsWith('.xml'));
+            if (!xmlFiles.length) {
+                statusMsg.textContent = 'Không tìm thấy file .xml nào.';
+                statusMsg.className = 'text-danger';
+                return;
+            }
+
+            // Sort by name (same as Python's sorted(os.listdir))
+            xmlFiles.sort((a, b) => a.name.localeCompare(b.name));
+
+            for (const file of xmlFiles) {
+                try {
+                    const text = await file.text();
+                    const rows = parseXML(text, file.name);
+                    allRows.push(...rows);
+                    okFiles.push(file.name);
+                    addChip(file.name, 'ok');
+                } catch (err) {
+                    errorFiles.push(file.name);
+                    addChip(`${file.name} — ${err.message}`, 'error');
+                }
+            }
+
+            // Show stats
+            statFiles.textContent   = okFiles.length;
+            statRows.textContent    = allRows.length;
+            statErrors.textContent  = errorFiles.length;
+            summaryBar.style.display = 'flex';
+
+            // Show actions
+            actionBar.style.removeProperty('display');
+
+            if (allRows.length) {
+                btnExport.disabled = false;
+                statusMsg.textContent = `✔ Đã đọc ${allRows.length} dòng từ ${okFiles.length} file.`;
+                statusMsg.className = 'text-success';
+                renderPreview();
+            } else {
+                statusMsg.textContent = 'Không có dữ liệu. Kiểm tra lại file XML.';
+                statusMsg.className = 'text-danger';
+            }
+        }
+
+        function addChip(label, type) {
+            const span = document.createElement('span');
+            span.className = `file-chip ${type}`;
+            const icon = type === 'ok'
+                ? '<i class="fas fa-check-circle me-1"></i>'
+                : '<i class="fas fa-exclamation-circle me-1"></i>';
+            span.innerHTML = icon + esc(label);
+            fileListWrap.appendChild(span);
+        }
+
+        // ── Preview table (max 20 rows) ──
+        function renderPreview() {
+            const PREVIEW_MAX = 20;
+            const cols = ALL_COLS;
+
+            // Header
+            previewHead.innerHTML = '<tr>' + cols.map(c => `<th>${esc(c)}</th>`).join('') + '</tr>';
+
+            // Body
+            const slice = allRows.slice(0, PREVIEW_MAX);
+            previewBody.innerHTML = slice.map(row =>
+                '<tr>' + cols.map(c => `<td title="${esc(row[c] || '')}">${esc(row[c] || '')}</td>`).join('') + '</tr>'
+            ).join('');
+
+            if (allRows.length > PREVIEW_MAX) {
+                previewMore.textContent = `… và ${allRows.length - PREVIEW_MAX} dòng nữa (tải Excel để xem đầy đủ)`;
+            } else {
+                previewMore.textContent = '';
+            }
+
+            previewWrap.style.display = 'block';
+        }
+
+        // ── Export to Excel ──
+        function exportExcel() {
+            if (!allRows.length) return;
+
+            btnExport.disabled = true;
+            btnExport.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Đang tạo file…';
+
+            // Build worksheet data: header row + data rows
+            const wsData = [
+                ALL_COLS,
+                ...allRows.map(row => ALL_COLS.map(c => row[c] || ''))
+            ];
+
+            const wb = XLSX.utils.book_new();
+            const ws = XLSX.utils.aoa_to_sheet(wsData);
+
+            // Column widths (approximate)
+            ws['!cols'] = ALL_COLS.map(c => ({ wch: Math.min(Math.max(c.length + 2, 12), 40) }));
+
+            XLSX.utils.book_append_sheet(wb, ws, 'Tổng hợp hóa đơn');
+            XLSX.writeFile(wb, 'tong_hop_hoa_don.xlsx');
+
+            btnExport.disabled = false;
+            btnExport.innerHTML = '<i class="fas fa-file-excel me-1"></i> Tải xuống Excel';
+            statusMsg.textContent = '✔ Đã xuất file tong_hop_hoa_don.xlsx';
+            statusMsg.className = 'text-success';
+        }
+
+        // ── XSS-safe escape ──
+        function esc(s) {
+            return String(s ?? '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;');
+        }
+    })();
+    </script>
+</body>
+</html>
