@@ -224,12 +224,25 @@ let errorLog = [];
 // (Thẻ HDon\DLHDon\TTChung, \NDHDon\NBan, \NDHDon\TToan, \NDHDon\DSHHDVu\HHDVu)
 const FIXED_COLUMNS = [
     "File", "Số hóa đơn", "Ngày hóa đơn", "Ký hiệu hóa đơn",
+    "Mã tra cứu (CQT)", "Đường dẫn/Dữ liệu QR tra cứu",
     "Đơn vị bán hàng", "MST người bán", "Địa chỉ người bán", "Hình thức thanh toán",
     "Tổng tiền (trước thuế)", "Tổng giảm trừ không chịu thuế", "Tổng tiền chiết khấu thương mại",
     "Tổng giảm trừ khác", "Tiền thuế GTGT (tổng)", "Tổng tiền thanh toán", "Tổng tiền thanh toán bằng chữ",
     "Loại dòng", "Số thứ tự", "Mã hàng hóa dịch vụ", "Tên hàng hóa dịch vụ", "Đơn vị tính",
     "Số lượng", "Đơn giá", "Tỷ lệ % chiết khấu", "Số tiền chiết khấu", "Thành tiền (dòng)", "Thuế suất"
 ];
+
+// Các cột LUÔN hiển thị (thông tin cốt lõi cần cho mọi hóa đơn), kể cả khi trống.
+// Các cột còn lại trong FIXED_COLUMNS chỉ hiện khi có ít nhất 1 dòng có dữ liệu —
+// tránh bảng bị "thừa" cột trống với những hóa đơn không dùng đến trường đó
+// (chiết khấu, giảm trừ khác, hàng hóa đặc trưng...).
+const ALWAYS_COLUMNS = new Set([
+    "File", "Số hóa đơn", "Ngày hóa đơn", "Ký hiệu hóa đơn",
+    "Mã tra cứu (CQT)", "Đường dẫn/Dữ liệu QR tra cứu",
+    "Đơn vị bán hàng", "MST người bán", "Địa chỉ người bán", "Hình thức thanh toán",
+    "Tổng tiền (trước thuế)", "Tiền thuế GTGT (tổng)", "Tổng tiền thanh toán",
+    "Tên hàng hóa dịch vụ", "Đơn vị tính", "Số lượng", "Đơn giá", "Thành tiền (dòng)", "Thuế suất"
+]);
 
 // Cột hiện tại đang hiển thị — mở rộng thêm các trường TTKhac (tự định nghĩa bởi NNT)
 // phát hiện được trong dữ liệu thực tế, được tính lại sau mỗi lần xử lý.
@@ -363,11 +376,18 @@ function parseInvoice(xmlString, fileName) {
         ...collectAllTTKhac(ttoan),
     };
 
+    // Thẻ HDon\MCCQT (Mã của cơ quan thuế) và HDon\DLQRCode (dữ liệu QR phục vụ
+    // tra cứu/thanh toán) là con TRỰC TIẾP của thẻ gốc <HDon>, không nằm trong DLHDon.
+    const maTraCuu = getTextByTag(root, 'MCCQT');
+    const qrCode = getTextByTag(root, 'DLQRCode');
+
     const common = {
         "File":                              fileName,
         "Số hóa đơn":                        getTextByTag(ttchung, 'SHDon'),
         "Ngày hóa đơn":                      getTextByTag(ttchung, 'NLap'),
         "Ký hiệu hóa đơn":                  getTextByTag(ttchung, 'KHHDon'),
+        "Mã tra cứu (CQT)":                  maTraCuu,
+        "Đường dẫn/Dữ liệu QR tra cứu":      qrCode,
         "Đơn vị bán hàng":                   nban ? getTextByTag(nban, 'Ten')  : '',
         "MST người bán":                      nban ? getTextByTag(nban, 'MST')  : '',
         "Địa chỉ người bán":                 nban ? getTextByTag(nban, 'DChi') : '',
@@ -419,14 +439,32 @@ function parseInvoice(xmlString, fileName) {
 // trường TTKhac tự định nghĩa phát hiện được trong dữ liệu thực tế (nếu có),
 // theo đúng thứ tự xuất hiện đầu tiên.
 function recomputeColumns() {
-    const seen = new Set(FIXED_COLUMNS);
-    const extra = [];
+    const hasValue = new Set();
     for (const row of allRows) {
-        for (const key of Object.keys(row)) {
-            if (!seen.has(key)) { seen.add(key); extra.push(key); }
+        for (const [key, val] of Object.entries(row)) {
+            if (val !== '' && val != null) hasValue.add(key);
         }
     }
-    COLUMNS = [...FIXED_COLUMNS, ...extra];
+
+    const seen = new Set();
+    const cols = [];
+
+    // Cột luôn hiển thị, theo đúng thứ tự khai báo.
+    for (const c of FIXED_COLUMNS) {
+        if (ALWAYS_COLUMNS.has(c)) { cols.push(c); seen.add(c); }
+    }
+    // Cột còn lại trong danh sách chuẩn — chỉ thêm nếu có dữ liệu thực tế.
+    for (const c of FIXED_COLUMNS) {
+        if (!seen.has(c) && hasValue.has(c)) { cols.push(c); seen.add(c); }
+    }
+    // Trường TTKhac / thông tin đặc trưng tự phát hiện — chỉ thêm nếu có dữ liệu.
+    for (const row of allRows) {
+        for (const key of Object.keys(row)) {
+            if (!seen.has(key) && hasValue.has(key)) { seen.add(key); cols.push(key); }
+        }
+    }
+
+    COLUMNS = cols;
 }
 
 // ════════════════════════════════════════════════════════════
