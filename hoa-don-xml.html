@@ -31,16 +31,24 @@
         #drop-zone .dz-hint  { font-size: .85rem; color: #888; margin-top: .35rem; }
 
         /* ── File list ── */
-        #file-list { list-style: none; padding: 0; margin: 0; }
+        #file-list {
+            list-style: none; padding: .35rem; margin: 0;
+            max-height: 320px; overflow-y: auto;
+            border: 1px solid #ececf3; border-radius: .5rem; background: #fff;
+        }
         #file-list li {
             display: flex; align-items: center; gap: .6rem;
-            padding: .45rem .75rem;
+            padding: .45rem .6rem;
             border-radius: .4rem;
             font-size: .875rem;
         }
         #file-list li:nth-child(odd)  { background: #f7f7fb; }
         #file-list li .fi-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         #file-list li .fi-badge { font-size: .7rem; padding: 2px 7px; border-radius: 3px; font-weight: 600; flex-shrink: 0; }
+        #file-list-wrap .file-list-head {
+            position: sticky; top: 0; z-index: 1;
+            background: #fff; padding-bottom: .5rem;
+        }
 
         /* ── Stats bar ── */
         .stats-bar { display: flex; flex-wrap: wrap; gap: .75rem; }
@@ -56,11 +64,18 @@
         .stat-card .stat-label { font-size: .78rem; color: #888; margin-top: .2rem; }
 
         /* ── Preview table ── */
-        .preview-wrap { overflow-x: auto; border-radius: .6rem; box-shadow: 0 4px 14px -3px rgba(0,0,0,.08); }
-        #preview-table { font-size: .8rem; margin: 0; min-width: 900px; }
-        #preview-table thead th { background: #4c527d; color: #fff; font-weight: 600; white-space: nowrap; position: sticky; top: 0; }
+        .preview-wrap { overflow: auto; max-height: 560px; border-radius: .6rem; box-shadow: 0 4px 14px -3px rgba(0,0,0,.08); }
+        #preview-table { font-size: .92rem; margin: 0; min-width: 1400px; }
+        #preview-table thead th {
+            background: #4c527d; color: #fff; font-weight: 600; white-space: nowrap;
+            position: sticky; top: 0; z-index: 2;
+            padding: .65rem .85rem;
+        }
+        #preview-table tbody tr:nth-child(even) td { background: #f9f9fc; }
         #preview-table tbody tr:hover td { background: #fff5f0; }
-        #preview-table td { vertical-align: middle; white-space: nowrap; }
+        #preview-table td { vertical-align: middle; white-space: nowrap; padding: .55rem .85rem; }
+        #preview-table td.num { text-align: right; font-variant-numeric: tabular-nums; font-feature-settings: "tnum"; }
+        #preview-table th.num { text-align: right; }
 
         /* ── Log ── */
         #log-box { font-size: .8rem; background: #1e1e2e; color: #cdd6f4; border-radius: .6rem; padding: 1rem 1.25rem; max-height: 220px; overflow-y: auto; display: none; }
@@ -127,7 +142,7 @@
         <input type="file" id="file-input" accept=".xml,text/xml,application/xml" multiple hidden>
 
         <div id="file-list-wrap" class="mt-3 d-none">
-            <div class="d-flex justify-content-between align-items-center mb-2">
+            <div class="file-list-head d-flex justify-content-between align-items-center mb-2">
                 <span id="file-count-label" class="fw-bold" style="font-size:.875rem;"></span>
                 <button class="btn btn-sm btn-outline-secondary" id="btn-clear">
                     <i class="fas fa-trash me-1"></i>Xóa tất cả
@@ -213,6 +228,26 @@ const COLUMNS = [
     "Tên hàng hóa dịch vụ", "Đơn vị tính", "Số lượng", "Đơn giá",
     "Thành tiền (dòng)", "Thuế suất", "Tiền thuế GTGT (dòng)", "Tổng tiền dòng (Amount)"
 ];
+
+// Cột chứa số tiền / số lượng — cần định dạng số & căn phải
+const NUMERIC_COLUMNS = new Set([
+    "Tổng tiền (trước thuế)", "Tiền thuế GTGT (tổng)", "Tổng tiền thanh toán",
+    "Số lượng", "Đơn giá", "Thành tiền (dòng)",
+    "Tiền thuế GTGT (dòng)", "Tổng tiền dòng (Amount)"
+]);
+
+function toNumberOrNull(value) {
+    if (value === '' || value == null) return null;
+    const cleaned = String(value).replace(/,/g, '').trim();
+    if (cleaned === '' || Number.isNaN(Number(cleaned))) return null;
+    return Number(cleaned);
+}
+
+function formatNumberVN(value) {
+    const num = toNumberOrNull(value);
+    if (num === null) return esc(value);
+    return num.toLocaleString('vi-VN', { maximumFractionDigits: 2 });
+}
 
 // ════════════════════════════════════════════════════════════
 //  XML HELPERS
@@ -375,9 +410,13 @@ function addFiles(files) {
 function renderPreview() {
     const MAX = 200;
     const rows = allRows.slice(0, MAX);
-    $id('preview-thead').innerHTML = `<tr>${COLUMNS.map(c => `<th>${esc(c)}</th>`).join('')}</tr>`;
+    $id('preview-thead').innerHTML = `<tr>${COLUMNS.map(c => `<th class="${NUMERIC_COLUMNS.has(c) ? 'num' : ''}">${esc(c)}</th>`).join('')}</tr>`;
     $id('preview-tbody').innerHTML = rows.map(r =>
-        `<tr>${COLUMNS.map(c => `<td>${esc(r[c])}</td>`).join('')}</tr>`
+        `<tr>${COLUMNS.map(c => {
+            const isNum = NUMERIC_COLUMNS.has(c);
+            const display = isNum ? formatNumberVN(r[c]) : esc(r[c]);
+            return `<td class="${isNum ? 'num' : ''}">${display}</td>`;
+        }).join('')}</tr>`
     ).join('');
     $id('preview-note').textContent = allRows.length > MAX
         ? `(hiển thị ${MAX}/${allRows.length} dòng — xuất Excel để xem tất cả)`
@@ -431,7 +470,7 @@ async function processFiles() {
 }
 
 // ════════════════════════════════════════════════════════════
-//  EXCEL EXPORT (lazy-load SheetJS)
+//  EXCEL EXPORT (lazy-load ExcelJS — hỗ trợ style, màu, định dạng số)
 // ════════════════════════════════════════════════════════════
 function loadScript(src) {
     return new Promise((resolve, reject) => {
@@ -442,24 +481,93 @@ function loadScript(src) {
     });
 }
 
+const THIN_BORDER = { style: 'thin', color: { argb: 'FFE0E0E8' } };
+const CELL_BORDER = { top: THIN_BORDER, left: THIN_BORDER, bottom: THIN_BORDER, right: THIN_BORDER };
+
+function colLetter(idx) {
+    // 0-based index -> Excel column letter (A, B, ..., Z, AA, ...)
+    let n = idx + 1, s = '';
+    while (n > 0) {
+        const rem = (n - 1) % 26;
+        s = String.fromCharCode(65 + rem) + s;
+        n = Math.floor((n - 1) / 26);
+    }
+    return s;
+}
+
 async function exportExcel() {
     if (!allRows.length) return;
     const btn = $id('btn-export');
     btn.disabled = true;
     btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Đang tạo file...';
     try {
-        if (!window.XLSX) await loadScript('https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js');
-        const XLSX = window.XLSX;
-        const wsData = [COLUMNS, ...allRows.map(r => COLUMNS.map(c => r[c] ?? ''))];
-        const ws = XLSX.utils.aoa_to_sheet(wsData);
-        ws['!cols'] = COLUMNS.map((c, i) => {
-            const max = Math.max(c.length, ...allRows.slice(0, 50).map(r => String(r[c] ?? '').length));
-            return { wch: Math.min(Math.max(max + 2, 10), 50) };
+        if (!window.ExcelJS) await loadScript('https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js');
+        const ExcelJS = window.ExcelJS;
+
+        const workbook = new ExcelJS.Workbook();
+        workbook.creator = 'NotDore';
+        workbook.created = new Date();
+
+        const sheet = workbook.addWorksheet('Hóa đơn', {
+            views: [{ state: 'frozen', ySplit: 1 }],
         });
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, 'Hóa đơn');
+
+        sheet.columns = COLUMNS.map(c => {
+            const sample = allRows.slice(0, 80).map(r => String(r[c] ?? '').length);
+            const width = Math.min(Math.max(c.length, ...sample) + 3, 42);
+            return { header: c, key: c, width };
+        });
+
+        // ── Header row ──
+        const headerRow = sheet.getRow(1);
+        headerRow.height = 26;
+        headerRow.eachCell(cell => {
+            cell.font = { bold: true, color: { argb: 'FFFFFFFF' }, size: 11, name: 'Calibri' };
+            cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFED6524' } };
+            cell.alignment = { vertical: 'middle', horizontal: 'center', wrapText: true };
+            cell.border = CELL_BORDER;
+        });
+
+        // ── Data rows ──
+        allRows.forEach((r, idx) => {
+            const rowValues = {};
+            COLUMNS.forEach(c => {
+                const raw = r[c] ?? '';
+                const num = NUMERIC_COLUMNS.has(c) ? toNumberOrNull(raw) : null;
+                rowValues[c] = num !== null ? num : raw;
+            });
+            const row = sheet.addRow(rowValues);
+            row.eachCell((cell, colNumber) => {
+                const colName = COLUMNS[colNumber - 1];
+                cell.border = CELL_BORDER;
+                cell.font = { size: 10.5, name: 'Calibri' };
+                if (NUMERIC_COLUMNS.has(colName)) {
+                    cell.numFmt = '#,##0';
+                    cell.alignment = { horizontal: 'right', vertical: 'middle' };
+                } else {
+                    cell.alignment = { vertical: 'middle' };
+                }
+                if (idx % 2 === 1) {
+                    cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF7F7FB' } };
+                }
+            });
+        });
+
+        // ── Auto-filter + misc ──
+        sheet.autoFilter = { from: 'A1', to: `${colLetter(COLUMNS.length - 1)}1` };
+        sheet.properties.defaultRowHeight = 20;
+
+        const buffer = await workbook.xlsx.writeBuffer();
+        const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+        const url = URL.createObjectURL(blob);
         const date = new Date().toISOString().slice(0, 10);
-        XLSX.writeFile(wb, `tong_hop_hoa_don_${date}.xlsx`);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `tong_hop_hoa_don_${date}.xlsx`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
     } catch (e) {
         alert('Không thể xuất Excel: ' + e.message);
     }
