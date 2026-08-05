@@ -220,21 +220,38 @@ let selectedFiles = [];
 let allRows = [];
 let errorLog = [];
 
-const COLUMNS = [
+// Cột cố định — đúng theo Quy định kỹ thuật định dạng hoá đơn điện tử
+// (Thẻ HDon\DLHDon\TTChung, \NDHDon\NBan, \NDHDon\TToan, \NDHDon\DSHHDVu\HHDVu)
+const FIXED_COLUMNS = [
     "File", "Số hóa đơn", "Ngày hóa đơn", "Ký hiệu hóa đơn",
-    "Đơn vị bán hàng", "MST người bán", "Địa chỉ người bán",
-    "Biển số xe", "Hình thức thanh toán",
-    "Tổng tiền (trước thuế)", "Tiền thuế GTGT (tổng)", "Tổng tiền thanh toán",
-    "Tên hàng hóa dịch vụ", "Đơn vị tính", "Số lượng", "Đơn giá",
-    "Thành tiền (dòng)", "Thuế suất", "Tiền thuế GTGT (dòng)", "Tổng tiền dòng (Amount)"
+    "Đơn vị bán hàng", "MST người bán", "Địa chỉ người bán", "Hình thức thanh toán",
+    "Tổng tiền (trước thuế)", "Tổng giảm trừ không chịu thuế", "Tổng tiền chiết khấu thương mại",
+    "Tổng giảm trừ khác", "Tiền thuế GTGT (tổng)", "Tổng tiền thanh toán", "Tổng tiền thanh toán bằng chữ",
+    "Loại dòng", "Số thứ tự", "Mã hàng hóa dịch vụ", "Tên hàng hóa dịch vụ", "Đơn vị tính",
+    "Số lượng", "Đơn giá", "Tỷ lệ % chiết khấu", "Số tiền chiết khấu", "Thành tiền (dòng)", "Thuế suất"
 ];
 
-// Cột chứa số tiền / số lượng — cần định dạng số & căn phải
+// Cột hiện tại đang hiển thị — mở rộng thêm các trường TTKhac (tự định nghĩa bởi NNT)
+// phát hiện được trong dữ liệu thực tế, được tính lại sau mỗi lần xử lý.
+let COLUMNS = [...FIXED_COLUMNS];
+
+// Cột chứa số tiền / số lượng — cần định dạng số & căn phải.
+// Thuế suất KHÔNG nằm trong danh sách này vì theo quy định đây là kiểu "Chuỗi ký tự"
+// (có thể mang giá trị đặc biệt như KCT, KKKNT chứ không luôn là số %).
 const NUMERIC_COLUMNS = new Set([
-    "Tổng tiền (trước thuế)", "Tiền thuế GTGT (tổng)", "Tổng tiền thanh toán",
-    "Số lượng", "Đơn giá", "Thành tiền (dòng)",
-    "Tiền thuế GTGT (dòng)", "Tổng tiền dòng (Amount)"
+    "Tổng tiền (trước thuế)", "Tổng giảm trừ không chịu thuế", "Tổng tiền chiết khấu thương mại",
+    "Tổng giảm trừ khác", "Tiền thuế GTGT (tổng)", "Tổng tiền thanh toán",
+    "Số thứ tự", "Số lượng", "Đơn giá", "Tỷ lệ % chiết khấu", "Số tiền chiết khấu", "Thành tiền (dòng)"
 ]);
+
+// Tính chất dòng hàng hóa/dịch vụ (thẻ TChat trong HHDVu) — Phụ lục IV Quy định kỹ thuật
+const TCHAT_LABELS = {
+    '1': 'Hàng hóa, dịch vụ',
+    '2': 'Chiết khấu thương mại',
+    '3': 'Khuyến mãi không thu tiền',
+    '4': 'Ghi chú / diễn giải',
+    '5': 'Hàng hóa đặc trưng',
+};
 
 function toNumberOrNull(value) {
     if (value === '' || value == null) return null;
@@ -272,36 +289,54 @@ function findFirst(root, localName) {
     return findAllDeep(root, localName)[0] || null;
 }
 
+// Chỉ lấy các thẻ con TRỰC TIẾP (không đệ quy) — dùng cho <TTKhac>, <TTin>
+// vì các thẻ này có thể lồng nhau ở nhiều cấp khác nhau trong hoá đơn.
+function directChildren(node, localName) {
+    const out = [];
+    for (const child of node.children || []) {
+        const name = child.localName || child.tagName || '';
+        const local = name.includes(':') ? name.split(':').pop() : name;
+        if (local === localName) out.push(child);
+    }
+    return out;
+}
+
 function getTextByTag(root, tag) {
     const node = findFirst(root, tag);
     return node ? (node.textContent || '').trim() : '';
 }
 
-function getTTKhacValue(node, fieldName) {
-    for (const ttkhac of findAllDeep(node, 'TTKhac')) {
-        for (const ttin of findAllDeep(ttkhac, 'TTin')) {
-            const truong = findFirst(ttin, 'TTruong');
-            if (truong && (truong.textContent || '').trim() === fieldName) {
-                const dlieu = findFirst(ttin, 'DLieu');
-                return dlieu ? (dlieu.textContent || '').trim() : '';
-            }
-        }
+// Thẻ <TTKhac> chứa các cặp <TTin><TTruong/><KDLieu/><DLieu/></TTin> do người
+// nộp thuế (hoặc phần mềm hóa đơn) TỰ ĐỊNH NGHĨA — theo Quy định kỹ thuật,
+// KHÔNG có tên trường cố định (ví dụ: biển số xe, mã đơn hàng, số hợp đồng...).
+// Vì vậy đọc TOÀN BỘ các trường có trong TTKhac ở từng vị trí, thay vì đoán
+// trước một vài tên trường cụ thể — để không bỏ sót dữ liệu của các phần mềm
+// hóa đơn khác nhau (MISA, VNPT, Viettel, ...).
+function collectFieldPairs(container, prefix = '') {
+    const result = {};
+    for (const ttin of directChildren(container, 'TTin')) {
+        const truong = findFirst(ttin, 'TTruong');
+        const dlieu = findFirst(ttin, 'DLieu');
+        const key = truong ? (truong.textContent || '').trim() : '';
+        if (!key) continue;
+        result[prefix ? `${prefix}: ${key}` : key] = dlieu ? (dlieu.textContent || '').trim() : '';
     }
-    return '';
+    return result;
 }
 
-function getBienSoXe(root) {
-    const nban = findFirst(root, 'NBan');
-    return nban ? getTTKhacValue(nban, 'SoPhuongTien') : '';
-}
-
-function parseTToan(root, tag) {
-    const ttoan = findFirst(root, 'TToan');
-    return ttoan ? getTextByTag(ttoan, tag) : '';
+function collectAllTTKhac(node, prefix = '') {
+    if (!node) return {};
+    let result = {};
+    for (const ttkhac of directChildren(node, 'TTKhac')) {
+        Object.assign(result, collectFieldPairs(ttkhac, prefix));
+    }
+    return result;
 }
 
 // ════════════════════════════════════════════════════════════
-//  INVOICE PARSER
+//  INVOICE PARSER — theo đúng cấu trúc thẻ trong Quy định kỹ thuật
+//  định dạng hóa đơn điện tử (Thông tư 78/2021/TT-BTC, Nghị định 123/2020,
+//  Nghị định 70/2025): HDon\DLHDon\{TTChung, NDHDon{NBan, NMua, DSHHDVu, TToan}}
 // ════════════════════════════════════════════════════════════
 function parseInvoice(xmlString, fileName) {
     const parser = new DOMParser();
@@ -310,42 +345,88 @@ function parseInvoice(xmlString, fileName) {
     const parseErr = doc.querySelector('parsererror');
     if (parseErr) throw new Error('XML không hợp lệ: ' + parseErr.textContent.slice(0, 120));
 
-    const root = doc.documentElement;
-    const nban = findFirst(root, 'NBan');
+    const root = doc.documentElement;                              // <HDon>
+    const dlhdon = findFirst(root, 'DLHDon') || root;               // \DLHDon
+    const ttchung = findFirst(dlhdon, 'TTChung') || dlhdon;         // \TTChung
+    const ndhdon = findFirst(dlhdon, 'NDHDon') || dlhdon;           // \NDHDon
+    const nban = findFirst(ndhdon, 'NBan');                         // \NDHDon\NBan
+    const nmua = findFirst(ndhdon, 'NMua');                         // \NDHDon\NMua
+    const ttoan = findFirst(ndhdon, 'TToan');                       // \NDHDon\TToan
 
-    const common = {
-        "File":                    fileName,
-        "Số hóa đơn":             getTextByTag(root, 'SHDon'),
-        "Ngày hóa đơn":           getTextByTag(root, 'NLap'),
-        "Ký hiệu hóa đơn":       getTextByTag(root, 'KHHDon'),
-        "Đơn vị bán hàng":        nban ? getTextByTag(nban, 'Ten')  : '',
-        "MST người bán":           nban ? getTextByTag(nban, 'MST')  : '',
-        "Địa chỉ người bán":      nban ? getTextByTag(nban, 'DChi') : '',
-        "Biển số xe":             getBienSoXe(root),
-        "Hình thức thanh toán":   getTextByTag(root, 'HTTToan'),
-        "Tổng tiền (trước thuế)": parseTToan(root, 'TgTCThue'),
-        "Tiền thuế GTGT (tổng)":  parseTToan(root, 'TgTThue'),
-        "Tổng tiền thanh toán":   parseTToan(root, 'TgTTTBSo'),
+    // Các trường TTKhac (tự định nghĩa) gộp từ mọi vị trí có thể xuất hiện theo quy định:
+    // DLHDon, TTChung, NBan, NMua, TToan — áp dụng chung cho cả hóa đơn.
+    const commonExtra = {
+        ...collectAllTTKhac(dlhdon),
+        ...collectAllTTKhac(ttchung),
+        ...collectAllTTKhac(nban, 'Người bán'),
+        ...collectAllTTKhac(nmua, 'Người mua'),
+        ...collectAllTTKhac(ttoan),
     };
 
-    const items = findAllDeep(root, 'HHDVu');
-    if (!items.length) {
-        const row = { ...common };
-        COLUMNS.slice(12).forEach(k => { row[k] = ''; });
-        return [row];
-    }
+    const common = {
+        "File":                              fileName,
+        "Số hóa đơn":                        getTextByTag(ttchung, 'SHDon'),
+        "Ngày hóa đơn":                      getTextByTag(ttchung, 'NLap'),
+        "Ký hiệu hóa đơn":                  getTextByTag(ttchung, 'KHHDon'),
+        "Đơn vị bán hàng":                   nban ? getTextByTag(nban, 'Ten')  : '',
+        "MST người bán":                      nban ? getTextByTag(nban, 'MST')  : '',
+        "Địa chỉ người bán":                 nban ? getTextByTag(nban, 'DChi') : '',
+        "Hình thức thanh toán":              getTextByTag(ttchung, 'HTTToan'),
+        "Tổng tiền (trước thuế)":            ttoan ? getTextByTag(ttoan, 'TgTCThue')  : '',
+        "Tổng giảm trừ không chịu thuế":     ttoan ? getTextByTag(ttoan, 'TGTKCThue') : '',
+        "Tổng tiền chiết khấu thương mại":   ttoan ? getTextByTag(ttoan, 'TTCKTMai')  : '',
+        "Tổng giảm trừ khác":                ttoan ? getTextByTag(ttoan, 'TGTKhac')   : '',
+        "Tiền thuế GTGT (tổng)":             ttoan ? getTextByTag(ttoan, 'TgTThue')   : '',
+        "Tổng tiền thanh toán":              ttoan ? getTextByTag(ttoan, 'TgTTTBSo')  : '',
+        "Tổng tiền thanh toán bằng chữ":     ttoan ? getTextByTag(ttoan, 'TgTTTBChu') : '',
+        ...commonExtra,
+    };
 
-    return items.map(item => ({
-        ...common,
-        "Tên hàng hóa dịch vụ":      getTextByTag(item, 'THHDVu'),
-        "Đơn vị tính":               getTextByTag(item, 'DVTinh'),
-        "Số lượng":                  getTextByTag(item, 'SLuong'),
-        "Đơn giá":                   getTextByTag(item, 'DGia'),
-        "Thành tiền (dòng)":         getTextByTag(item, 'ThTien'),
-        "Thuế suất":                 getTextByTag(item, 'TSuat'),
-        "Tiền thuế GTGT (dòng)":     getTTKhacValue(item, 'VATAmount'),
-        "Tổng tiền dòng (Amount)":   getTTKhacValue(item, 'Amount'),
-    }));
+    // Thẻ NDHDon\DSHHDVu\HHDVu — mỗi thẻ là 1 dòng hàng hóa/dịch vụ (có thể lặp nhiều lần).
+    // Không bắt buộc phải có (ví dụ hóa đơn điều chỉnh không đổi thông tin hàng hóa).
+    const items = findAllDeep(ndhdon, 'HHDVu');
+    if (!items.length) return [{ ...common }];
+
+    return items.map(item => {
+        const tchat = getTextByTag(item, 'TChat');
+        // TTHHDTrung chỉ bắt buộc khi TChat = "5" (hàng hóa đặc trưng: vàng, xe, BĐS, bảo hiểm...)
+        const ttHDTrung = findFirst(item, 'TTHHDTrung');
+        const itemExtra = {
+            ...collectAllTTKhac(item),
+            ...(ttHDTrung ? collectFieldPairs(ttHDTrung, 'Đặc trưng') : {}),
+        };
+        return {
+            ...common,
+            "Loại dòng":               TCHAT_LABELS[tchat] || (tchat ? `Khác (${tchat})` : ''),
+            "Số thứ tự":               getTextByTag(item, 'STT'),
+            "Mã hàng hóa dịch vụ":     getTextByTag(item, 'MHHDVu'),
+            "Tên hàng hóa dịch vụ":    getTextByTag(item, 'THHDVu'),
+            "Đơn vị tính":             getTextByTag(item, 'DVTinh'),
+            // Số lượng/Đơn giá không bắt buộc với dòng "Ghi chú/diễn giải" (TChat=4)
+            "Số lượng":                getTextByTag(item, 'SLuong'),
+            "Đơn giá":                 getTextByTag(item, 'DGia'),
+            "Tỷ lệ % chiết khấu":      getTextByTag(item, 'TLCKhau'),
+            "Số tiền chiết khấu":      getTextByTag(item, 'STCKhau'),
+            // Thành tiền không bắt buộc khi TChat = "4" (Ghi chú/diễn giải) — có thể để trống
+            "Thành tiền (dòng)":       getTextByTag(item, 'ThTien'),
+            "Thuế suất":               getTextByTag(item, 'TSuat'),
+            ...itemExtra,
+        };
+    });
+}
+
+// Sau khi xử lý toàn bộ file, tính lại danh sách cột: cột cố định + các
+// trường TTKhac tự định nghĩa phát hiện được trong dữ liệu thực tế (nếu có),
+// theo đúng thứ tự xuất hiện đầu tiên.
+function recomputeColumns() {
+    const seen = new Set(FIXED_COLUMNS);
+    const extra = [];
+    for (const row of allRows) {
+        for (const key of Object.keys(row)) {
+            if (!seen.has(key)) { seen.add(key); extra.push(key); }
+        }
+    }
+    COLUMNS = [...FIXED_COLUMNS, ...extra];
 }
 
 // ════════════════════════════════════════════════════════════
@@ -453,6 +534,8 @@ async function processFiles() {
             log(`✗ ${file.name} — ${e.message}`, 'err');
         }
     }
+
+    recomputeColumns();
 
     $id('stat-files').textContent    = selectedFiles.length;
     $id('stat-invoices').textContent = invoiceSet.size;
