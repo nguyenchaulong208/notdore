@@ -37,7 +37,7 @@
         .drop-zone .drop-label { font-size: 1rem; color: #4c527d; font-weight: 600; }
         .drop-zone .drop-hint { font-size: .82rem; color: #9194ab; margin-top: .35rem; }
 
-        /* ── File list ── */
+        /* ── File chips ── */
         #file-list-wrap { margin-top: 1.25rem; }
         .file-chip {
             display: inline-flex; align-items: center; gap: .4rem;
@@ -48,44 +48,89 @@
         .file-chip.error { background: #fee2e2; color: #b91c1c; }
         .file-chip.ok    { background: #dcfce7; color: #15803d; }
 
-        /* ── Action bar ── */
-        .action-bar { display: flex; flex-wrap: wrap; gap: .75rem; align-items: center; margin-top: 1.5rem; }
-        .action-bar .btn { min-width: 140px; }
-        #status-msg { font-size: .9rem; color: #4c527d; }
-        #status-msg.text-danger { color: #dc2626 !important; }
-        #status-msg.text-success { color: #15803d !important; }
-
         /* ── Summary stats ── */
         #summary-bar {
-            display: none;
-            gap: 1rem;
-            flex-wrap: wrap;
-            background: #f0fdf4;
-            border: 1px solid #bbf7d0;
-            border-radius: .6rem;
-            padding: .85rem 1.25rem;
-            margin-top: 1.25rem;
+            display: none; gap: 1rem; flex-wrap: wrap;
+            background: #f0fdf4; border: 1px solid #bbf7d0;
+            border-radius: .6rem; padding: .85rem 1.25rem; margin-top: 1.25rem;
         }
         .stat-item { font-size: .88rem; color: #15803d; }
         .stat-item strong { font-size: 1.1rem; }
 
-        /* ── Preview table ── */
-        #preview-wrap { display: none; margin-top: 2rem; }
-        #preview-wrap h2 { font-size: 1.1rem; font-family: 'Quicksand', sans-serif; font-weight: 700; margin-bottom: .75rem; }
-        .table-scroller { overflow-x: auto; border-radius: .6rem; box-shadow: 0 2px 8px rgba(0,0,0,.06); }
-        #preview-table { min-width: 900px; font-size: .82rem; margin: 0; }
-        #preview-table thead th { background: #5029ce; color: #fff; white-space: nowrap; border: none; padding: .55rem .75rem; }
-        #preview-table tbody tr:hover { background: #f5f3ff; }
-        #preview-table td { vertical-align: middle; padding: .45rem .75rem; border-color: #ede9fe; white-space: nowrap; max-width: 240px; overflow: hidden; text-overflow: ellipsis; }
+        /* ── Action bar ── */
+        .action-bar { display: flex; flex-wrap: wrap; gap: .75rem; align-items: center; margin-top: 1.5rem; }
+        .action-bar .btn { min-width: 140px; }
+        #status-msg { font-size: .9rem; color: #4c527d; }
+        #status-msg.text-danger  { color: #dc2626 !important; }
+        #status-msg.text-success { color: #15803d !important; }
+
+        /* ── Column panel ── */
+        #col-panel {
+            display: none;
+            background: #fff;
+            border: 1px solid #e5e1fb;
+            border-radius: .65rem;
+            padding: 1.1rem 1.25rem 1rem;
+            margin-top: 1.25rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,.05);
+        }
+        #col-panel .cp-title {
+            font-family: 'Quicksand', sans-serif;
+            font-size: .88rem; font-weight: 700;
+            color: #5029ce; margin-bottom: .75rem;
+            display: flex; align-items: center; gap: .5rem;
+        }
+        .col-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: .4rem .75rem;
+        }
+        .col-check-label {
+            display: flex; align-items: center; gap: .45rem;
+            font-size: .84rem; color: #4c527d; cursor: pointer;
+            padding: .25rem .35rem; border-radius: .3rem;
+            transition: background .15s;
+        }
+        .col-check-label:hover { background: #f5f3ff; }
+        .col-check-label input { accent-color: #5029ce; width: 14px; height: 14px; cursor: pointer; }
+        .col-check-label.is-extra { color: #9194ab; }
+        .col-check-label.is-extra input { accent-color: #9194ab; }
+
+        /* ── Preview section (full-width) ── */
+        #preview-section {
+            display: none;
+            background: #f8f7ff;
+            border-top: 1px solid #e5e1fb;
+            border-bottom: 1px solid #e5e1fb;
+            padding: 1.5rem 0 2rem;
+            margin-top: 2rem;
+        }
+        #preview-section h2 {
+            font-size: 1.05rem; font-family: 'Quicksand', sans-serif;
+            font-weight: 700; margin-bottom: .75rem;
+        }
+        .table-scroller { overflow-x: auto; border-radius: .6rem; box-shadow: 0 2px 10px rgba(0,0,0,.07); }
+        #preview-table { font-size: .81rem; margin: 0; white-space: nowrap; }
+        #preview-table thead th {
+            background: #5029ce; color: #fff;
+            border: none; padding: .5rem .7rem;
+            position: sticky; top: 0; z-index: 1;
+        }
+        #preview-table thead th.is-extra-col { background: #7c5be8; }
+        #preview-table tbody tr:hover { background: #f0eeff; }
+        #preview-table td {
+            vertical-align: middle; padding: .4rem .7rem;
+            border-color: #ede9fe; max-width: 280px;
+            overflow: hidden; text-overflow: ellipsis;
+        }
+        #preview-table td.is-extra-col { color: #7c7ea0; background: #faf9ff; }
         .preview-more { font-size: .82rem; color: #9194ab; text-align: center; padding: .6rem 0 0; }
 
         /* ── How-to card ── */
         .howto-card {
-            background: #fff;
-            border-radius: .75rem;
+            background: #fff; border-radius: .75rem;
             box-shadow: 0 2px 8px rgba(0,0,0,.06);
-            padding: 1.5rem;
-            margin-top: 2.5rem;
+            padding: 1.5rem; margin-top: 2.5rem;
         }
         .howto-card h3 { font-family: 'Quicksand', sans-serif; font-size: 1rem; font-weight: 700; color: #ed6524; margin-bottom: 1rem; }
         .howto-step { display: flex; gap: .75rem; margin-bottom: .85rem; align-items: flex-start; }
@@ -97,10 +142,14 @@
         }
         .step-text { font-size: .9rem; color: #4c527d; padding-top: .15rem; }
 
-        /* ── Responsive ── */
+        /* ── Toggle col-panel button ── */
+        #btn-cols { border-color: #c9b8f5; color: #5029ce; }
+        #btn-cols:hover { background: #f0eeff; }
+
         @media (max-width: 575.98px) {
             .drop-zone { padding: 1.75rem 1rem; }
             .tool-header h1 { font-size: 1.4rem; }
+            .col-grid { grid-template-columns: 1fr 1fr; }
         }
     </style>
 </head>
@@ -125,7 +174,7 @@
 
             <div class="tool-header">
                 <h1><i class="fas fa-file-invoice me-2" style="color:#ed6524"></i>Tổng hợp XML Hóa đơn → Excel</h1>
-                <p>Tải lên nhiều file XML hóa đơn điện tử (ký hiệu <code>.xml</code>). Công cụ phân tích từng dòng hàng, ghép thông tin chung và xuất ra file <strong>.xlsx</strong> ngay trên trình duyệt — không cần cài đặt, không gửi dữ liệu lên server.</p>
+                <p>Tải lên nhiều file XML hóa đơn điện tử (<code>.xml</code>). Công cụ phân tích từng dòng hàng, ghép thông tin chung và xuất ra file <strong>.xlsx</strong> ngay trên trình duyệt — không cần cài đặt, không gửi dữ liệu lên server.</p>
             </div>
 
             <!-- Drop zone -->
@@ -136,7 +185,7 @@
                 <div class="drop-hint">Hỗ trợ nhiều file cùng lúc · Chỉ đọc trên máy bạn, không gửi đi đâu</div>
             </div>
 
-            <!-- Selected files -->
+            <!-- File chips -->
             <div id="file-list-wrap"></div>
 
             <!-- Stats -->
@@ -146,10 +195,13 @@
                 <div class="stat-item">⚠️ Lỗi: <strong id="stat-errors">0</strong></div>
             </div>
 
-            <!-- Actions -->
+            <!-- Action bar -->
             <div class="action-bar" id="action-bar" style="display:none!important">
                 <button class="btn btn-primary" id="btn-export" disabled>
                     <i class="fas fa-file-excel me-1"></i> Tải xuống Excel
+                </button>
+                <button class="btn btn-outline-secondary" id="btn-cols">
+                    <i class="fas fa-columns me-1"></i> Chọn cột hiển thị
                 </button>
                 <button class="btn btn-outline-secondary" id="btn-clear">
                     <i class="fas fa-trash-alt me-1"></i> Xóa tất cả
@@ -157,19 +209,20 @@
                 <span id="status-msg"></span>
             </div>
 
-            <!-- Preview -->
-            <div id="preview-wrap">
-                <h2><i class="fas fa-table me-2" style="color:#5029ce"></i>Xem trước dữ liệu</h2>
-                <div class="table-scroller">
-                    <table class="table table-bordered table-sm" id="preview-table">
-                        <thead id="preview-head"></thead>
-                        <tbody id="preview-body"></tbody>
-                    </table>
+            <!-- Column selector panel -->
+            <div id="col-panel">
+                <div class="cp-title">
+                    <i class="fas fa-table-columns"></i>
+                    Chọn cột — mặc định bao gồm cột cần thiết; cột mờ là thông tin bổ sung
                 </div>
-                <p class="preview-more" id="preview-more"></p>
+                <div class="col-grid" id="col-grid"></div>
+                <div style="margin-top:.85rem; font-size:.8rem; color:#9194ab;">
+                    <i class="fas fa-info-circle me-1"></i>
+                    Cột được chọn sẽ hiển thị trong bảng xem trước và được xuất ra Excel.
+                </div>
             </div>
 
-            <!-- How to -->
+            <!-- How-to -->
             <div class="howto-card">
                 <h3><i class="fas fa-info-circle me-2"></i>Hướng dẫn sử dụng</h3>
                 <div class="howto-step">
@@ -182,16 +235,30 @@
                 </div>
                 <div class="howto-step">
                     <div class="step-num">3</div>
-                    <div class="step-text">Nhấn <strong>Tải xuống Excel</strong> — file <code>tong_hop_hoa_don.xlsx</code> sẽ tải về ngay lập tức.</div>
+                    <div class="step-text">Nhấn <strong>Chọn cột hiển thị</strong> nếu muốn bật thêm các cột thông tin bổ sung (ẩn mặc định).</div>
                 </div>
                 <div class="howto-step" style="margin-bottom:0">
                     <div class="step-num">4</div>
-                    <div class="step-text">Mỗi dòng hàng trong hóa đơn tương ứng một hàng trong Excel, kèm đầy đủ thông tin chung (số hóa đơn, MST, ngày…).</div>
+                    <div class="step-text">Nhấn <strong>Tải xuống Excel</strong> — file <code>tong_hop_hoa_don.xlsx</code> chỉ chứa các cột đang được chọn.</div>
                 </div>
             </div>
 
-        </div>
+        </div><!-- /container -->
     </section>
+
+    <!-- Preview — full width for better readability -->
+    <div id="preview-section">
+        <div class="container-fluid px-3 px-md-4">
+            <h2><i class="fas fa-table me-2" style="color:#5029ce"></i>Xem trước dữ liệu</h2>
+            <div class="table-scroller">
+                <table class="table table-bordered table-sm" id="preview-table">
+                    <thead id="preview-head"></thead>
+                    <tbody id="preview-body"></tbody>
+                </table>
+            </div>
+            <p class="preview-more" id="preview-more"></p>
+        </div>
+    </div>
 
     <section class="audience-section py-4">
         <div class="container">
@@ -207,7 +274,6 @@
         </div>
     </footer>
 
-    <!-- SheetJS (xlsx) from CDN -->
     <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
     <script src="assets/plugins/popper.min.js"></script>
     <script src="assets/plugins/bootstrap/js/bootstrap.min.js"></script>
@@ -217,29 +283,47 @@
     (() => {
         'use strict';
 
-        // ── Columns (same order as Python script) ──
-        const COMMON_COLS = [
-            'File', 'Số hóa đơn', 'Ngày hóa đơn', 'Ký hiệu hóa đơn',
-            'Đơn vị bán hàng', 'MST người bán', 'Địa chỉ người bán',
-            'Biển số xe', 'Hình thức thanh toán',
-            'Tổng tiền (trước thuế)', 'Tiền thuế GTGT (tổng)', 'Tổng tiền thanh toán'
+        // ── Column definitions ──────────────────────────────────────────────
+        // extra: false  → visible & exported by default
+        // extra: true   → hidden by default; user can enable
+        const COL_DEFS = [
+            // ── Thông tin hóa đơn ──
+            { key: 'Số hóa đơn',              extra: false },
+            { key: 'Ngày hóa đơn',            extra: false },
+            { key: 'Ký hiệu hóa đơn',         extra: false },
+            { key: 'Đơn vị bán hàng',         extra: false },
+            { key: 'MST người bán',            extra: false },
+            { key: 'Địa chỉ người bán',       extra: true  },
+            { key: 'Biển số xe',              extra: true  },
+            { key: 'Hình thức thanh toán',    extra: true  },
+            // ── Dòng hàng ──
+            { key: 'Tên hàng hóa dịch vụ',   extra: false },
+            { key: 'Đơn vị tính',             extra: false },
+            { key: 'Số lượng',                extra: false },
+            { key: 'Đơn giá',                 extra: false },
+            { key: 'Thành tiền (dòng)',       extra: false },
+            { key: 'Thuế suất',               extra: false },
+            { key: 'Tiền thuế GTGT (dòng)',   extra: true  },
+            { key: 'Tổng tiền dòng (Amount)', extra: true  },
+            // ── Tổng hóa đơn ──
+            { key: 'Tổng tiền (trước thuế)',  extra: true  },
+            { key: 'Tiền thuế GTGT (tổng)',   extra: true  },
+            { key: 'Tổng tiền thanh toán',    extra: false },
+            // ── Tên file (ít cần trong output) ──
+            { key: 'File',                    extra: true  },
         ];
-        const ITEM_COLS = [
-            'Tên hàng hóa dịch vụ', 'Đơn vị tính', 'Số lượng', 'Đơn giá',
-            'Thành tiền (dòng)', 'Thuế suất',
-            'Tiền thuế GTGT (dòng)', 'Tổng tiền dòng (Amount)'
-        ];
-        const ALL_COLS = [...COMMON_COLS, ...ITEM_COLS];
 
-        // ── XML helpers ──
+        // enabled state: start with non-extra cols checked
+        const enabled = {};
+        COL_DEFS.forEach(c => { enabled[c.key] = !c.extra; });
+
+        // ── XML helpers ──────────────────────────────────────────────────────
         function getText(node, tag) {
             const el = node.getElementsByTagName(tag)[0];
             return el && el.textContent ? el.textContent.trim() : '';
         }
-
         function getTTin(node, ttruong) {
-            const items = node.getElementsByTagName('TTin');
-            for (const item of items) {
+            for (const item of node.getElementsByTagName('TTin')) {
                 const t = item.getElementsByTagName('TTruong')[0];
                 if (t && t.textContent.trim() === ttruong) {
                     const d = item.getElementsByTagName('DLieu')[0];
@@ -248,82 +332,108 @@
             }
             return '';
         }
-
         function parseXML(xmlText, filename) {
             const parser = new DOMParser();
-            const doc = parser.parseFromString(xmlText, 'text/xml');
-            const root = doc.documentElement;
-
-            if (root.querySelector && root.querySelector('parsererror')) {
+            const doc    = parser.parseFromString(xmlText, 'text/xml');
+            const root   = doc.documentElement;
+            if (root.querySelector && root.querySelector('parsererror'))
                 throw new Error('File XML không hợp lệ');
-            }
 
             const nban  = root.getElementsByTagName('NBan')[0]  || null;
             const ttoan = root.getElementsByTagName('TToan')[0] || null;
 
             const common = {
-                'File': filename,
+                'File':                     filename,
                 'Số hóa đơn':              getText(root, 'SHDon'),
                 'Ngày hóa đơn':            getText(root, 'NLap'),
                 'Ký hiệu hóa đơn':         getText(root, 'KHHDon'),
-                'Đơn vị bán hàng':         nban  ? getText(nban, 'Ten')   : '',
-                'MST người bán':           nban  ? getText(nban, 'MST')   : '',
-                'Địa chỉ người bán':       nban  ? getText(nban, 'DChi')  : '',
+                'Đơn vị bán hàng':         nban  ? getText(nban, 'Ten')  : '',
+                'MST người bán':           nban  ? getText(nban, 'MST')  : '',
+                'Địa chỉ người bán':       nban  ? getText(nban, 'DChi') : '',
                 'Biển số xe':              nban  ? getTTin(nban, 'SoPhuongTien') : '',
                 'Hình thức thanh toán':    getText(root, 'HTTToan'),
-                'Tổng tiền (trước thuế)':  ttoan ? getText(ttoan, 'TgTCThue')   : '',
-                'Tiền thuế GTGT (tổng)':   ttoan ? getText(ttoan, 'TgTThue')    : '',
-                'Tổng tiền thanh toán':    ttoan ? getText(ttoan, 'TgTTTBSo')   : '',
+                'Tổng tiền (trước thuế)':  ttoan ? getText(ttoan, 'TgTCThue')  : '',
+                'Tiền thuế GTGT (tổng)':   ttoan ? getText(ttoan, 'TgTThue')   : '',
+                'Tổng tiền thanh toán':    ttoan ? getText(ttoan, 'TgTTTBSo')  : '',
             };
 
             const items = root.getElementsByTagName('HHDVu');
             if (!items.length) {
-                // No line items — return one row with blanks for item cols
-                const row = { ...common };
-                ITEM_COLS.forEach(c => { row[c] = ''; });
+                const row = { ...common,
+                    'Tên hàng hóa dịch vụ': '', 'Đơn vị tính': '', 'Số lượng': '',
+                    'Đơn giá': '', 'Thành tiền (dòng)': '', 'Thuế suất': '',
+                    'Tiền thuế GTGT (dòng)': '', 'Tổng tiền dòng (Amount)': '' };
                 return [row];
             }
 
-            const rows = [];
-            for (const item of items) {
-                rows.push({
-                    ...common,
-                    'Tên hàng hóa dịch vụ':   getText(item, 'THHDVu'),
-                    'Đơn vị tính':             getText(item, 'DVTinh'),
-                    'Số lượng':                getText(item, 'SLuong'),
-                    'Đơn giá':                 getText(item, 'DGia'),
-                    'Thành tiền (dòng)':       getText(item, 'ThTien'),
-                    'Thuế suất':               getText(item, 'TSuat'),
-                    'Tiền thuế GTGT (dòng)':   getTTin(item, 'VATAmount'),
-                    'Tổng tiền dòng (Amount)': getTTin(item, 'Amount'),
-                });
-            }
-            return rows;
+            return Array.from(items).map(item => ({
+                ...common,
+                'Tên hàng hóa dịch vụ':   getText(item, 'THHDVu'),
+                'Đơn vị tính':             getText(item, 'DVTinh'),
+                'Số lượng':                getText(item, 'SLuong'),
+                'Đơn giá':                 getText(item, 'DGia'),
+                'Thành tiền (dòng)':       getText(item, 'ThTien'),
+                'Thuế suất':               getText(item, 'TSuat'),
+                'Tiền thuế GTGT (dòng)':   getTTin(item, 'VATAmount'),
+                'Tổng tiền dòng (Amount)': getTTin(item, 'Amount'),
+            }));
         }
 
-        // ── State ──
-        let allRows    = [];
-        let errorFiles = [];
-        let okFiles    = [];
+        // ── State ────────────────────────────────────────────────────────────
+        let allRows = [], errorFiles = [], okFiles = [];
 
-        // ── DOM refs ──
+        // ── DOM refs ─────────────────────────────────────────────────────────
         const dropZone      = document.getElementById('drop-zone');
         const fileInput     = document.getElementById('file-input');
         const fileListWrap  = document.getElementById('file-list-wrap');
         const actionBar     = document.getElementById('action-bar');
         const btnExport     = document.getElementById('btn-export');
+        const btnCols       = document.getElementById('btn-cols');
         const btnClear      = document.getElementById('btn-clear');
         const statusMsg     = document.getElementById('status-msg');
         const summaryBar    = document.getElementById('summary-bar');
         const statFiles     = document.getElementById('stat-files');
         const statRows      = document.getElementById('stat-rows');
         const statErrors    = document.getElementById('stat-errors');
-        const previewWrap   = document.getElementById('preview-wrap');
+        const colPanel      = document.getElementById('col-panel');
+        const colGrid       = document.getElementById('col-grid');
+        const previewSection= document.getElementById('preview-section');
         const previewHead   = document.getElementById('preview-head');
         const previewBody   = document.getElementById('preview-body');
         const previewMore   = document.getElementById('preview-more');
 
-        // ── Drag-over styling ──
+        // ── Build column checkbox panel ──────────────────────────────────────
+        COL_DEFS.forEach(({ key, extra }) => {
+            const label = document.createElement('label');
+            label.className = 'col-check-label' + (extra ? ' is-extra' : '');
+            label.title = extra ? 'Thông tin bổ sung (ẩn mặc định)' : 'Cột thường dùng';
+
+            const cb = document.createElement('input');
+            cb.type = 'checkbox';
+            cb.checked = enabled[key];
+            cb.dataset.col = key;
+            cb.addEventListener('change', () => {
+                enabled[key] = cb.checked;
+                if (allRows.length) renderPreview();
+            });
+
+            const icon = document.createElement('i');
+            icon.className = extra ? 'fas fa-eye-slash fa-xs me-1' : 'fas fa-check fa-xs me-1';
+
+            label.append(cb, icon, document.createTextNode(key));
+            colGrid.appendChild(label);
+        });
+
+        // ── Toggle column panel ───────────────────────────────────────────────
+        btnCols.addEventListener('click', () => {
+            const open = colPanel.style.display === 'block';
+            colPanel.style.display = open ? 'none' : 'block';
+            btnCols.innerHTML = open
+                ? '<i class="fas fa-columns me-1"></i> Chọn cột hiển thị'
+                : '<i class="fas fa-times me-1"></i> Đóng bộ chọn cột';
+        });
+
+        // ── Drag-and-drop ────────────────────────────────────────────────────
         dropZone.addEventListener('dragover',  e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
         dropZone.addEventListener('dragleave', ()  => dropZone.classList.remove('drag-over'));
         dropZone.addEventListener('drop', e => {
@@ -333,42 +443,43 @@
         });
         fileInput.addEventListener('change', () => handleFiles(fileInput.files));
 
+        // ── Clear ────────────────────────────────────────────────────────────
         btnClear.addEventListener('click', () => {
             allRows = []; errorFiles = []; okFiles = [];
             fileInput.value = '';
             fileListWrap.innerHTML = '';
             actionBar.style.setProperty('display', 'none', 'important');
+            colPanel.style.display = 'none';
             summaryBar.style.display = 'none';
-            previewWrap.style.display = 'none';
+            previewSection.style.display = 'none';
+            btnCols.innerHTML = '<i class="fas fa-columns me-1"></i> Chọn cột hiển thị';
         });
 
         btnExport.addEventListener('click', exportExcel);
 
-        // ── Process uploaded files ──
+        // ── Process files ────────────────────────────────────────────────────
         async function handleFiles(fileList) {
             if (!fileList || !fileList.length) return;
 
-            // Reset
             allRows = []; errorFiles = []; okFiles = [];
             fileListWrap.innerHTML = '';
             statusMsg.textContent = 'Đang xử lý…';
             statusMsg.className = '';
             btnExport.disabled = true;
 
-            const xmlFiles = Array.from(fileList).filter(f => f.name.toLowerCase().endsWith('.xml'));
+            const xmlFiles = Array.from(fileList)
+                .filter(f => f.name.toLowerCase().endsWith('.xml'))
+                .sort((a, b) => a.name.localeCompare(b.name));
+
             if (!xmlFiles.length) {
                 statusMsg.textContent = 'Không tìm thấy file .xml nào.';
                 statusMsg.className = 'text-danger';
                 return;
             }
 
-            // Sort by name (same as Python's sorted(os.listdir))
-            xmlFiles.sort((a, b) => a.name.localeCompare(b.name));
-
             for (const file of xmlFiles) {
                 try {
-                    const text = await file.text();
-                    const rows = parseXML(text, file.name);
+                    const rows = parseXML(await file.text(), file.name);
                     allRows.push(...rows);
                     okFiles.push(file.name);
                     addChip(file.name, 'ok');
@@ -378,13 +489,10 @@
                 }
             }
 
-            // Show stats
-            statFiles.textContent   = okFiles.length;
-            statRows.textContent    = allRows.length;
-            statErrors.textContent  = errorFiles.length;
+            statFiles.textContent  = okFiles.length;
+            statRows.textContent   = allRows.length;
+            statErrors.textContent = errorFiles.length;
             summaryBar.style.display = 'flex';
-
-            // Show actions
             actionBar.style.removeProperty('display');
 
             if (allRows.length) {
@@ -401,71 +509,73 @@
         function addChip(label, type) {
             const span = document.createElement('span');
             span.className = `file-chip ${type}`;
-            const icon = type === 'ok'
+            span.innerHTML = (type === 'ok'
                 ? '<i class="fas fa-check-circle me-1"></i>'
-                : '<i class="fas fa-exclamation-circle me-1"></i>';
-            span.innerHTML = icon + esc(label);
+                : '<i class="fas fa-exclamation-circle me-1"></i>') + esc(label);
             fileListWrap.appendChild(span);
         }
 
-        // ── Preview table (max 20 rows) ──
-        function renderPreview() {
-            const PREVIEW_MAX = 20;
-            const cols = ALL_COLS;
-
-            // Header
-            previewHead.innerHTML = '<tr>' + cols.map(c => `<th>${esc(c)}</th>`).join('') + '</tr>';
-
-            // Body
-            const slice = allRows.slice(0, PREVIEW_MAX);
-            previewBody.innerHTML = slice.map(row =>
-                '<tr>' + cols.map(c => `<td title="${esc(row[c] || '')}">${esc(row[c] || '')}</td>`).join('') + '</tr>'
-            ).join('');
-
-            if (allRows.length > PREVIEW_MAX) {
-                previewMore.textContent = `… và ${allRows.length - PREVIEW_MAX} dòng nữa (tải Excel để xem đầy đủ)`;
-            } else {
-                previewMore.textContent = '';
-            }
-
-            previewWrap.style.display = 'block';
+        // ── Active columns ────────────────────────────────────────────────────
+        function getActiveCols() {
+            return COL_DEFS.filter(c => enabled[c.key]);
         }
 
-        // ── Export to Excel ──
+        // ── Render preview ────────────────────────────────────────────────────
+        function renderPreview() {
+            const PREVIEW_MAX = 30;
+            const cols = getActiveCols();
+
+            previewHead.innerHTML = '<tr>' +
+                cols.map(c => `<th class="${c.extra ? 'is-extra-col' : ''}">${esc(c.key)}</th>`).join('') +
+                '</tr>';
+
+            const slice = allRows.slice(0, PREVIEW_MAX);
+            previewBody.innerHTML = slice.map(row =>
+                '<tr>' + cols.map(c =>
+                    `<td class="${c.extra ? 'is-extra-col' : ''}" title="${esc(row[c.key] || '')}">${esc(row[c.key] || '')}</td>`
+                ).join('') + '</tr>'
+            ).join('');
+
+            previewMore.textContent = allRows.length > PREVIEW_MAX
+                ? `… và ${allRows.length - PREVIEW_MAX} dòng nữa (tải Excel để xem đầy đủ)`
+                : '';
+
+            previewSection.style.display = 'block';
+            // Scroll preview into view gently
+            setTimeout(() => previewSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 80);
+        }
+
+        // ── Export Excel ──────────────────────────────────────────────────────
         function exportExcel() {
             if (!allRows.length) return;
 
             btnExport.disabled = true;
             btnExport.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Đang tạo file…';
 
-            // Build worksheet data: header row + data rows
+            const cols  = getActiveCols().map(c => c.key);
             const wsData = [
-                ALL_COLS,
-                ...allRows.map(row => ALL_COLS.map(c => row[c] || ''))
+                cols,
+                ...allRows.map(row => cols.map(c => row[c] || ''))
             ];
 
             const wb = XLSX.utils.book_new();
             const ws = XLSX.utils.aoa_to_sheet(wsData);
-
-            // Column widths (approximate)
-            ws['!cols'] = ALL_COLS.map(c => ({ wch: Math.min(Math.max(c.length + 2, 12), 40) }));
+            ws['!cols'] = cols.map(c => ({ wch: Math.min(Math.max(c.length + 2, 12), 42) }));
 
             XLSX.utils.book_append_sheet(wb, ws, 'Tổng hợp hóa đơn');
             XLSX.writeFile(wb, 'tong_hop_hoa_don.xlsx');
 
             btnExport.disabled = false;
             btnExport.innerHTML = '<i class="fas fa-file-excel me-1"></i> Tải xuống Excel';
-            statusMsg.textContent = '✔ Đã xuất file tong_hop_hoa_don.xlsx';
+            statusMsg.textContent = `✔ Đã xuất ${cols.length} cột · ${allRows.length} dòng`;
             statusMsg.className = 'text-success';
         }
 
-        // ── XSS-safe escape ──
+        // ── XSS-safe escape ───────────────────────────────────────────────────
         function esc(s) {
             return String(s ?? '')
-                .replace(/&/g, '&amp;')
-                .replace(/</g, '&lt;')
-                .replace(/>/g, '&gt;')
-                .replace(/"/g, '&quot;');
+                .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
         }
     })();
     </script>
