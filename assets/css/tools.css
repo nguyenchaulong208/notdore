@@ -1,0 +1,89 @@
+.sidebar-box {
+    background: #fff;
+    border-radius: 0.5rem;
+    box-shadow: 0 5px 20px -4px rgba(0, 0, 0, 0.08);
+    padding: 1rem;
+}
+
+.sidebar-box__title {
+    border-bottom: 2px solid #ed6524;
+    color: #ed6524;
+    font-family: 'Quicksand', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 700;
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.5rem;
+}
+
+#tool-tabs { gap: 0.5rem; }
+
+#tool-tabs .nav-link {
+    color: #4c527d;
+    font-size: 0.875rem;
+    font-weight: 700;
+    padding: 0.5rem 0.75rem;
+}
+
+#tool-tabs .nav-link.active,
+#tool-tabs .nav-link:hover,
+#tool-tabs .nav-link:focus {
+    background: #ed6524;
+    color: #fff;
+}
+
+.tool-card {
+    border: 0;
+    border-radius: 0.5rem;
+    box-shadow: 0 5px 20px -4px rgba(0, 0, 0, 0.08);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.tool-card:hover {
+    box-shadow: 0 10px 25px rgba(237, 101, 36, 0.15);
+    transform: translateY(-5px);
+}
+
+.tool-card .card-body { padding: 1.5rem; }
+.tool-card .card-title { font-family: 'Quicksand', sans-serif; }
+.tool-card .card-text { color: #4c527d; }
+.tool-tags { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+.tool-tags .badge-cat { background: #ede9fe; color: #5b21b6; }
+.tool-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.tool-actions .btn { padding: 0.5rem 1rem; }
+.tool-state { color: #6c757d; padding: 2rem 0; }
+
+.badge-cat {
+    border-radius: 3px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 2px 7px;
+}
+
+.youtube-embed {
+    height: 0;
+    overflow: hidden;
+    padding-bottom: 56.25%;
+    position: relative;
+}
+
+.youtube-embed iframe {
+    height: 100%;
+    left: 0;
+    position: absolute;
+    top: 0;
+    width: 100%;
+}
+
+.resource-list {
+    border-radius: 0.5rem;
+    box-shadow: 0 5px 20px -4px rgba(0, 0, 0, 0.08);
+    overflow-x: auto;
+    overflow-y: hidden;
+}
+
+.resource-list .list-group-item { min-width: 420px; }
+
+@media (max-width: 575.98px) {
+    .tool-card .card-body { padding: 1.25rem; }
+    #tool-tabs .nav-link { padding: 0.45rem 0.65rem; }
+}

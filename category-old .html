@@ -1,13 +1,13 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
 
 <head>
-	<title>NotDore</title>
+	<title>NotDore – Danh mục văn bản</title>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<meta name="description" content="">
-	<meta name="author" content="Xiaoying Riley at 3rd Wave Media">
+	<meta name="description" content="Tra cứu văn bản pháp luật theo chuyên mục: thuế giá trị gia tăng, thuế thu nhập cá nhân, thuế thu nhập doanh nghiệp, bảo hiểm xã hội.">
+	<meta name="author" content="Theodore">
 	<link rel="shortcut icon" href="favicon.ico">
 	<link href="https://fonts.googleapis.com/css?family=Quicksand:700|Roboto:400,400i,700&display=swap" rel="stylesheet">
 	<script defer src="assets/fontawesome/js/all.min.js"></script>
@@ -68,16 +68,6 @@
 			margin: 0.2rem 0;
 		}
 		.sb-slide__date { font-size: 0.75rem; color: #6c757d; }
-		.sb-slide__cat {
-			display: inline-block;
-			font-size: 0.68rem;
-			background: #ede9fe;
-			color: #5b21b6;
-			border-radius: 3px;
-			padding: 1px 6px;
-			margin-bottom: 0.25rem;
-			font-weight: 600;
-		}
 		.badge-new {
 			font-size: 0.65rem;
 			background: #ed6524;
@@ -184,82 +174,6 @@
 		.badge-status--inactive { background: #f0d1d1; color: #7a1a1a; }
 		.badge-status--amended  { background: #fff3cd; color: #7a5e00; }
 		.doc-card__meta .text-danger { font-size: 12px; }
-		.badge-cat {
-			display: inline-block;
-			font-size: 0.7rem;
-			background: #ede9fe;
-			color: #5b21b6;
-			border-radius: 3px;
-			padding: 2px 7px;
-			font-weight: 600;
-			margin-bottom: 0.3rem;
-		}
-
-		/* ── Document table ─────────────────────────────────────── */
-		.doc-table-wrap {
-			background: #fff;
-			border-radius: 0.5rem;
-			box-shadow: 0 5px 20px -4px rgba(0,0,0,0.08);
-			overflow-x: auto;
-			overflow-y: hidden;
-			-webkit-overflow-scrolling: touch;
-		}
-		.doc-table { font-size: 0.875rem; margin-bottom: 0; min-width: 760px; }
-		.doc-table thead th {
-			background: #f8f7fc;
-			color: #1c1e2e;
-			font-family: 'Quicksand', sans-serif;
-			font-weight: 700;
-			font-size: 0.8rem;
-			text-transform: uppercase;
-			letter-spacing: 0.03em;
-			border-bottom: 2px solid #ed6524;
-			white-space: nowrap;
-			padding: 0.75rem 1rem;
-		}
-		.doc-table tbody td {
-			padding: 0.85rem 1rem;
-			vertical-align: middle;
-			border-bottom: 1px solid #eee;
-		}
-		.doc-table tbody tr:hover { background: #fff9f5; }
-		.doc-table__code {
-			font-weight: 700;
-			font-family: 'Quicksand', sans-serif;
-			color: #1c1e2e;
-			white-space: nowrap;
-		}
-		a.doc-table__code--link {
-			text-decoration: none;
-			cursor: pointer;
-		}
-		a.doc-table__code--link:hover {
-			color: #ed6524;
-			text-decoration: underline;
-		}
-		.doc-table__title {
-			color: #4c527d;
-			max-width: 420px;
-		}
-		.doc-table__type {
-			white-space: nowrap;
-			color: #6c757d;
-		}
-		.doc-table__date { white-space: nowrap; color: #6c757d; }
-		.doc-table__actions {
-			display: flex;
-			gap: 0.5rem;
-			justify-content: center;
-			white-space: nowrap;
-		}
-		.doc-table__actions a {
-			font-size: 0.8rem;
-			text-decoration: none;
-			color: #ed6524;
-			font-weight: 600;
-		}
-		.doc-table__actions a:hover { text-decoration: underline; }
-		.doc-table__actions a.text-secondary { color: #6c757d; }
 
 		/* ── Load more ──────────────────────────────────────────── */
 		#load-more-wrap { margin-top: 1.5rem; }
@@ -271,34 +185,36 @@
 		<div class="branding">
 			<div class="container-fluid position-relative py-3">
 				<div class="logo-wrapper">
-					<div class="site-logo"><a class="navbar-brand" href="index.html"><img class="logo-icon me-2" src="assets/images/site-logo.svg" alt="logo"><span class="logo-text">NotDore</span></a></div>
+					<div class="site-logo">
+						<a class="navbar-brand" href="index.html">
+							<img class="logo-icon me-2" src="assets/images/site-logo.svg" alt="logo">
+							<span class="logo-text">NotDore</span>
+						</a>
+					</div>
 				</div>
 			</div>
 		</div>
 	</header>
 
+	<!-- ── Hero ──────────────────────────────────────────────────── -->
 	<section class="hero-section" id="hero-section">
 		<div class="container">
 			<div class="row">
 				<!-- Left: tiêu đề danh mục -->
-<!-- Left: tiêu đề danh mục -->
-<div class="col-12 col-md-7 pt-5 mb-5 align-self-center">
-    <div class="promo pe-md-3 pe-lg-5">
-        <h1 class="headline mb-3" id="category-title">Kho Tài Liệu Pháp Luật & Công Cụ Làm Việc Cho Kế Toán – Thuế – Nhân Sự</h1>
-        <div class="subheadline mb-4" id="category-desc">
-            Nơi lưu trữ tài liệu pháp luật và công cụ hỗ trợ cho kế toán - thuế - nhân sự. 
-            Văn bản pháp luật + Bộ công cụ Excel, Python, AI Templates được tổng hợp ở nhiều lĩnh vực và cập nhật thường xuyên.
-        </div>
-        <div class="cta-holder row gx-md-3 gy-3 gy-md-0">
-            <div class="col-12 col-md-auto">
-                <a class="btn btn-primary w-100 scrollto" href="#documents-section">Danh sách văn bản</a>
-            </div>
-            <div class="col-12 col-md-auto">
-                <a class="btn btn-secondary scrollto w-100" href="tools.html">Công cụ làm việc</a>
-            </div>
-        </div>
-    </div>
-</div>
+				<div class="col-12 col-md-7 pt-5 mb-5 align-self-center">
+					<div class="promo pe-md-3 pe-lg-5">
+						<h1 class="headline mb-3" id="category-title">Danh mục</h1>
+						<div class="subheadline mb-4" id="category-desc"></div>
+						<div class="cta-holder row gx-md-3 gy-3 gy-md-0">
+							<div class="col-12 col-md-auto">
+								<a class="btn btn-primary w-100 scrollto" href="#documents-section">Danh sách văn bản</a>
+							</div>
+							<div class="col-12 col-md-auto">
+								<a class="btn btn-secondary scrollto w-100" href="#info-section">Tổng quan</a>
+							</div>
+						</div>
+					</div>
+				</div>
 
 				<!-- Right: sidebar carousel "Văn bản mới nhất" -->
 				<div class="col-12 col-md-5 mb-5 align-self-center">
@@ -323,6 +239,23 @@
 		</div>
 	</section>
 
+	<!-- ── Tổng quan ─────────────────────────────────────────────── -->
+	<section id="info-section" class="content-section">
+		<div class="container">
+			<div class="single-col-max mx-auto">
+				<h2 class="section-heading text-center mb-5">Tổng quan</h2>
+				<div class="row">
+					<div class="col-12 mb-5">
+						<div class="key-points mb-4 text-center">
+							<ul class="key-points-list list-unstyled mb-4 mx-auto d-inline-block text-start" id="overview-list"></ul>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</section>
+
+	<!-- ── Danh sách văn bản đầy đủ ─────────────────────────────── -->
 	<section id="documents-section" class="benefits-section theme-bg-light-gradient py-5">
 		<div class="container py-5">
 			<h2 class="section-heading text-center mb-3" id="documents-heading">VĂN BẢN</h2>
@@ -338,12 +271,9 @@
 						<select class="form-select" id="filter-type">
 							<option value="">Tất cả loại</option>
 							<option value="Luật">Luật</option>
-							<option value="Nghị quyết">Nghị quyết</option>
 							<option value="Nghị định">Nghị định</option>
 							<option value="Thông tư">Thông tư</option>
-							<option value="Thông tư liên tịch">Thông tư liên tịch</option>
 							<option value="Quyết định">Quyết định</option>
-							<option value="Chỉ thị">Chỉ thị</option>
 							<option value="Công văn">Công văn</option>
 							<option value="Khác">Khác</option>
 						</select>
@@ -377,28 +307,12 @@
 				</div>
 			</div>
 
-			<!-- Danh sách văn bản (dạng bảng) -->
-			<div class="table-responsive doc-table-wrap">
-				<table class="table doc-table align-middle mb-0">
-					<thead>
-						<tr>
-							<th>Số hiệu</th>
-							<th>Tiêu đề</th>
-							<th>Loại</th>
-							<th>Ngày ban hành</th>
-							<th>Trạng thái</th>
-							<th class="text-center">Tệp</th>
-						</tr>
-					</thead>
-					<tbody id="documents-grid">
-						<tr id="docs-loading">
-							<td colspan="6" class="text-center py-5">
-								<i class="fas fa-spinner fa-spin fa-2x" style="color:#ed6524"></i>
-								<p class="mt-3 text-muted mb-0">Đang tải danh sách văn bản...</p>
-							</td>
-						</tr>
-					</tbody>
-				</table>
+			<!-- Grid -->
+			<div class="row text-center" id="documents-grid">
+				<div id="docs-loading" class="col-12 text-center py-5">
+					<i class="fas fa-spinner fa-spin fa-2x" style="color:#ed6524"></i>
+					<p class="mt-3 text-muted">Đang tải danh sách văn bản...</p>
+				</div>
 			</div>
 
 			<!-- Load more -->
@@ -410,85 +324,12 @@
 		</div>
 	</section>
 
-	<section id="content-section" class="content-section">
-		<div class="container">
-			<div class="single-col-max mx-auto">
-				<h2 class="section-heading text-center mb-5">Các công cụ làm việc</h2>
-				<div class="row">
-					<div class="col-12 col-md-6">
-						<div class="figure-holder mb-5">
-							<img class="img-fluid" src="assets/images/Techsoft.jpg" alt="image">
-						</div>
-					</div>
-					<div class="col-12 col-md-6 mb-5">
-						<div class="key-points mb-4 text-center">
-							<ul class="key-points-list list-unstyled mb-4 mx-auto d-inline-block text-start">
-								<li><i class="fas fa-check-circle me-2"></i>Các file Excel phục vụ tính toán, tổng hợp dữ liệu, lập bảng biểu và xử lý thông tin lặp lại.</li>
-								<li><i class="fas fa-check-circle me-2"></i>Các đoạn mã và script Python hỗ trợ tự động hóa thao tác, chuyển đổi dữ liệu và thực hiện các quy trình kỹ thuật.</li>
-								<li><i class="fas fa-check-circle me-2"></i>Mẫu gợi ý dành cho các tác vụ sử dụng AI như tạo báo cáo, chuẩn hóa dữ liệu, soạn thảo nội dung hoặc xử lý thông tin.</li>
-								<li><i class="fas fa-check-circle me-2"></i>Các công cụ mã nguồn mở để phát triển và tùy chỉnh theo nhu cầu.</li>
-								<li><i class="fas fa-check-circle me-2"></i>Các biểu mẫu văn bản.</li>
-								<li><i class="fas fa-check-circle me-2"></i>Các tài liệu tham khảo khác.</li>
-								
-							</ul>
-							<div class="text-center"><a class="btn btn-primary" href="tools.html">Đi đến trang công cụ</a></div>
-						</div>
-					</div>
-				</div>
-			</div>
-		</div>
-	</section>
-
+	<!-- ── Đối tượng áp dụng ─────────────────────────────────────── -->
 	<section id="audience-section" class="audience-section py-5">
 		<div class="container">
-			<h2 class="section-heading text-center mb-4">Phạm vi sử dụng</h2>
-			<div class="section-intro single-col-max mx-auto text-center mb-5">
-				Website này được xây dựng nhằm phục vụ nhu cầu lưu trữ và tham khảo cá nhân. Nội dung không mang tính tư vấn chuyên môn, không thay thế văn bản chính thức và không phục vụ mục đích thương mại.
-			</div>
-			<div class="audience mx-auto">
-				<div class="item row gx-3">
-					<div class="col-auto item-icon"><i class="fas fa-user-check"></i></div>
-					<div class="col">
-						<h4 class="item-title">Người làm văn phòng</h4>
-						<div class="item-desc">Tra cứu văn bản theo từng lĩnh vực để thuận tiện cho việc theo dõi quy định. Thông tin được trình bày trung tính, không hướng dẫn nghiệp vụ.</div>
-					</div>
-				</div>
-	
-				<div class="item row gx-3">
-					<div class="col-auto item-icon"><i class="fas fa-user-check"></i></div>
-					<div class="col">
-						<h4 class="item-title">Người quan tâm pháp luật</h4>
-						<div class="item-desc">Tìm kiếm và đọc văn bản theo chủ đề một cách thuận tiện. Nội dung chỉ mang tính tổng hợp và lưu trữ cá nhân.</div>
-					</div>
-				</div>
-				<div class="item row gx-3">
-					<div class="col-auto item-icon"><i class="fas fa-user-check"></i></div>
-					<div class="col">
-						<h4 class="item-title">Người thích khám phá</h4>
-						<div class="item-desc">Tìm kiếm các công cụ và tài nguyên mới để mở rộng kiến thức và kỹ năng.</div>
-					</div>
-				</div>
-			</div>
-		</div>
-	</section>
-
-	<section id="form-section" class="form-section">
-		<div class="container">
-			<div class="lead-form-wrapper single-col-max mx-auto theme-bg-light rounded p-5">
-				<h2 class="form-heading text-center">Đóng góp & Liên hệ</h2>
-				<div class="form-intro text-center mb-3">Nếu bạn có tài liệu muốn chia sẻ, góp ý về nội dung, hoặc cần liên hệ, bạn có thể gửi email cho tôi. Trang này chỉ phục vụ mục đích cá nhân và lưu trữ thông tin, không cung cấp dịch vụ hay tư vấn.</div>
-				<div class="form-wrapper mx-auto">
-					<form class="signup-form row g-2 align-items-center">
-						<div class="col-12 col-lg-9">
-							<label class="sr-only" for="semail">Email</label>
-							<input type="email" id="semail" name="semail1" class="form-control me-md-1 semail" placeholder="Your email">
-						</div>
-						<div class="col-12 col-lg-3">
-							<button type="submit" class="btn btn-primary btn-submit w-100">Send</button>
-						</div>
-					</form>
-				</div>
-			</div>
+			<h2 class="section-heading text-center mb-4">Đối tượng áp dụng</h2>
+			<div class="section-intro single-col-max mx-auto text-center mb-5" id="audience-intro"></div>
+			<div class="audience mx-auto" id="audience-list"></div>
 		</div>
 	</section>
 
@@ -502,8 +343,7 @@
 	<script src="assets/plugins/bootstrap/js/bootstrap.min.js"></script>
 	<script src="assets/plugins/smoothscroll.min.js"></script>
 	<script src="assets/js/main.js"></script>
-	<script src="assets/js/utils.js"></script>
-	<script src="assets/js/index.js"></script>
+	<script src="assets/js/category.js"></script>
 </body>
 
 </html>
