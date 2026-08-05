@@ -63,19 +63,45 @@
         .stat-card .stat-value { font-size: 1.6rem; font-weight: 700; font-family: 'Quicksand', sans-serif; color: #ed6524; }
         .stat-card .stat-label { font-size: .78rem; color: #888; margin-top: .2rem; }
 
-        /* ── Preview table ── */
-        .preview-wrap { overflow: auto; max-height: 560px; border-radius: .6rem; box-shadow: 0 4px 14px -3px rgba(0,0,0,.08); }
-        #preview-table { font-size: .92rem; margin: 0; min-width: 1400px; }
+        /* ── Preview table (full-width breakout) ── */
+        #preview-outer { display: none; background: #f8f7ff; border-top: 1px solid #e5e1fb; border-bottom: 1px solid #e5e1fb; padding: 1.5rem 0 2rem; margin-top: 2rem; }
+        .preview-wrap { overflow: auto; max-height: 600px; border-radius: .6rem; box-shadow: 0 4px 14px -3px rgba(0,0,0,.08); }
+        #preview-table { font-size: .88rem; margin: 0; }
         #preview-table thead th {
             background: #4c527d; color: #fff; font-weight: 600; white-space: nowrap;
             position: sticky; top: 0; z-index: 2;
-            padding: .65rem .85rem;
+            padding: .6rem .8rem;
         }
+        #preview-table thead th.th-extra { background: #6c7299; }
         #preview-table tbody tr:nth-child(even) td { background: #f9f9fc; }
         #preview-table tbody tr:hover td { background: #fff5f0; }
-        #preview-table td { vertical-align: middle; white-space: nowrap; padding: .55rem .85rem; }
+        #preview-table td { vertical-align: middle; white-space: nowrap; padding: .5rem .8rem; }
         #preview-table td.num { text-align: right; font-variant-numeric: tabular-nums; font-feature-settings: "tnum"; }
+        #preview-table td.td-extra { color: #7c7ea0; }
         #preview-table th.num { text-align: right; }
+
+        /* ── Column panel ── */
+        #col-panel {
+            display: none;
+            background: #fff; border: 1px solid #e5e1fb; border-radius: .65rem;
+            padding: 1.1rem 1.25rem 1rem; margin-top: 1rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,.05);
+        }
+        #col-panel .cp-title {
+            font-family: 'Quicksand', sans-serif; font-size: .88rem; font-weight: 700;
+            color: #4c527d; margin-bottom: .75rem;
+        }
+        .col-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: .35rem .75rem; }
+        .col-check-label {
+            display: flex; align-items: center; gap: .4rem;
+            font-size: .83rem; color: #4c527d; cursor: pointer;
+            padding: .22rem .35rem; border-radius: .3rem; transition: background .15s;
+        }
+        .col-check-label:hover { background: #f5f3ff; }
+        .col-check-label input { accent-color: #4c527d; width: 13px; height: 13px; cursor: pointer; }
+        .col-check-label.is-extra { color: #9194ab; }
+        .col-check-label.is-extra input { accent-color: #9194ab; }
+        #col-panel .cp-hint { font-size: .78rem; color: #9194ab; margin-top: .75rem; }
 
         /* ── Log ── */
         #log-box { font-size: .8rem; background: #1e1e2e; color: #cdd6f4; border-radius: .6rem; padding: 1rem 1.25rem; max-height: 220px; overflow-y: auto; display: none; }
@@ -153,23 +179,33 @@
     </div>
 
     <!-- ACTION BUTTONS -->
-    <div class="d-flex flex-wrap gap-2 mb-4">
+    <div class="d-flex flex-wrap gap-2 mb-3">
         <button class="btn btn-orange" id="btn-run" disabled>
             <i class="fas fa-play me-2"></i>Xử lý &amp; Xem kết quả
         </button>
         <button class="btn btn-success" id="btn-export" disabled>
             <i class="fas fa-file-excel me-2"></i>Xuất file Excel
         </button>
+        <button class="btn btn-outline-secondary" id="btn-cols" style="display:none">
+            <i class="fas fa-columns me-1"></i>Chọn cột
+        </button>
         <button class="btn btn-outline-secondary" id="btn-toggle-log" style="display:none">
             <i class="fas fa-terminal me-1"></i>Xem log lỗi
         </button>
+    </div>
+
+    <!-- COLUMN PANEL -->
+    <div id="col-panel">
+        <div class="cp-title"><i class="fas fa-table-columns me-2"></i>Chọn cột hiển thị &amp; xuất Excel</div>
+        <div class="col-grid" id="col-grid"></div>
+        <div class="cp-hint"><i class="fas fa-info-circle me-1"></i>Cột mờ là thông tin bổ sung (ẩn mặc định). Thay đổi áp dụng ngay cho bảng xem trước và file Excel.</div>
     </div>
 
     <!-- LOG -->
     <div id="log-box"></div>
 
     <!-- STATS -->
-    <div id="stats-section" class="d-none mb-3">
+    <div id="stats-section" class="d-none mb-2">
         <div class="stats-bar">
             <div class="stat-card">
                 <div class="stat-value" id="stat-files">0</div>
@@ -190,9 +226,16 @@
         </div>
     </div>
 
-    <!-- PREVIEW -->
-    <div id="preview-section" class="section-card d-none">
-        <h5><i class="fas fa-table me-2"></i>Xem trước dữ liệu <small id="preview-note" class="text-muted fw-normal"></small></h5>
+</div><!-- /container -->
+</section>
+
+<!-- PREVIEW — full-width để hiển thị nhiều cột hơn -->
+<div id="preview-outer">
+    <div class="container-fluid px-3 px-md-4">
+        <h5 class="mb-3" style="font-family:'Quicksand',sans-serif;color:#4c527d;">
+            <i class="fas fa-table me-2"></i>Xem trước dữ liệu
+            <small id="preview-note" class="text-muted fw-normal"></small>
+        </h5>
         <div class="preview-wrap">
             <table class="table table-bordered table-hover" id="preview-table">
                 <thead id="preview-thead"></thead>
@@ -200,9 +243,7 @@
             </table>
         </div>
     </div>
-
 </div>
-</section>
 
 <footer class="footer">
     <div class="footer-bottom text-center py-5">
@@ -219,6 +260,39 @@
 let selectedFiles = [];
 let allRows = [];
 let errorLog = [];
+
+// Cột ẩn mặc định — thông tin ít dùng trong công việc kế toán hàng ngày.
+// Người dùng có thể bật lại qua panel "Chọn cột".
+const HIDDEN_BY_DEFAULT = new Set([
+    "File",
+    "Mã tra cứu (CQT)",
+    "Đường dẫn/Dữ liệu QR tra cứu",
+    "Địa chỉ người bán",
+    "Hình thức thanh toán",
+    "Tổng tiền (trước thuế)",
+    "Tổng giảm trừ không chịu thuế",
+    "Tổng tiền chiết khấu thương mại",
+    "Tổng giảm trừ khác",
+    "Tổng tiền thanh toán bằng chữ",
+    "Loại dòng",
+    "Số thứ tự",
+    "Mã hàng hóa dịch vụ",
+    "Tỷ lệ % chiết khấu",
+    "Số tiền chiết khấu",
+]);
+
+// Ghi đè của người dùng: col -> true (bật) hoặc false (tắt)
+// Nếu key không có trong object => dùng HIDDEN_BY_DEFAULT để quyết định
+const userOverride = {};
+
+function isColVisible(col) {
+    if (col in userOverride) return userOverride[col];
+    return !HIDDEN_BY_DEFAULT.has(col);
+}
+
+function getVisibleCols() {
+    return COLUMNS.filter(c => isColVisible(c));
+}
 
 // Cột cố định — đúng theo Quy định kỹ thuật định dạng hoá đơn điện tử
 // (Thẻ HDon\DLHDon\TTChung, \NDHDon\NBan, \NDHDon\TToan, \NDHDon\DSHHDVu\HHDVu)
@@ -526,21 +600,58 @@ function addFiles(files) {
     updateFileList();
 }
 
+function buildColPanel() {
+    const grid = $id('col-grid');
+    grid.innerHTML = '';
+    COLUMNS.forEach(col => {
+        const isExtra = HIDDEN_BY_DEFAULT.has(col);
+        const visible  = isColVisible(col);
+
+        const label = document.createElement('label');
+        label.className = 'col-check-label' + (isExtra ? ' is-extra' : '');
+        label.title = isExtra ? 'Thông tin bổ sung (ẩn mặc định)' : 'Cột thường dùng';
+
+        const cb = document.createElement('input');
+        cb.type = 'checkbox';
+        cb.checked = visible;
+        cb.addEventListener('change', () => {
+            userOverride[col] = cb.checked;
+            renderPreview();
+        });
+
+        const icon = document.createElement('i');
+        icon.className = isExtra ? 'fas fa-eye-slash fa-xs me-1' : 'fas fa-check fa-xs me-1';
+
+        label.append(cb, icon, document.createTextNode(col));
+        grid.appendChild(label);
+    });
+}
+
 function renderPreview() {
-    const MAX = 200;
+    const MAX  = 200;
+    const cols = getVisibleCols();
     const rows = allRows.slice(0, MAX);
-    $id('preview-thead').innerHTML = `<tr>${COLUMNS.map(c => `<th class="${NUMERIC_COLUMNS.has(c) ? 'num' : ''}">${esc(c)}</th>`).join('')}</tr>`;
+
+    $id('preview-thead').innerHTML = `<tr>${cols.map(c => {
+        const cls = [NUMERIC_COLUMNS.has(c) ? 'num' : '', HIDDEN_BY_DEFAULT.has(c) ? 'th-extra' : ''].filter(Boolean).join(' ');
+        return `<th class="${cls}">${esc(c)}</th>`;
+    }).join('')}</tr>`;
+
     $id('preview-tbody').innerHTML = rows.map(r =>
-        `<tr>${COLUMNS.map(c => {
-            const isNum = NUMERIC_COLUMNS.has(c);
+        `<tr>${cols.map(c => {
+            const isNum   = NUMERIC_COLUMNS.has(c);
+            const isExtra = HIDDEN_BY_DEFAULT.has(c);
             const display = isNum ? formatNumberVN(r[c]) : esc(r[c]);
-            return `<td class="${isNum ? 'num' : ''}">${display}</td>`;
+            const cls = [isNum ? 'num' : '', isExtra ? 'td-extra' : ''].filter(Boolean).join(' ');
+            return `<td class="${cls}">${display}</td>`;
         }).join('')}</tr>`
     ).join('');
+
     $id('preview-note').textContent = allRows.length > MAX
         ? `(hiển thị ${MAX}/${allRows.length} dòng — xuất Excel để xem tất cả)`
         : '';
-    $id('preview-section').classList.remove('d-none');
+    $id('preview-outer').style.display = 'block';
+    buildColPanel();
 }
 
 // ════════════════════════════════════════════════════════════
@@ -584,6 +695,7 @@ async function processFiles() {
     if (allRows.length) {
         renderPreview();
         $id('btn-export').disabled = false;
+        $id('btn-cols').style.display = '';
     }
 
     btn.disabled = false;
@@ -633,7 +745,8 @@ async function exportExcel() {
             views: [{ state: 'frozen', ySplit: 1 }],
         });
 
-        sheet.columns = COLUMNS.map(c => {
+        const VISIBLE = getVisibleCols();
+        sheet.columns = VISIBLE.map(c => {
             const sample = allRows.slice(0, 80).map(r => String(r[c] ?? '').length);
             const width = Math.min(Math.max(c.length, ...sample) + 3, 42);
             return { header: c, key: c, width };
@@ -652,14 +765,14 @@ async function exportExcel() {
         // ── Data rows ──
         allRows.forEach((r, idx) => {
             const rowValues = {};
-            COLUMNS.forEach(c => {
+            VISIBLE.forEach(c => {
                 const raw = r[c] ?? '';
                 const num = NUMERIC_COLUMNS.has(c) ? toNumberOrNull(raw) : null;
                 rowValues[c] = num !== null ? num : raw;
             });
             const row = sheet.addRow(rowValues);
             row.eachCell((cell, colNumber) => {
-                const colName = COLUMNS[colNumber - 1];
+                const colName = VISIBLE[colNumber - 1];
                 cell.border = CELL_BORDER;
                 cell.font = { size: 10.5, name: 'Calibri' };
                 if (NUMERIC_COLUMNS.has(colName)) {
@@ -675,7 +788,7 @@ async function exportExcel() {
         });
 
         // ── Auto-filter + misc ──
-        sheet.autoFilter = { from: 'A1', to: `${colLetter(COLUMNS.length - 1)}1` };
+        sheet.autoFilter = { from: 'A1', to: `${colLetter(VISIBLE.length - 1)}1` };
         sheet.properties.defaultRowHeight = 20;
 
         const buffer = await workbook.xlsx.writeBuffer();
@@ -728,9 +841,20 @@ document.addEventListener('DOMContentLoaded', () => {
         updateFileList();
         $id('btn-run').disabled = true;
         $id('btn-export').disabled = true;
+        $id('btn-cols').style.display = 'none';
+        $id('col-panel').style.display = 'none';
         $id('stats-section').classList.add('d-none');
-        $id('preview-section').classList.add('d-none');
+        $id('preview-outer').style.display = 'none';
         clearLog();
+    });
+
+    $id('btn-cols').addEventListener('click', () => {
+        const panel = $id('col-panel');
+        const open  = panel.style.display === 'block';
+        panel.style.display = open ? 'none' : 'block';
+        $id('btn-cols').innerHTML = open
+            ? '<i class="fas fa-columns me-1"></i>Chọn cột'
+            : '<i class="fas fa-times me-1"></i>Đóng bộ chọn';
     });
 
     $id('btn-run').addEventListener('click', processFiles);
