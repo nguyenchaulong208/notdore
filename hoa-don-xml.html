@@ -662,7 +662,7 @@ async function processFiles() {
     errorLog = [];
     clearLog();
     $id('stats-section').classList.add('d-none');
-    $id('preview-section').classList.add('d-none');
+    $id('preview-outer').style.display = 'none';
     $id('btn-export').disabled = true;
 
     const btn = $id('btn-run');
