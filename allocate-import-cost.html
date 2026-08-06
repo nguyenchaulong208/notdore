@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phân bổ giá hàng nhập khẩu - NotDore</title>
+    <link rel="shortcut icon" href="favicon.ico">
+    <link href="https://fonts.googleapis.com/css?family=Quicksand:700|Roboto:400,400i,700&display=swap" rel="stylesheet">
+    <script defer src="assets/fontawesome/js/all.min.js"></script>
+    <link id="theme-style" rel="stylesheet" href="assets/css/theme.css">
+    <style>
+        /* Small page-specific tweaks */
+        .tool-page { padding: 2.5rem 0 4rem; }
+        .section-card { padding: 1rem; margin-bottom: 1rem; }
+        table.table-editable td input { width: 100%; box-sizing: border-box; border: none; background: transparent; }
+        .results-wrap { margin-top: 1rem; }
+        .error-box { color: #b00020; background: #fff0f1; padding: .6rem; border-radius: .4rem; display: none; }
+    </style>
+</head>
+<body>
+<header class="header">
+    <div class="branding">
+        <div class="container-fluid position-relative py-3">
+            <div class="logo-wrapper"><div class="site-logo">
+                <a class="navbar-brand" href="index.html">
+                    <img class="logo-icon me-2" src="assets/images/site-logo.svg" alt="logo">
+                    <span class="logo-text">NotDore</span>
+                </a>
+            </div></div>
+        </div>
+    </div>
+</header>
+
+<section class="tool-page">
+    <div class="container" style="max-width:1000px">
+        <a href="tools.html" class="back-link"><i class="fas fa-arrow-left"></i>Quay lại danh sách công cụ</a>
+        <h1 class="mb-1" style="font-family:'Quicksand',sans-serif;font-size:1.4rem;font-weight:700;">
+            <i class="fas fa-balance-scale-left me-2" style="color:#ed6524"></i>Phân bổ giá hàng nhập khẩu
+        </h1>
+        <p class="text-muted mb-3">Nhập thông tin lô, danh sách mặt hàng và chi phí nhập khẩu; bấm "Xử lý" để tính phân bổ.</p>
+
+        <div class="section-card">
+            <h5><i class="fas fa-clipboard-list me-2"></i>Thông tin lô hàng</h5>
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label">Mã lô</label>
+                    <input id="lotCode" class="form-control" type="text" placeholder="L001">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Ngày nhập</label>
+                    <input id="importDate" class="form-control" type="date">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Tỷ giá (VND/1 ngoại tệ)</label>
+                    <input id="exchangeRate" class="form-control" type="number" step="0.01" placeholder="24000">
+                </div>
+            </div>
+        </div>
+
+        <div class="section-card">
+            <h5><i class="fas fa-boxes me-2"></i>Danh sách mặt hàng</h5>
+            <div class="mb-2">
+                <button id="addItem" class="btn btn-sm btn-outline-secondary"><i class="fas fa-plus"></i> Thêm mặt hàng</button>
+                <button id="clearItems" class="btn btn-sm btn-outline-secondary"><i class="fas fa-trash"></i> Xóa tất cả</button>
+            </div>
+            <table class="table table-bordered table-editable" id="itemsTable">
+                <thead>
+                    <tr>
+                        <th>Mã</th>
+                        <th>Tên</th>
+                        <th>Số lượng</th>
+                        <th>Khối lượng (kg)</th>
+                        <th>Giá gốc</th>
+                        <th>Đơn vị tiền</th>
+                        <th>Hành động</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+
+        <div class="section-card">
+            <h5><i class="fas fa-file-invoice-dollar me-2"></i>Danh sách chi phí</h5>
+            <div class="mb-2">
+                <button id="addCost" class="btn btn-sm btn-outline-secondary"><i class="fas fa-plus"></i> Thêm chi phí</button>
+                <button id="clearCosts" class="btn btn-sm btn-outline-secondary"><i class="fas fa-trash"></i> Xóa tất cả</button>
+            </div>
+            <table class="table table-bordered table-editable" id="costsTable">
+                <thead>
+                    <tr>
+                        <th>Mã chi phí</th>
+                        <th>Loại</th>
+                        <th>Số tiền</th>
+                        <th>Tiền tệ</th>
+                        <th>Phân bổ</th>
+                        <th>Hành động</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+
+        <div class="section-card">
+            <h5><i class="fas fa-cogs me-2"></i>Tùy chọn</h5>
+            <div class="row g-3 align-items-end">
+                <div class="col-md-4">
+                    <label class="form-label">Phương pháp mặc định</label>
+                    <select id="defaultMethod" class="form-select">
+                        <option value="value">Theo giá trị</option>
+                        <option value="quantity">Theo số lượng</option>
+                        <option value="weight">Theo trọng lượng</option>
+                        <option value="equal">Bằng nhau</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Số chữ số thập phân (đầu ra)</label>
+                    <input id="rounding" class="form-control" type="number" min="0" max="6" value="2">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Xử lý sai số làm tròn</label>
+                    <select id="roundDiff" class="form-select">
+                        <option value="distribute">Phân phối</option>
+                        <option value="last">Cộng vào dòng cuối</option>
+                        <option value="none">Không xử lý</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="d-flex gap-2 mb-3">
+            <button id="btnProcess" class="btn btn-orange"><i class="fas fa-play me-2"></i>Xử lý &amp; Xem kết quả</button>
+            <button id="btnExport" class="btn btn-success" disabled><i class="fas fa-file-excel me-2"></i>Xuất Excel</button>
+            <button id="btnClear" class="btn btn-outline-secondary">Làm mới</button>
+        </div>
+
+        <div class="error-box" id="errorBox"></div>
+
+        <div class="results-wrap" id="results" style="display:none">
+            <h5><i class="fas fa-table me-2"></i>Kết quả phân bổ</h5>
+            <div id="resultSummary" class="mb-2"></div>
+            <div class="table-responsive">
+                <table class="table table-bordered" id="resultTable">
+                    <thead>
+                        <tr>
+                            <th>Mã</th>
+                            <th>Tên</th>
+                            <th>Số lượng</th>
+                            <th>Giá gốc (VND)</th>
+                            <th>Chi phí phân bổ (VND)</th>
+                            <th>Tổng chi phí nhập (VND)</th>
+                            <th>Đơn giá nhập (VND)</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+</section>
+
+<footer class="footer">
+    <div class="footer-bottom text-center py-4">
+        <small class="copyright">Designed with ❤️ by NotDore</small>
+    </div>
+</footer>
+
+<!-- Include allocation module and UI script -->
+<script src="assets/plugins/popper.min.js"></script>
+<script src="assets/plugins/bootstrap/js/bootstrap.min.js"></script>
+<script>
+/* Allocation module (simplified copy of ImportAllocation) */
+(function(global){
+'use strict';
+// -- helper
+function toNumber(v){ if(v===null||v===undefined||v==='') return null; const n=Number(String(v).replace(/,/g,'').replace(/\s/g,'')); return Number.isFinite(n)?n:null; }
+
+function convertCurrency(amount,currency,lotInfo){ const a=toNumber(amount); if(a===null) return null; const cur=(currency||'VND').toString().toUpperCase(); if(cur==='VND') return a; const er=toNumber(lotInfo&&lotInfo.exchangeRate); if(er===null||er<=0) throw new Error('Missing or invalid exchangeRate'); return a*er; }
+
+function allocateCostByQuantity(costAmount,items,totals){ const totalQ=totals.totalQuantity||0; if(!totalQ) return items.map(()=>costAmount/items.length); return items.map(it=> (it.quantity/totalQ)*costAmount); }
+function allocateCostByWeight(costAmount,items,totals){ const totalW=totals.totalWeight||0; if(!totalW) return items.map(()=>costAmount/items.length); return items.map(it=> (it.weight/totalW)*costAmount); }
+function allocateCostByValue(costAmount,items,totals){ const totalV=totals.totalValue||0; if(!totalV) return items.map(()=>costAmount/items.length); return items.map(it=> (it.lineValue/totalV)*costAmount); }
+function allocateCostByCustom(costAmount,items,cost){ if(Array.isArray(cost.allocationRatios)){ const ratios=cost.allocationRatios.map(r=>Number(r)||0); const sum=ratios.reduce((s,x)=>s+x,0); if(sum<=0) return items.map(()=>0); return items.map((_,i)=> (ratios[i]/sum)*costAmount); } if(typeof cost.allocationCallback==='function'){ const res=cost.allocationCallback(items,costAmount); if(!Array.isArray(res)||res.length!==items.length) throw new Error('allocationCallback must return array same length as items'); return res.map(x=>Number(x)||0); } return items.map(()=>costAmount/items.length); }
+
+function allocateCostEqual(costAmount,items){ return items.map(()=>costAmount/items.length); }
+
+function applyRounding(allocationsRaw,decimals=2,handleRoundingDiff='distribute'){ const unit=Math.pow(10,-decimals); const factor=Math.pow(10,decimals); const rounded=allocationsRaw.map(v=>{ if(v===null||v===undefined) return 0; return Math.round((Number(v)+0)*factor)/factor; }); const rawSum=allocationsRaw.reduce((s,v)=>s+(Number(v)||0),0); const roundedSum=rounded.reduce((s,v)=>s+(Number(v)||0),0); let diff=Math.round((rawSum-roundedSum)/unit)*unit; if(Math.abs(diff)<1e-12) diff=0; if(diff===0||handleRoundingDiff==='none'){ return { rounded, roundingDiff: rawSum-roundedSum }; } const neededUnits=Math.round(diff/unit); if(handleRoundingDiff==='last'){ const lastIdx=rounded.length-1; rounded[lastIdx]=Number((rounded[lastIdx]+diff).toFixed(decimals)); return { rounded, roundingDiff: rawSum-rounded.reduce((s,v)=>s+v,0) }; }
+ const fractions=allocationsRaw.map((v,i)=>{ const absVal=Math.abs(Number(v)||0); const rawTimes=absVal*factor; const frac=rawTimes-Math.floor(rawTimes); return {idx:i,frac,abs:absVal}; });
+ if(neededUnits>0){ fractions.sort((a,b)=>b.frac-a.frac); for(let k=0;k<neededUnits;k++){ const idx=fractions[k%fractions.length].idx; rounded[idx]=Number((rounded[idx]+unit).toFixed(decimals)); } } else if(neededUnits<0){ fractions.sort((a,b)=>a.frac-b.frac); for(let k=0;k<Math.abs(neededUnits);k++){ const idx=fractions[k%fractions.length].idx; rounded[idx]=Number((rounded[idx]-unit).toFixed(decimals)); } }
+ const finalRoundedSum=rounded.reduce((s,v)=>s+(Number(v)||0),0); return { rounded, roundingDiff: rawSum-finalRoundedSum };
+}
+
+function calculateTotals(lotInfo,items){ const processed=items.map(it=>{ const quantity=toNumber(it.quantity)||0; const weight=toNumber(it.weight)||0; const basePrice=toNumber(it.basePrice)||0; const currency=(it.currency||'VND').toString().toUpperCase(); const basePriceVND=currency==='VND'?basePrice:convertCurrency(basePrice,currency,lotInfo); const lineValue=basePriceVND*quantity; return Object.assign({},it,{quantity,weight,basePrice,basePriceVND,lineValue}); }); const totals=processed.reduce((acc,it)=>{ acc.totalQuantity+=it.quantity; acc.totalWeight+=it.weight; acc.totalValue+=it.lineValue; return acc; },{totalQuantity:0,totalWeight:0,totalValue:0}); return {items:processed,totals}; }
+
+function calculateImportCostAllocation({lotInfo,items,costs,options={}}){ const opts=Object.assign({ defaultAllocationMethod:'value', roundingMethod:2, handleRoundingDiff:'distribute' },options||{}); // basic validation minimal here
+ // build totals
+ let converted; try{ converted=calculateTotals(lotInfo,items); }catch(e){ return { valid:false, errors:[{message:e.message}] }; }
+ const procItems=converted.items; const totals=converted.totals; procItems.forEach(it=>{ it.allocatedCosts=[]; it.totalImportCost=0; }); let totalCost=0; for(let ci=0;ci<costs.length;ci++){ const cost=Object.assign({},costs[ci]); const costAmtOriginal=toNumber(cost.amount); if(costAmtOriginal===null) continue; const costVND=convertCurrency(costAmtOriginal,cost.currency||'VND',lotInfo); totalCost+=costVND; const method=cost.allocationMethod||opts.defaultAllocationMethod; let rawAlloc=[]; switch(method){ case 'quantity': rawAlloc=allocateCostByQuantity(costVND,procItems,totals); break; case 'weight': rawAlloc=allocateCostByWeight(costVND,procItems,totals); break; case 'value': rawAlloc=allocateCostByValue(costVND,procItems,totals); break; case 'custom': rawAlloc=allocateCostByCustom(costVND,procItems,cost); break; case 'equal': rawAlloc=allocateCostEqual(costVND,procItems); break; default: if(opts.defaultAllocationMethod==='quantity') rawAlloc=allocateCostByQuantity(costVND,procItems,totals); else if(opts.defaultAllocationMethod==='weight') rawAlloc=allocateCostByWeight(costVND,procItems,totals); else rawAlloc=allocateCostByValue(costVND,procItems,totals); }
+ const {rounded,roundingDiff}=applyRounding(rawAlloc,Number(opts.roundingMethod)||2,opts.handleRoundingDiff);
+ rounded.forEach((amt,idx)=>{ const entry={ costId: cost.costId||`cost_${ci}`, costType: cost.costType||'', allocatedAmount: amt }; procItems[idx].allocatedCosts.push(entry); procItems[idx].totalImportCost = Number((procItems[idx].totalImportCost + amt).toFixed(8)); }); }
+ procItems.forEach(it=>{ it.totalImportCost=Number((it.totalImportCost||0).toFixed(8)); it.unitImportCost=it.quantity?Number((it.totalImportCost/it.quantity).toFixed(8)):0; }); const totalAllocated=procItems.reduce((s,it)=>s+(it.totalImportCost||0),0); const roundingDiff=Number((totalCost-totalAllocated).toFixed(Number(opts.roundingMethod)||2)); const result={ valid:true, items:procItems.map(it=>({ itemId:it.itemId, itemName:it.itemName, quantity:it.quantity, basePriceVND:it.basePriceVND, allocatedCosts:it.allocatedCosts.map(ac=>({costId:ac.costId,costType:ac.costType,allocatedAmount:ac.allocatedAmount})), totalImportCost:Number(it.totalImportCost.toFixed(Number(opts.roundingMethod)||2)), unitImportCost:Number(it.unitImportCost.toFixed(Number(opts.roundingMethod)||2)) })), summary:{ totalCost:Number(totalCost.toFixed(Number(opts.roundingMethod)||2)), totalAllocated:Number(totalAllocated.toFixed(Number(opts.roundingMethod)||2)), roundingDiff:roundingDiff } }; return result; }
+
+// expose
+global.AllocModule = { calculateImportCostAllocation };
+})(window);
+</script>
+
+<script>
+// UI glue: build rows, read DOM, call module and render results
+document.addEventListener('DOMContentLoaded', () => {
+    const itemsTbody = document.querySelector('#itemsTable tbody');
+    const costsTbody = document.querySelector('#costsTable tbody');
+    const addItemBtn = document.getElementById('addItem');
+    const addCostBtn = document.getElementById('addCost');
+    const btnProcess = document.getElementById('btnProcess');
+    const btnClear = document.getElementById('btnClear');
+    const btnExport = document.getElementById('btnExport');
+    const errorBox = document.getElementById('errorBox');
+    const resultsWrap = document.getElementById('results');
+    const resultTableBody = document.querySelector('#resultTable tbody');
+    const resultSummary = document.getElementById('resultSummary');
+
+    function mkItemRow(data = {}){
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td><input class="form-control form-control-sm" data-field="itemId" value="${data.itemId||''}"></td>
+            <td><input class="form-control form-control-sm" data-field="itemName" value="${data.itemName||''}"></td>
+            <td><input class="form-control form-control-sm" data-field="quantity" type="number" step="1" value="${data.quantity!=null?data.quantity:''}"></td>
+            <td><input class="form-control form-control-sm" data-field="weight" type="number" step="0.01" value="${data.weight!=null?data.weight:''}"></td>
+            <td><input class="form-control form-control-sm" data-field="basePrice" type="number" step="0.01" value="${data.basePrice!=null?data.basePrice:''}"></td>
+            <td>
+                <select class="form-select form-select-sm" data-field="currency">
+                    <option value="VND" ${!data.currency||data.currency==='VND'?'selected':''}>VND</option>
+                    <option value="USD" ${data.currency==='USD'?'selected':''}>USD</option>
+                    <option value="EUR" ${data.currency==='EUR'?'selected':''}>EUR</option>
+                </select>
+            </td>
+            <td><button class="btn btn-sm btn-outline-danger btn-remove"><i class="fas fa-times"></i></button></td>
+        `;
+        itemsTbody.appendChild(tr);
+    }
+
+    function mkCostRow(data = {}){
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td><input class="form-control form-control-sm" data-field="costId" value="${data.costId||''}"></td>
+            <td><input class="form-control form-control-sm" data-field="costType" value="${data.costType||''}"></td>
+            <td><input class="form-control form-control-sm" data-field="amount" type="number" step="0.01" value="${data.amount!=null?data.amount:''}"></td>
+            <td>
+                <select class="form-select form-select-sm" data-field="currency">
+                    <option value="VND" ${!data.currency||data.currency==='VND'?'selected':''}>VND</option>
+                    <option value="USD" ${data.currency==='USD'?'selected':''}>USD</option>
+                    <option value="EUR" ${data.currency==='EUR'?'selected':''}>EUR</option>
+                </select>
+            </td>
+            <td>
+                <select class="form-select form-select-sm" data-field="allocationMethod">
+                    <option value="value" ${!data.allocationMethod||data.allocationMethod==='value'?'selected':''}>Theo giá trị</option>
+                    <option value="quantity" ${data.allocationMethod==='quantity'?'selected':''}>Theo số lượng</option>
+                    <option value="weight" ${data.allocationMethod==='weight'?'selected':''}>Theo trọng lượng</option>
+                    <option value="equal" ${data.allocationMethod==='equal'?'selected':''}>Bằng nhau</option>
+                    <option value="custom" ${data.allocationMethod==='custom'?'selected':''}>Tùy chỉnh</option>
+                </select>
+            </td>
+            <td><button class="btn btn-sm btn-outline-danger btn-remove"><i class="fas fa-times"></i></button></td>
+        `;
+        costsTbody.appendChild(tr);
+    }
+
+    // initial sample rows
+    mkItemRow({ itemId:'A', itemName:'Hàng A', quantity:10, weight:2.5, basePrice:5, currency:'USD' });
+    mkItemRow({ itemId:'B', itemName:'Hàng B', quantity:5, weight:1.2, basePrice:8, currency:'USD' });
+    mkItemRow({ itemId:'C', itemName:'Hàng C', quantity:20, weight:0.5, basePrice:20000, currency:'VND' });
+    mkCostRow({ costId:'C1', costType:'Cước', amount:100, currency:'USD', allocationMethod:'value' });
+    mkCostRow({ costId:'C2', costType:'Phí bảo hiểm', amount:2000000, currency:'VND', allocationMethod:'weight' });
+
+    // event delegation for remove buttons
+    document.addEventListener('click', (e) => {
+        const btn = e.target.closest('.btn-remove');
+        if (!btn) return;
+        const row = btn.closest('tr');
+        if (row && row.parentNode) row.parentNode.removeChild(row);
+    });
+
+    addItemBtn.addEventListener('click', (e) => { e.preventDefault(); mkItemRow(); });
+    addCostBtn.addEventListener('click', (e) => { e.preventDefault(); mkCostRow(); });
+    document.getElementById('clearItems').addEventListener('click', () => { itemsTbody.innerHTML = ''; });
+    document.getElementById('clearCosts').addEventListener('click', () => { costsTbody.innerHTML = ''; });
+
+    function readForm(){
+        const lotInfo = {
+            lotCode: document.getElementById('lotCode').value.trim(),
+            importDate: document.getElementById('importDate').value,
+            exchangeRate: document.getElementById('exchangeRate').value ? Number(document.getElementById('exchangeRate').value) : null
+        };
+        const items = [];
+        Array.from(itemsTbody.querySelectorAll('tr')).forEach(tr=>{
+            const obj = {};
+            const inputs = tr.querySelectorAll('[data-field]');
+            inputs.forEach(inp=>{ const k=inp.getAttribute('data-field'); obj[k]=inp.value; });
+            items.push(obj);
+        });
+        const costs = [];
+        Array.from(costsTbody.querySelectorAll('tr')).forEach(tr=>{
+            const obj = {}; const inputs = tr.querySelectorAll('[data-field]'); inputs.forEach(inp=>{ const k=inp.getAttribute('data-field'); obj[k]=inp.value; }); costs.push(obj);
+        });
+        const options = {
+            defaultAllocationMethod: document.getElementById('defaultMethod').value,
+            roundingMethod: Number(document.getElementById('rounding').value),
+            handleRoundingDiff: document.getElementById('roundDiff').value
+        };
+        return { lotInfo, items, costs, options };
+    }
+
+    function showErrors(errs){
+        errorBox.style.display='block';
+        errorBox.innerHTML = errs.map(e=>`<div>${e.field?e.field+': ':''}${e.message}</div>`).join('');
+    }
+    function clearErrors(){ errorBox.style.display='none'; errorBox.innerHTML=''; }
+
+    btnProcess.addEventListener('click',(e)=>{
+        e.preventDefault(); clearErrors(); resultsWrap.style.display='none'; resultTableBody.innerHTML=''; resultSummary.innerHTML=''; btnExport.disabled=true;
+        const {lotInfo, items, costs, options} = readForm();
+        // call module
+        try{
+            const res = AllocModule.calculateImportCostAllocation({lotInfo, items, costs, options});
+            if(!res || res.valid===false){ if(res && res.errors) showErrors(res.errors); else showErrors([{message:'Không thể xử lý'}]); return; }
+            // render results
+            resultsWrap.style.display='block';
+            res.items.forEach(it=>{
+                const tr=document.createElement('tr');
+                const allocSum = it.allocatedCosts.reduce((s,a)=>s+(a.allocatedAmount||0),0);
+                tr.innerHTML = `<td>${it.itemId||''}</td><td>${it.itemName||''}</td><td>${it.quantity}</td><td>${(it.basePriceVND||0).toLocaleString('vi-VN')}</td><td>${allocSum.toLocaleString('vi-VN')}</td><td>${(it.totalImportCost||0).toLocaleString('vi-VN')}</td><td>${(it.unitImportCost||0).toLocaleString('vi-VN')}</td>`;
+                resultTableBody.appendChild(tr);
+            });
+            resultSummary.innerHTML = `<div>Tổng chi phí: <strong>${res.summary.totalCost.toLocaleString('vi-VN')}</strong> — Tổng phân bổ: <strong>${res.summary.totalAllocated.toLocaleString('vi-VN')}</strong> — Sai số làm tròn: <strong>${res.summary.roundingDiff.toLocaleString('vi-VN')}</strong></div>`;
+            btnExport.disabled=false;
+        }catch(err){ showErrors([{message:err.message}]); console.error(err); }
+    });
+
+    btnClear.addEventListener('click',(e)=>{ e.preventDefault(); // reset fields
+        document.getElementById('lotCode').value=''; document.getElementById('importDate').value=''; document.getElementById('exchangeRate').value=''; itemsTbody.innerHTML=''; costsTbody.innerHTML=''; resultTableBody.innerHTML=''; resultsWrap.style.display='none'; clearErrors(); });
+
+    // Export simple CSV for quick download
+    btnExport.addEventListener('click',(e)=>{ e.preventDefault(); // build CSV from result table
+        const rows = [];
+        const headers = ['Mã','Tên','Số lượng','Giá gốc (VND)','Chi phí phân bổ (VND)','Tổng chi phí nhập (VND)','Đơn giá nhập (VND)'];
+        rows.push(headers.join(','));
+        Array.from(resultTableBody.querySelectorAll('tr')).forEach(tr=>{ const cols=Array.from(tr.children).map(td=>`"${td.textContent.replace(/"/g,'""')}"`); rows.push(cols.join(',')); });
+        const csv = rows.join('\n');
+        const blob = new Blob([csv],{type:'text/csv'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='allocation_result.csv'; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+    });
+
+});
+</script>
+</body>
+</html>

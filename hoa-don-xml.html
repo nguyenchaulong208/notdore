@@ -202,7 +202,7 @@
     </div>
 
     <!-- LOG -->
-    <div id="log-box"></div>
+    <div id="log-box" aria-live="polite" aria-atomic="false"></div>
 
     <!-- STATS -->
     <div id="stats-section" class="d-none mb-2">
@@ -261,33 +261,21 @@ let selectedFiles = [];
 let allRows = [];
 let errorLog = [];
 
-// Cột ẩn mặc định — thông tin ít dùng trong công việc kế toán hàng ngày.
-// Người dùng có thể bật lại qua panel "Chọn cột".
-const HIDDEN_BY_DEFAULT = new Set([
-    "File",
-    "Mã tra cứu (CQT)",
-    "Đường dẫn/Dữ liệu QR tra cứu",
-    "Địa chỉ người bán",
-    "Hình thức thanh toán",
-    "Tổng tiền (trước thuế)",
-    "Tổng giảm trừ không chịu thuế",
-    "Tổng tiền chiết khấu thương mại",
-    "Tổng giảm trừ khác",
-    "Tổng tiền thanh toán bằng chữ",
-    "Loại dòng",
-    "Số thứ tự",
-    "Mã hàng hóa dịch vụ",
-    "Tỷ lệ % chiết khấu",
-    "Số tiền chiết khấu",
+// Danh sách cột mặc định HIỂN THỊ (theo yêu cầu: các cột còn lại là tùy chọn/ẩn)
+const DEFAULT_VISIBLE = new Set([
+    "Số hóa đơn", "Ngày hóa đơn", "Ký hiệu hóa đơn",
+    "Đơn vị bán hàng", "MST người bán", "Hình thức thanh toán",
+    "Tên hàng hóa dịch vụ", "Đơn vị tính", "Số lượng", "Đơn giá",
+    "Thành tiền (dòng)", "Thuế suất", "Loại dòng", "Tỷ lệ % chiết khấu", "Số tiền chiết khấu"
 ]);
 
 // Ghi đè của người dùng: col -> true (bật) hoặc false (tắt)
-// Nếu key không có trong object => dùng HIDDEN_BY_DEFAULT để quyết định
+// Nếu key không có trong object => dùng DEFAULT_VISIBLE để quyết định
 const userOverride = {};
 
 function isColVisible(col) {
     if (col in userOverride) return userOverride[col];
-    return !HIDDEN_BY_DEFAULT.has(col);
+    return DEFAULT_VISIBLE.has(col);
 }
 
 function getVisibleCols() {
@@ -323,15 +311,19 @@ const ALWAYS_COLUMNS = new Set([
 let COLUMNS = [...FIXED_COLUMNS];
 
 // Cột chứa số tiền / số lượng — cần định dạng số & căn phải.
-// Thuế suất KHÔNG nằm trong danh sách này vì theo quy định đây là kiểu "Chuỗi ký tự"
-// (có thể mang giá trị đặc biệt như KCT, KKKNT chứ không luôn là số %).
+// Lưu ý: Thuế suất đôi khi là chuỗi đặc biệt, nhưng nếu là số thì sẽ được hiển thị như phần trăm.
 const NUMERIC_COLUMNS = new Set([
     "Tổng tiền (trước thuế)", "Tổng giảm trừ không chịu thuế", "Tổng tiền chiết khấu thương mại",
     "Tổng giảm trừ khác", "Tiền thuế GTGT (tổng)", "Tổng tiền thanh toán",
-    "Số thứ tự", "Số lượng", "Đơn giá", "Tỷ lệ % chiết khấu", "Số tiền chiết khấu", "Thành tiền (dòng)"
+    "Đơn giá", "Số tiền chiết khấu", "Thành tiền (dòng)"
 ]);
 
-// Tính chất dòng hàng hóa/dịch vụ (thẻ TChat trong HHDVu) — Phụ lục IV Quy định kỹ thuật
+// Cột số nguyên (không hiện thập phân)
+const INTEGER_COLUMNS = new Set(["Số thứ tự", "Số lượng"]);
+// Cột thể hiện phần trăm (dữ liệu thường là số như 10 cho 10%)
+const PERCENT_COLUMNS = new Set(["Tỷ lệ % chiết khấu", "Thuế suất"]);
+
+// Nhãn cho TChat (tính chất dòng) — dùng khi hiển thị Loại dòng
 const TCHAT_LABELS = {
     '1': 'Hàng hóa, dịch vụ',
     '2': 'Chiết khấu thương mại',
@@ -340,17 +332,36 @@ const TCHAT_LABELS = {
     '5': 'Hàng hóa đặc trưng',
 };
 
+// Runtime-detected numeric columns (auto-detection for fields like VATAmountOC)
+const DYNAMIC_NUMERIC = new Set();
+// Helper: cột nào là số (dùng để căn phải và style)
+function isNumericCol(col) {
+    return NUMERIC_COLUMNS.has(col) || INTEGER_COLUMNS.has(col) || PERCENT_COLUMNS.has(col) || DYNAMIC_NUMERIC.has(col);
+}
+
+// Chuyển chuỗi thành Number hoặc null
 function toNumberOrNull(value) {
     if (value === '' || value == null) return null;
-    const cleaned = String(value).replace(/,/g, '').trim();
+    const cleaned = String(value).replace(/,/g, '').replace(/%/g, '').trim();
     if (cleaned === '' || Number.isNaN(Number(cleaned))) return null;
     return Number(cleaned);
 }
 
-function formatNumberVN(value) {
+// Định dạng số theo locale Việt Nam theo từng loại cột
+function formatNumberVN(value, colName) {
     const num = toNumberOrNull(value);
     if (num === null) return esc(value);
-    return num.toLocaleString('vi-VN', { maximumFractionDigits: 2 });
+
+    if (INTEGER_COLUMNS.has(colName)) {
+        return num.toLocaleString('vi-VN', { maximumFractionDigits: 0 });
+    }
+    if (PERCENT_COLUMNS.has(colName)) {
+        // Hiển thị phần trăm với 2 chữ số thập phân (hỗ trợ dữ liệu dạng 10 (10%) hoặc 0.1 (10%))
+        const displayNum = num <= 1 ? (num * 100) : num;
+        return displayNum.toLocaleString('vi-VN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '%';
+    }
+    // Mặc định: 2 chữ số thập phân cho tiền/tỉ lệ
+    return num.toLocaleString('vi-VN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
 // ════════════════════════════════════════════════════════════
@@ -541,6 +552,25 @@ function recomputeColumns() {
     COLUMNS = cols;
 }
 
+// Tự động phát hiện các cột số bổ sung (ví dụ VATAmountOC hoặc các trường TTKhac chứa số)
+function detectNumericColumns() {
+    DYNAMIC_NUMERIC.clear();
+    const SAMPLE = 80;
+    for (const col of COLUMNS) {
+        if (NUMERIC_COLUMNS.has(col) || INTEGER_COLUMNS.has(col) || PERCENT_COLUMNS.has(col)) continue;
+        let numericCount = 0, total = 0;
+        for (let i = 0; i < Math.min(allRows.length, SAMPLE); i++) {
+            const v = allRows[i][col];
+            if (v === undefined || v === null || v === '') continue;
+            total++;
+            if (toNumberOrNull(v) !== null) numericCount++;
+        }
+        if (total > 0 && numericCount / total >= 0.6) {
+            DYNAMIC_NUMERIC.add(col);
+        }
+    }
+}
+
 // ════════════════════════════════════════════════════════════
 //  UI HELPERS
 // ════════════════════════════════════════════════════════════
@@ -589,11 +619,12 @@ function updateFileList() {
 }
 
 function addFiles(files) {
-    const existing = new Set(selectedFiles.map(f => f.name + f.size));
+    const existing = new Set(selectedFiles.map(f => `${f.name}|${f.size}|${f.lastModified}`));
     for (const f of files) {
-        if (!existing.has(f.name + f.size)) {
+        const key = `${f.name}|${f.size}|${f.lastModified}`;
+        if (!existing.has(key)) {
             selectedFiles.push(f);
-            existing.add(f.name + f.size);
+            existing.add(key);
         }
     }
     selectedFiles.sort((a, b) => a.name.localeCompare(b.name));
@@ -604,7 +635,7 @@ function buildColPanel() {
     const grid = $id('col-grid');
     grid.innerHTML = '';
     COLUMNS.forEach(col => {
-        const isExtra = HIDDEN_BY_DEFAULT.has(col);
+        const isExtra = !DEFAULT_VISIBLE.has(col);
         const visible  = isColVisible(col);
 
         const label = document.createElement('label');
@@ -616,6 +647,7 @@ function buildColPanel() {
         cb.checked = visible;
         cb.addEventListener('change', () => {
             userOverride[col] = cb.checked;
+            try { localStorage.setItem('hdxml_userCols', JSON.stringify(userOverride)); } catch (e) { /* ignore */ }
             renderPreview();
         });
 
@@ -633,15 +665,15 @@ function renderPreview() {
     const rows = allRows.slice(0, MAX);
 
     $id('preview-thead').innerHTML = `<tr>${cols.map(c => {
-        const cls = [NUMERIC_COLUMNS.has(c) ? 'num' : '', HIDDEN_BY_DEFAULT.has(c) ? 'th-extra' : ''].filter(Boolean).join(' ');
+        const cls = [isNumericCol(c) ? 'num' : '', !DEFAULT_VISIBLE.has(c) ? 'th-extra' : ''].filter(Boolean).join(' ');
         return `<th class="${cls}">${esc(c)}</th>`;
     }).join('')}</tr>`;
 
     $id('preview-tbody').innerHTML = rows.map(r =>
         `<tr>${cols.map(c => {
-            const isNum   = NUMERIC_COLUMNS.has(c);
-            const isExtra = HIDDEN_BY_DEFAULT.has(c);
-            const display = isNum ? formatNumberVN(r[c]) : esc(r[c]);
+            const isNum   = isNumericCol(c);
+            const isExtra = !DEFAULT_VISIBLE.has(c);
+            const display = isNum ? formatNumberVN(r[c], c) : esc(r[c]);
             const cls = [isNum ? 'num' : '', isExtra ? 'td-extra' : ''].filter(Boolean).join(' ');
             return `<td class="${cls}">${display}</td>`;
         }).join('')}</tr>`
@@ -685,6 +717,8 @@ async function processFiles() {
     }
 
     recomputeColumns();
+    // Phát hiện các cột số động (sau khi đã có COLUMNS và allRows)
+    detectNumericColumns();
 
     $id('stat-files').textContent    = selectedFiles.length;
     $id('stat-invoices').textContent = invoiceSet.size;
@@ -767,16 +801,33 @@ async function exportExcel() {
             const rowValues = {};
             VISIBLE.forEach(c => {
                 const raw = r[c] ?? '';
-                const num = NUMERIC_COLUMNS.has(c) ? toNumberOrNull(raw) : null;
-                rowValues[c] = num !== null ? num : raw;
+                if (PERCENT_COLUMNS.has(c)) {
+                    const num = toNumberOrNull(raw);
+                    // Hỗ trợ cả dạng 10 (10%) và 0.1 (10%): nếu <=1 coi là fraction, không chia thêm
+                    rowValues[c] = num !== null ? (num <= 1 ? num : num / 100) : raw; // Excel expects fraction for percent format
+                } else if (INTEGER_COLUMNS.has(c)) {
+                    const num = toNumberOrNull(raw);
+                    rowValues[c] = num !== null ? Math.round(num) : raw;
+                } else if (NUMERIC_COLUMNS.has(c) || DYNAMIC_NUMERIC.has(c)) {
+                    const num = toNumberOrNull(raw);
+                    rowValues[c] = num !== null ? num : raw;
+                } else {
+                    rowValues[c] = raw;
+                }
             });
             const row = sheet.addRow(rowValues);
             row.eachCell((cell, colNumber) => {
                 const colName = VISIBLE[colNumber - 1];
                 cell.border = CELL_BORDER;
                 cell.font = { size: 10.5, name: 'Calibri' };
-                if (NUMERIC_COLUMNS.has(colName)) {
+                if (PERCENT_COLUMNS.has(colName)) {
+                    cell.numFmt = '0.00%';
+                    cell.alignment = { horizontal: 'right', vertical: 'middle' };
+                } else if (INTEGER_COLUMNS.has(colName)) {
                     cell.numFmt = '#,##0';
+                    cell.alignment = { horizontal: 'right', vertical: 'middle' };
+                } else if (NUMERIC_COLUMNS.has(colName) || DYNAMIC_NUMERIC.has(colName)) {
+                    cell.numFmt = '#,##0.00';
                     cell.alignment = { horizontal: 'right', vertical: 'middle' };
                 } else {
                     cell.alignment = { vertical: 'middle' };
@@ -815,6 +866,11 @@ async function exportExcel() {
 document.addEventListener('DOMContentLoaded', () => {
     const dropZone  = $id('drop-zone');
     const fileInput = $id('file-input');
+    // Load saved column visibility overrides (if any)
+    try {
+        const saved = localStorage.getItem('hdxml_userCols');
+        if (saved) Object.assign(userOverride, JSON.parse(saved));
+    } catch (e) { /* ignore localStorage errors */ }
 
     dropZone.addEventListener('click', () => fileInput.click());
     dropZone.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') fileInput.click(); });
