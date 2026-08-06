@@ -1,0 +1,8 @@
+/* Page-specific styles for allocate-import-cost.html */
+
+/* Small page-specific tweaks */
+.tool-page { padding: 2.5rem 0 4rem; }
+.section-card { padding: 1rem; margin-bottom: 1rem; }
+table.table-editable td input { width: 100%; box-sizing: border-box; border: none; background: transparent; }
+.results-wrap { margin-top: 1rem; }
+.error-box { color: #b00020; background: #fff0f1; padding: .6rem; border-radius: .4rem; display: none; }
