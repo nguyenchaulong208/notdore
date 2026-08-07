@@ -47,7 +47,7 @@ function getVisibleCols() {
 
 // Các cột tùy chọn khác (không mặc định hiện) — thông tin người bán, tổng hóa đơn, dữ liệu kỹ thuật...
 const OPTIONAL_FIXED_COLUMNS = [
-    "Đơn vị bán hàng", "MST người bán", "Địa chỉ người bán", "Hình thức thanh toán",
+    "Đơn vị bán hàng", "Mã số thuế người bán", "Địa chỉ người bán", "Hình thức thanh toán",
     "Tổng tiền (trước thuế)", "Tổng giảm trừ không chịu thuế", "Tổng tiền chiết khấu thương mại",
     "Tổng giảm trừ khác", "Tiền thuế GTGT (tổng)", "Tổng tiền thanh toán", "Tổng tiền thanh toán bằng chữ",
     "Số thứ tự", "Mã hàng hóa dịch vụ", "Đường dẫn/Dữ liệu QR tra cứu",
@@ -77,6 +77,16 @@ let COLUMNS = [...FIXED_COLUMNS];
 const INTEGER_COLUMNS = new Set(["Số thứ tự", "Số lượng"]);
 const PERCENT_COLUMNS = new Set(["Tỷ lệ % chiết khấu", "Thuế suất"]);
 
+// Các cột là MÃ/ĐỊNH DANH (toàn chữ số nhưng không phải giá trị số học) — LUÔN giữ
+// định dạng văn bản (text), không bao giờ được coi là số. Nếu không chặn riêng,
+// detectNumericColumns() có thể dò nhầm các cột này là số (vì giá trị toàn chữ số),
+// dẫn tới mất số 0 đứng đầu, thêm dấu phẩy/số thập phân sai khi xuất Excel.
+const FORCE_TEXT_COLUMNS = new Set([
+    "Số hóa đơn", "Ký hiệu hóa đơn", "Mẫu số",
+    "Mã số thuế người mua", "Mã số thuế người bán",
+    "Mã cơ quan thuế", "Mã tra cứu/Mã bí mật", "Mã hàng hóa dịch vụ",
+]);
+
 const TCHAT_LABELS = {
     '1': 'Hàng hóa, dịch vụ',
     '2': 'Chiết khấu thương mại',
@@ -87,6 +97,7 @@ const TCHAT_LABELS = {
 
 const DYNAMIC_NUMERIC = new Set();
 function isNumericCol(col) {
+    if (FORCE_TEXT_COLUMNS.has(col)) return false;
     return NUMERIC_COLUMNS.has(col) || INTEGER_COLUMNS.has(col) || PERCENT_COLUMNS.has(col) || DYNAMIC_NUMERIC.has(col);
 }
 
@@ -241,7 +252,7 @@ function parseInvoice(xmlString, fileName) {
         "Mã cơ quan thuế":                   maCQThue,
         "Mã tra cứu/Mã bí mật":              maBiMat,
         "Đơn vị bán hàng":                   nban ? getTextByTag(nban, 'Ten')  : '',
-        "MST người bán":                      nban ? getTextByTag(nban, 'MST')  : '',
+        "Mã số thuế người bán":               nban ? getTextByTag(nban, 'MST')  : '',
         "Địa chỉ người bán":                 nban ? getTextByTag(nban, 'DChi') : '',
         "Hình thức thanh toán":              getTextByTag(ttchung, 'HTTToan'),
         "Tổng tiền (trước thuế)":            ttoan ? getTextByTag(ttoan, 'TgTCThue')  : '',
@@ -514,7 +525,9 @@ async function exportExcel() {
             const rowValues = {};
             VISIBLE.forEach(c => {
                 const raw = r[c] ?? '';
-                if (PERCENT_COLUMNS.has(c)) {
+                if (FORCE_TEXT_COLUMNS.has(c)) {
+                    rowValues[c] = String(raw);
+                } else if (PERCENT_COLUMNS.has(c)) {
                     const num = toNumberOrNull(raw);
                     rowValues[c] = num !== null ? (num <= 1 ? num : num / 100) : raw;
                 } else if (INTEGER_COLUMNS.has(c)) {
@@ -532,7 +545,10 @@ async function exportExcel() {
                 const colName = VISIBLE[colNumber - 1];
                 cell.border = CELL_BORDER;
                 cell.font = { size: 10.5, name: 'Calibri' };
-                if (PERCENT_COLUMNS.has(colName)) {
+                if (FORCE_TEXT_COLUMNS.has(colName)) {
+                    cell.numFmt = '@';
+                    cell.alignment = { horizontal: 'left', vertical: 'middle' };
+                } else if (PERCENT_COLUMNS.has(colName)) {
                     cell.numFmt = '0.00%';
                     cell.alignment = { horizontal: 'right', vertical: 'middle' };
                 } else if (INTEGER_COLUMNS.has(colName)) {
@@ -601,7 +617,7 @@ function detectNumericColumns() {
     DYNAMIC_NUMERIC.clear();
     const SAMPLE = 80;
     for (const col of COLUMNS) {
-        if (NUMERIC_COLUMNS.has(col) || INTEGER_COLUMNS.has(col) || PERCENT_COLUMNS.has(col)) continue;
+        if (NUMERIC_COLUMNS.has(col) || INTEGER_COLUMNS.has(col) || PERCENT_COLUMNS.has(col) || FORCE_TEXT_COLUMNS.has(col)) continue;
         let numericCount = 0, total = 0;
         for (let i = 0; i < Math.min(allRows.length, SAMPLE); i++) {
             const v = allRows[i][col];
