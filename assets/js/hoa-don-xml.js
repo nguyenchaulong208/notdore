@@ -242,19 +242,30 @@ function findLookupToken(fields, depth = 0) {
     return best;
 }
 
-function decodeInvoiceQR(qrCode) {
+function decodeInvoiceQR(qrCode, maCQThue) {
     if (!qrCode) return { lookupCode: '', lookupUrl: '' };
     const trimmed = qrCode.trim();
     // Trường hợp dữ liệu QR chính là một liên kết tra cứu trực tiếp
     if (/^https?:\/\//i.test(trimmed)) {
         return { lookupCode: '', lookupUrl: trimmed };
     }
-    // Trường hợp dữ liệu mã hoá theo TLV — giải mã cấu trúc và suy đoán mã tra cứu
+    // Trường hợp dữ liệu mã hoá theo TLV — giải mã cấu trúc trước
     const fields = decodeQRTLV(trimmed);
-    return {
-        lookupCode: fields.length ? findLookupToken(fields) : '',
-        lookupUrl: '', // không đủ căn cứ để dựng link chính xác từ dữ liệu TLV
-    };
+    if (!fields.length) return { lookupCode: '', lookupUrl: '' };
+
+    const token = findLookupToken(fields);
+    let lookupCode = token;
+
+    // "Mã tra cứu hóa đơn" thường được nối liền ngay sau "Mã cơ quan thuế" (MCCQT) trong
+    // cùng một token, KHÔNG có ký tự phân tách, và độ dài phần mã tra cứu khác nhau tùy
+    // nhà cung cấp phần mềm hóa đơn — nên không thể dùng một độ dài cố định. Cách tự thích
+    // ứng: nếu token bắt đầu đúng bằng "Mã cơ quan thuế" đã biết (trích từ thẻ MCCQT riêng),
+    // cắt bỏ đúng phần tiền tố đó — phần còn lại chính là mã tra cứu, bất kể dài ngắn.
+    if (maCQThue && token.startsWith(maCQThue)) {
+        lookupCode = token.slice(maCQThue.length);
+    }
+
+    return { lookupCode, lookupUrl: '' };
 }
 
 function parseInvoice(xmlString, fileName) {
@@ -281,7 +292,7 @@ function parseInvoice(xmlString, fileName) {
 
     const maCQThue = getTextByTag(root, 'MCCQT');
     const qrCode = getTextByTag(root, 'DLQRCode');
-    const qrDecoded = decodeInvoiceQR(qrCode);
+    const qrDecoded = decodeInvoiceQR(qrCode, maCQThue);
     // Ưu tiên thẻ riêng do phần mềm khai báo trực tiếp; nếu không có, dùng giá trị suy đoán từ QR
     const maTraCuu = getTextByAnyTag(ttchung, ['MTBaoMat', 'MaBiMat', 'MTraCuu']) || qrDecoded.lookupCode;
     const linkTraCuu = qrDecoded.lookupUrl;
