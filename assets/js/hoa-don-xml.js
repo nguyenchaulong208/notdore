@@ -293,8 +293,19 @@ function parseInvoice(xmlString, fileName) {
     const maCQThue = getTextByTag(root, 'MCCQT');
     const qrCode = getTextByTag(root, 'DLQRCode');
     const qrDecoded = decodeInvoiceQR(qrCode, maCQThue);
-    // Ưu tiên thẻ riêng do phần mềm khai báo trực tiếp; nếu không có, dùng giá trị suy đoán từ QR
-    const maTraCuu = getTextByAnyTag(ttchung, ['MTBaoMat', 'MaBiMat', 'MTraCuu']) || qrDecoded.lookupCode;
+
+    // "TransactionID" là nguồn đáng tin cậy NHẤT cho "Mã tra cứu hóa đơn" khi đã có sẵn
+    // trong XML gốc (thẻ riêng do phần mềm khai báo, hoặc trường mở rộng TTKhac) — ưu tiên
+    // đọc trực tiếp thay vì suy đoán từ dữ liệu QR mã hoá. Chỉ dùng kết quả giải mã QR làm
+    // PHƯƠNG ÁN DỰ PHÒNG khi TransactionID không có dữ liệu.
+    const transactionIdDirect = getTextByAnyTag(ttchung, ['TransactionID', 'MTBaoMat', 'MaBiMat', 'MTraCuu'])
+        || getTextByAnyTag(dlhdon, ['TransactionID'])
+        || getTextByAnyTag(root, ['TransactionID']);
+    const transactionIdFromExtra = commonExtra['TransactionID'] || '';
+    // Xoá khỏi commonExtra để tránh hiển thị trùng lặp thành một cột "TransactionID" riêng
+    delete commonExtra['TransactionID'];
+
+    const maTraCuu = transactionIdDirect || transactionIdFromExtra || qrDecoded.lookupCode;
     const linkTraCuu = qrDecoded.lookupUrl;
     const trangThai = detectInvoiceStatus(root, ttchung);
 
