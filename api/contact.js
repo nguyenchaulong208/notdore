@@ -27,7 +27,7 @@ export default async function handler(req, res) {
         // Dùng domain đã verify trên Resend, vd: "NotDore <contact@notdore.io.vn>"
         // Trước khi verify domain, có thể dùng "onboarding@resend.dev" để test
         from: "NotDore <onboarding@resend.dev>",
-        to: ["nguyenchaulong208@gmail.com"],
+        to: ["nguyenchaulong.data208@gmail.com"],
         reply_to: email,
         subject: `[Liên hệ NotDore] Tin nhắn mới từ ${email}`,
         html: `
