@@ -1,0 +1,196 @@
+/* ghep-file-excel.css — Công cụ Ghép File Excel (NotDore) */
+
+/* ===== Stepper ngang ===== */
+.mw-stepper {
+  display: flex;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  gap: 0.25rem;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+.mw-stepper__step {
+  flex: 1 1 0;
+  min-width: 92px;
+  text-align: center;
+  padding: 0.5rem 0.25rem;
+  border-bottom: 3px solid #e2e5e9;
+  color: #8a8f98;
+  font-size: 0.8rem;
+}
+.mw-stepper__index {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #e2e5e9;
+  color: #fff;
+  font-size: 0.75rem;
+  margin-bottom: 4px;
+}
+.mw-stepper__step.is-active {
+  border-bottom-color: #198754;
+  color: #198754;
+  font-weight: 600;
+}
+.mw-stepper__step.is-active .mw-stepper__index { background: #198754; }
+.mw-stepper__step.is-done { color: #198754; }
+.mw-stepper__step.is-done .mw-stepper__index { background: #198754; }
+.mw-stepper__label { display: block; }
+
+/* ===== Nút Lưu/Tải cấu trúc góc trên phải ===== */
+.mw-profile-bar {
+  position: sticky;
+  top: 0.5rem;
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  z-index: 5;
+  margin-bottom: 0.75rem;
+}
+
+/* ===== Panels: chỉ 1 step hiển thị tại 1 thời điểm ===== */
+.mw-panel { display: none; }
+.mw-panel.is-active { display: block; animation: mw-fade-in 0.15s ease-out; }
+@keyframes mw-fade-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ===== Card chung (dùng cho file-card, target schema, export summary) ===== */
+.mw-card {
+  background: #fff;
+  border: 1px solid #e9ecef;
+  border-radius: 0.5rem;
+  padding: 1rem 1.25rem;
+}
+
+/* ===== Dropzone (Step 1) ===== */
+.mw-dropzone {
+  border: 2px dashed #ced4da;
+  border-radius: 0.75rem;
+  padding: 2.5rem 1rem;
+  text-align: center;
+  color: #6c757d;
+  cursor: pointer;
+  transition: border-color 0.15s, background-color 0.15s;
+}
+.mw-dropzone:hover,
+.mw-dropzone:focus-visible {
+  border-color: #198754;
+  background-color: #f4fbf7;
+  outline: none;
+}
+.mw-dropzone.is-dragover {
+  border-color: #198754;
+  background-color: #eaf7f0;
+}
+
+/* File card — Step 1 (mw-file-card) và Step 2 (mở rộng thêm bảng preview bên trong) */
+.mw-file-card {
+  border: 1px solid #e9ecef;
+  border-radius: 0.5rem;
+  padding: 0.75rem 1rem;
+  background: #fff;
+  height: 100%;
+}
+.mw-file-card__name {
+  font-weight: 600;
+  font-size: 0.9rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.mw-file-card__meta { color: #8a8f98; font-size: 0.78rem; }
+.mw-file-card__remove {
+  color: #dc3545;
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 0.85rem;
+}
+
+/*
+ * QUAN TRỌNG — pattern scroll ngang bảng trên mobile:
+ * KHÔNG dùng `overflow: hidden` shorthand trên wrapper (chặn luôn scroll ngang).
+ * Phải tách riêng overflow-x/overflow-y, và ép min-width cho <table> bên trong
+ * để trình duyệt biết khi nào cần thanh cuộn ngang thay vì bóp méo cột.
+ */
+.mw-table-scroll {
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  border: 1px solid #e9ecef;
+  border-radius: 0.5rem;
+}
+.mw-table-scroll table {
+  min-width: 640px;
+  margin-bottom: 0;
+}
+.mw-table-scroll th {
+  white-space: nowrap;
+  background: #f8f9fa;
+  position: sticky;
+  top: 0;
+}
+
+/* ===== Step 3: mapping badge ⚡ ===== */
+.mw-badge-auto {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.7rem;
+  padding: 0.1rem 0.4rem;
+  border-radius: 999px;
+  background: #fff3cd;
+  color: #7a5b00;
+}
+.mw-mapping-warning {
+  border-left: 3px solid #dc3545;
+  background: #fff5f5;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.25rem;
+  font-size: 0.85rem;
+  color: #842029;
+}
+
+/* ===== Step 4: editable cell ===== */
+#mw-result-table td[contenteditable="true"] {
+  cursor: text;
+}
+#mw-result-table td[contenteditable="true"]:focus {
+  outline: 2px solid #198754;
+  outline-offset: -2px;
+  background: #f4fbf7;
+}
+
+/* ===== Step 5: progress ===== */
+.mw-progress .progress { height: 1.25rem; }
+
+/* ===== Thanh hành động sticky dưới cùng ===== */
+.mw-action-bar {
+  position: sticky;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  background: rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(4px);
+  border-top: 1px solid #e9ecef;
+  padding: 0.75rem 0;
+  margin-top: 1.5rem;
+  z-index: 10;
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 575.98px) {
+  .mw-stepper__label { font-size: 0.7rem; }
+  .mw-dropzone { padding: 1.75rem 0.75rem; }
+}
