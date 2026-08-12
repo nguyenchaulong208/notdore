@@ -36,8 +36,14 @@
       }
     };
     worker.onerror = (err) => {
-      // Lỗi nạp script trong worker (vd CDN chặn) — reject toàn bộ request đang chờ
-      pending.forEach(({ reject }) => reject(err));
+      // Lỗi nạp/chạy script trong worker (vd thiếu file vendor, JS lỗi cú pháp...).
+      // Một số trình duyệt phát ra Event trơn (không có .message) khi lỗi xảy ra lúc
+      // importScripts — nên phải tự dựng message rõ ràng thay vì trông chờ err.message.
+      const detail = err?.message || `${err?.filename || ''}${err?.lineno ? `:${err.lineno}` : ''}`.trim();
+      const message = detail
+        ? `Worker gặp lỗi: ${detail}`
+        : 'Worker không khởi tạo được — kiểm tra file /js/merge-wizard-worker.js và /js/vendor/*.js đã upload đúng chỗ chưa.';
+      pending.forEach(({ reject }) => reject(new Error(message)));
       pending.clear();
     };
     return worker;

@@ -21,8 +21,8 @@
 // (xem test-worker-logic.js) ta inject sẵn global.XLSX/global.ExcelJS nên bỏ qua bước này.
 if (typeof importScripts === 'function') {
   importScripts(
-    'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js',
-    'https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js'
+    'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js',
+    'https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js'
   );
 }
 
