@@ -1,5 +1,19 @@
 // hoa-don-xml.js - extracted from inline script in hoa-don-xml.html
 // Note: this file is a direct extraction of the page script. Keep in sync when refactoring.
+//
+// CHANGELOG (bản sửa):
+// - Bổ sung trích xuất thông tin người mua (Tên/MST/Địa chỉ) — trước đây chưa từng được đọc.
+// - Bổ sung "Mẫu số" (KHMSHDon), "Tiền phí", "Tiền thuế (dòng)" (tính từ Thành tiền × Thuế suất).
+// - Tách rõ "Mã cơ quan thuế" (MCCQT) và "Mã tra cứu hóa đơn" (dò trong DLQRCode).
+// - Giải mã dữ liệu QR (DLQRCode) theo cấu trúc TLV (QĐ 1450/QĐ-TCT) để suy đoán "Mã tra
+//   cứu hóa đơn" khi không có thẻ khai báo riêng; thêm cột tùy chọn "Link tra cứu hóa đơn"
+//   (chỉ điền khi DLQRCode vốn dĩ là một URL — không tự dựng link từ dữ liệu mã hoá TLV).
+// - Đổi tên "Loại dòng" -> "Loại hàng hóa dịch vụ" cho đúng ngữ nghĩa hiển thị.
+// - "Trạng thái hóa đơn" / "Biển kiểm soát": các trường này KHÔNG có vị trí cố định trong
+//   mọi phần mềm hóa đơn điện tử (tùy nhà cung cấp phần mềm), nên dò best-effort theo vài
+//   tên thẻ phổ biến và/hoặc qua cơ chế trường mở rộng (TTKhac) sẵn có — có thể để trống
+//   nếu phần mềm xuất hóa đơn không khai báo các trường này.
+// - Cập nhật lại danh sách cột mặc định hiển thị theo đúng bố cục bảng kê hóa đơn chuẩn.
 
 // ════════════════════════════════════════════════════════════
 //  STATE
@@ -8,13 +22,18 @@ let selectedFiles = [];
 let allRows = [];
 let errorLog = [];
 
-// Danh sách cột mặc định HIỂN THỊ (theo yêu cầu: các cột còn lại là tùy chọn/ẩn)
-const DEFAULT_VISIBLE = new Set([
-    "Số hóa đơn", "Ngày hóa đơn", "Ký hiệu hóa đơn",
-    "Đơn vị bán hàng", "MST người bán", "Hình thức thanh toán",
-    "Tên hàng hóa dịch vụ", "Đơn vị tính", "Số lượng", "Đơn giá",
-    "Thành tiền (dòng)", "Thuế suất", "Loại dòng", "Tỷ lệ % chiết khấu", "Số tiền chiết khấu"
-]);
+// ── Danh sách cột mặc định HIỂN THỊ (đúng bố cục bảng kê hóa đơn) ─────────────
+// Thứ tự trong mảng này cũng chính là thứ tự cột hiển thị/kết xuất.
+const DEFAULT_VISIBLE_ORDER = [
+    "File",
+    "Ký hiệu hóa đơn", "Mẫu số", "Số hóa đơn", "Ngày hóa đơn",
+    "Tên người mua", "Mã số thuế người mua", "Địa chỉ người mua",
+    "Loại hàng hóa dịch vụ", "Tên hàng hóa dịch vụ", "Đơn vị tính", "Số lượng", "Đơn giá",
+    "Thành tiền (dòng)", "Tiền phí", "Thuế suất", "Tiền thuế (dòng)",
+    "Tỷ lệ % chiết khấu", "Số tiền chiết khấu",
+    "Biển kiểm soát", "Trạng thái hóa đơn", "Mã cơ quan thuế", "Mã tra cứu hóa đơn",
+];
+const DEFAULT_VISIBLE = new Set(DEFAULT_VISIBLE_ORDER);
 
 // Ghi đè của người dùng: col -> true (bật) hoặc false (tắt)
 // Nếu key không có trong object => dùng DEFAULT_VISIBLE để quyết định
@@ -29,35 +48,47 @@ function getVisibleCols() {
     return COLUMNS.filter(c => isColVisible(c));
 }
 
-// Cột cố định — đúng theo Quy định kỹ thuật định dạng hoá đơn điện tử
-const FIXED_COLUMNS = [
-    "File", "Số hóa đơn", "Ngày hóa đơn", "Ký hiệu hóa đơn",
-    "Mã tra cứu (CQT)", "Đường dẫn/Dữ liệu QR tra cứu",
-    "Đơn vị bán hàng", "MST người bán", "Địa chỉ người bán", "Hình thức thanh toán",
+// Các cột tùy chọn khác (không mặc định hiện) — thông tin người bán, tổng hóa đơn, dữ liệu kỹ thuật...
+const OPTIONAL_FIXED_COLUMNS = [
+    "Đơn vị bán hàng", "Mã số thuế người bán", "Địa chỉ người bán", "Hình thức thanh toán",
     "Tổng tiền (trước thuế)", "Tổng giảm trừ không chịu thuế", "Tổng tiền chiết khấu thương mại",
     "Tổng giảm trừ khác", "Tiền thuế GTGT (tổng)", "Tổng tiền thanh toán", "Tổng tiền thanh toán bằng chữ",
-    "Loại dòng", "Số thứ tự", "Mã hàng hóa dịch vụ", "Tên hàng hóa dịch vụ", "Đơn vị tính",
-    "Số lượng", "Đơn giá", "Tỷ lệ % chiết khấu", "Số tiền chiết khấu", "Thành tiền (dòng)", "Thuế suất"
+    "Số thứ tự", "Mã hàng hóa dịch vụ", "Đường dẫn/Dữ liệu QR tra cứu", "Link tra cứu hóa đơn",
 ];
 
-const ALWAYS_COLUMNS = new Set([
-    "File", "Số hóa đơn", "Ngày hóa đơn", "Ký hiệu hóa đơn",
-    "Mã tra cứu (CQT)", "Đường dẫn/Dữ liệu QR tra cứu",
-    "Đơn vị bán hàng", "MST người bán", "Địa chỉ người bán", "Hình thức thanh toán",
-    "Tổng tiền (trước thuế)", "Tiền thuế GTGT (tổng)", "Tổng tiền thanh toán",
-    "Tên hàng hóa dịch vụ", "Đơn vị tính", "Số lượng", "Đơn giá", "Thành tiền (dòng)", "Thuế suất"
-]);
+// Cột cố định — đúng theo Quy định kỹ thuật định dạng hoá đơn điện tử
+const FIXED_COLUMNS = [...DEFAULT_VISIBLE_ORDER, ...OPTIONAL_FIXED_COLUMNS];
 
-let COLUMNS = [...FIXED_COLUMNS];
+// Các cột LUÔN xuất hiện trong bảng (kể cả khi rỗng ở mọi dòng) — các trường cấu trúc
+// gần như chắc chắn có mặt trong mọi hóa đơn hợp lệ. Các trường tùy phần mềm/tùy loại
+// hóa đơn (phí, chiết khấu, biển kiểm soát, trạng thái, mã CQT...) chỉ hiện khi có dữ liệu.
+const ALWAYS_COLUMNS = new Set([
+    "File", "Ký hiệu hóa đơn", "Mẫu số", "Số hóa đơn", "Ngày hóa đơn",
+    "Tên người mua", "Mã số thuế người mua", "Địa chỉ người mua",
+    "Loại hàng hóa dịch vụ", "Tên hàng hóa dịch vụ", "Đơn vị tính", "Số lượng", "Đơn giá",
+    "Thành tiền (dòng)", "Thuế suất",
+]);
 
 const NUMERIC_COLUMNS = new Set([
     "Tổng tiền (trước thuế)", "Tổng giảm trừ không chịu thuế", "Tổng tiền chiết khấu thương mại",
     "Tổng giảm trừ khác", "Tiền thuế GTGT (tổng)", "Tổng tiền thanh toán",
-    "Đơn giá", "Số tiền chiết khấu", "Thành tiền (dòng)"
+    "Đơn giá", "Số tiền chiết khấu", "Thành tiền (dòng)", "Tiền phí", "Tiền thuế (dòng)"
 ]);
+
+let COLUMNS = [...FIXED_COLUMNS];
 
 const INTEGER_COLUMNS = new Set(["Số thứ tự", "Số lượng"]);
 const PERCENT_COLUMNS = new Set(["Tỷ lệ % chiết khấu", "Thuế suất"]);
+
+// Các cột là MÃ/ĐỊNH DANH (toàn chữ số nhưng không phải giá trị số học) — LUÔN giữ
+// định dạng văn bản (text), không bao giờ được coi là số. Nếu không chặn riêng,
+// detectNumericColumns() có thể dò nhầm các cột này là số (vì giá trị toàn chữ số),
+// dẫn tới mất số 0 đứng đầu, thêm dấu phẩy/số thập phân sai khi xuất Excel.
+const FORCE_TEXT_COLUMNS = new Set([
+    "Số hóa đơn", "Ký hiệu hóa đơn", "Mẫu số",
+    "Mã số thuế người mua", "Mã số thuế người bán",
+    "Mã cơ quan thuế", "Mã tra cứu hóa đơn", "Mã hàng hóa dịch vụ",
+]);
 
 const TCHAT_LABELS = {
     '1': 'Hàng hóa, dịch vụ',
@@ -69,6 +100,7 @@ const TCHAT_LABELS = {
 
 const DYNAMIC_NUMERIC = new Set();
 function isNumericCol(col) {
+    if (FORCE_TEXT_COLUMNS.has(col)) return false;
     return NUMERIC_COLUMNS.has(col) || INTEGER_COLUMNS.has(col) || PERCENT_COLUMNS.has(col) || DYNAMIC_NUMERIC.has(col);
 }
 
@@ -122,8 +154,19 @@ function directChildren(node, localName) {
 }
 
 function getTextByTag(root, tag) {
+    if (!root) return '';
     const node = findFirst(root, tag);
     return node ? (node.textContent || '').trim() : '';
+}
+
+// Dò lần lượt theo danh sách tên thẻ khả dĩ, trả về giá trị đầu tiên khác rỗng.
+// Dùng cho các trường không có tên thẻ cố định giữa các phần mềm hóa đơn điện tử.
+function getTextByAnyTag(root, tags) {
+    for (const tag of tags) {
+        const val = getTextByTag(root, tag);
+        if (val) return val;
+    }
+    return '';
 }
 
 function collectFieldPairs(container, prefix = '') {
@@ -145,6 +188,84 @@ function collectAllTTKhac(node, prefix = '') {
         Object.assign(result, collectFieldPairs(ttkhac, prefix));
     }
     return result;
+}
+
+// Trạng thái hóa đơn thường KHÔNG nằm trong XML gốc của hóa đơn (nó là kết quả tra cứu
+// trên cổng CQT), nhưng một số phần mềm có nhúng thêm thẻ riêng — dò best-effort.
+function detectInvoiceStatus(root, ttchung) {
+    return getTextByAnyTag(ttchung, ['TTHDon', 'TrangThai', 'TThai'])
+        || getTextByAnyTag(root, ['TrangThaiHDon', 'TrangThai']);
+}
+
+// ── Giải mã dữ liệu QR hóa đơn điện tử (Đường dẫn/Dữ liệu QR tra cứu) ─────────
+// Theo Quyết định 1450/QĐ-TCT: dữ liệu QR được cấu tạo theo TLV (Tag-Length-Value) —
+// mỗi trường gồm 2 ký tự mã định danh + 2 ký tự độ dài + chuỗi giá trị theo đúng độ dài đó.
+// LƯU Ý QUAN TRỌNG: văn bản công khai chỉ xác nhận CẤU TRÚC TLV này, còn bảng ánh xạ
+// "mã định danh nào ứng với trường nghiệp vụ nào" (MST, ký hiệu, số hóa đơn...) nằm
+// trong phụ lục chi tiết không công khai miễn phí, và có thể khác nhau tùy phần mềm
+// hóa đơn (Viettel, VNPT, MISA...). Vì vậy hàm dưới đây:
+//  1. Giải mã đúng cấu trúc TLV một cách tổng quát (luôn đúng, không phụ thuộc phần mềm).
+//  2. Suy đoán (heuristic) mã tra cứu bằng cách tìm token dài dạng chữ+số (không phải
+//     ngày/số thuần) — dựa trên quan sát thực tế, KHÔNG phải ánh xạ chính thức.
+//  3. KHÔNG tự dựng "link tra cứu" từ dữ liệu TLV vì không có căn cứ xác nhận domain/tham
+//     số tra cứu chính xác — chỉ điền link khi DLQRCode vốn dĩ đã là một URL thật.
+
+function decodeQRTLV(str) {
+    const fields = [];
+    let i = 0;
+    while (i + 4 <= str.length) {
+        const tag = str.slice(i, i + 2);
+        const lenStr = str.slice(i + 2, i + 4);
+        if (!/^\d{2}$/.test(tag) || !/^\d{2}$/.test(lenStr)) break;
+        const len = parseInt(lenStr, 10);
+        if (i + 4 + len > str.length) break;
+        fields.push({ tag, value: str.slice(i + 4, i + 4 + len) });
+        i += 4 + len;
+    }
+    return fields;
+}
+
+function findLookupToken(fields, depth = 0) {
+    let best = '';
+    for (const f of fields) {
+        const v = f.value;
+        // Chỉ đánh giá làm ứng viên khi giá trị là "nút lá" (không giải mã tiếp được
+        // thành nhiều trường con) — tránh nhầm cả khối bao ngoài (container) thành token
+        const nested = (depth < 3 && v.length > 20) ? decodeQRTLV(v) : [];
+        if (nested.length > 1) {
+            const nestedBest = findLookupToken(nested, depth + 1);
+            if (nestedBest.length > best.length) best = nestedBest;
+        } else if (/^[A-Za-z0-9_-]{20,}$/.test(v) && !/^\d+$/.test(v) && v.length > best.length) {
+            best = v;
+        }
+    }
+    return best;
+}
+
+function decodeInvoiceQR(qrCode, maCQThue) {
+    if (!qrCode) return { lookupCode: '', lookupUrl: '' };
+    const trimmed = qrCode.trim();
+    // Trường hợp dữ liệu QR chính là một liên kết tra cứu trực tiếp
+    if (/^https?:\/\//i.test(trimmed)) {
+        return { lookupCode: '', lookupUrl: trimmed };
+    }
+    // Trường hợp dữ liệu mã hoá theo TLV — giải mã cấu trúc trước
+    const fields = decodeQRTLV(trimmed);
+    if (!fields.length) return { lookupCode: '', lookupUrl: '' };
+
+    const token = findLookupToken(fields);
+    let lookupCode = token;
+
+    // "Mã tra cứu hóa đơn" thường được nối liền ngay sau "Mã cơ quan thuế" (MCCQT) trong
+    // cùng một token, KHÔNG có ký tự phân tách, và độ dài phần mã tra cứu khác nhau tùy
+    // nhà cung cấp phần mềm hóa đơn — nên không thể dùng một độ dài cố định. Cách tự thích
+    // ứng: nếu token bắt đầu đúng bằng "Mã cơ quan thuế" đã biết (trích từ thẻ MCCQT riêng),
+    // cắt bỏ đúng phần tiền tố đó — phần còn lại chính là mã tra cứu, bất kể dài ngắn.
+    if (maCQThue && token.startsWith(maCQThue)) {
+        lookupCode = token.slice(maCQThue.length);
+    }
+
+    return { lookupCode, lookupUrl: '' };
 }
 
 function parseInvoice(xmlString, fileName) {
@@ -169,18 +290,40 @@ function parseInvoice(xmlString, fileName) {
         ...collectAllTTKhac(ttoan),
     };
 
-    const maTraCuu = getTextByTag(root, 'MCCQT');
+    const maCQThue = getTextByTag(root, 'MCCQT');
     const qrCode = getTextByTag(root, 'DLQRCode');
+    const qrDecoded = decodeInvoiceQR(qrCode, maCQThue);
+
+    // "TransactionID" là nguồn đáng tin cậy NHẤT cho "Mã tra cứu hóa đơn" khi đã có sẵn
+    // trong XML gốc (thẻ riêng do phần mềm khai báo, hoặc trường mở rộng TTKhac) — ưu tiên
+    // đọc trực tiếp thay vì suy đoán từ dữ liệu QR mã hoá. Chỉ dùng kết quả giải mã QR làm
+    // PHƯƠNG ÁN DỰ PHÒNG khi TransactionID không có dữ liệu.
+    const transactionIdDirect = getTextByAnyTag(ttchung, ['TransactionID', 'MTBaoMat', 'MaBiMat', 'MTraCuu'])
+        || getTextByAnyTag(dlhdon, ['TransactionID'])
+        || getTextByAnyTag(root, ['TransactionID']);
+    const transactionIdFromExtra = commonExtra['TransactionID'] || '';
+    // Xoá khỏi commonExtra để tránh hiển thị trùng lặp thành một cột "TransactionID" riêng
+    delete commonExtra['TransactionID'];
+
+    const maTraCuu = transactionIdDirect || transactionIdFromExtra || qrDecoded.lookupCode;
+    const linkTraCuu = qrDecoded.lookupUrl;
+    const trangThai = detectInvoiceStatus(root, ttchung);
 
     const common = {
         "File":                              fileName,
+        "Ký hiệu hóa đơn":                  getTextByTag(ttchung, 'KHHDon'),
+        "Mẫu số":                            getTextByTag(ttchung, 'KHMSHDon'),
         "Số hóa đơn":                        getTextByTag(ttchung, 'SHDon'),
         "Ngày hóa đơn":                      getTextByTag(ttchung, 'NLap'),
-        "Ký hiệu hóa đơn":                  getTextByTag(ttchung, 'KHHDon'),
-        "Mã tra cứu (CQT)":                  maTraCuu,
-        "Đường dẫn/Dữ liệu QR tra cứu":      qrCode,
+        "Tên người mua":                     nmua ? getTextByTag(nmua, 'Ten')  : '',
+        "Mã số thuế người mua":              nmua ? getTextByTag(nmua, 'MST')  : '',
+        "Địa chỉ người mua":                 nmua ? getTextByTag(nmua, 'DChi') : '',
+        "Tiền phí":                          ttoan ? getTextByAnyTag(ttoan, ['TPhi', 'TTPhi', 'Phi']) : '',
+        "Trạng thái hóa đơn":                trangThai,
+        "Mã cơ quan thuế":                   maCQThue,
+        "Mã tra cứu hóa đơn":                 maTraCuu,
         "Đơn vị bán hàng":                   nban ? getTextByTag(nban, 'Ten')  : '',
-        "MST người bán":                      nban ? getTextByTag(nban, 'MST')  : '',
+        "Mã số thuế người bán":               nban ? getTextByTag(nban, 'MST')  : '',
         "Địa chỉ người bán":                 nban ? getTextByTag(nban, 'DChi') : '',
         "Hình thức thanh toán":              getTextByTag(ttchung, 'HTTToan'),
         "Tổng tiền (trước thuế)":            ttoan ? getTextByTag(ttoan, 'TgTCThue')  : '',
@@ -190,6 +333,8 @@ function parseInvoice(xmlString, fileName) {
         "Tiền thuế GTGT (tổng)":             ttoan ? getTextByTag(ttoan, 'TgTThue')   : '',
         "Tổng tiền thanh toán":              ttoan ? getTextByTag(ttoan, 'TgTTTBSo')  : '',
         "Tổng tiền thanh toán bằng chữ":     ttoan ? getTextByTag(ttoan, 'TgTTTBChu') : '',
+        "Đường dẫn/Dữ liệu QR tra cứu":      qrCode,
+        "Link tra cứu hóa đơn":              linkTraCuu,
         ...commonExtra,
     };
 
@@ -203,19 +348,33 @@ function parseInvoice(xmlString, fileName) {
             ...collectAllTTKhac(item),
             ...(ttHDTrung ? collectFieldPairs(ttHDTrung, 'Đặc trưng') : {}),
         };
+
+        // Tiền thuế theo dòng = Thành tiền × Thuế suất (%). Bỏ qua khi thuế suất
+        // không phải là số (VD: "KCT" - không chịu thuế, "KKKNT"...).
+        const thTienRaw = getTextByTag(item, 'ThTien');
+        const tsuatRaw = getTextByTag(item, 'TSuat');
+        const thanhTienNum = toNumberOrNull(thTienRaw);
+        const tsuatNum = toNumberOrNull(tsuatRaw);
+        let tienThueDong = '';
+        if (thanhTienNum !== null && tsuatNum !== null) {
+            const percent = tsuatNum <= 1 ? tsuatNum * 100 : tsuatNum;
+            tienThueDong = Math.round(thanhTienNum * percent) / 100;
+        }
+
         return {
             ...common,
-            "Loại dòng":               TCHAT_LABELS[tchat] || (tchat ? `Khác (${tchat})` : ''),
+            "Loại hàng hóa dịch vụ":  TCHAT_LABELS[tchat] || (tchat ? `Khác (${tchat})` : ''),
             "Số thứ tự":               getTextByTag(item, 'STT'),
             "Mã hàng hóa dịch vụ":     getTextByTag(item, 'MHHDVu'),
             "Tên hàng hóa dịch vụ":    getTextByTag(item, 'THHDVu'),
             "Đơn vị tính":             getTextByTag(item, 'DVTinh'),
             "Số lượng":                getTextByTag(item, 'SLuong'),
             "Đơn giá":                 getTextByTag(item, 'DGia'),
+            "Thành tiền (dòng)":       thTienRaw,
+            "Thuế suất":               tsuatRaw,
+            "Tiền thuế (dòng)":        tienThueDong,
             "Tỷ lệ % chiết khấu":      getTextByTag(item, 'TLCKhau'),
             "Số tiền chiết khấu":      getTextByTag(item, 'STCKhau'),
-            "Thành tiền (dòng)":       getTextByTag(item, 'ThTien'),
-            "Thuế suất":               getTextByTag(item, 'TSuat'),
             ...itemExtra,
         };
     });
@@ -438,7 +597,9 @@ async function exportExcel() {
             const rowValues = {};
             VISIBLE.forEach(c => {
                 const raw = r[c] ?? '';
-                if (PERCENT_COLUMNS.has(c)) {
+                if (FORCE_TEXT_COLUMNS.has(c)) {
+                    rowValues[c] = String(raw);
+                } else if (PERCENT_COLUMNS.has(c)) {
                     const num = toNumberOrNull(raw);
                     rowValues[c] = num !== null ? (num <= 1 ? num : num / 100) : raw;
                 } else if (INTEGER_COLUMNS.has(c)) {
@@ -456,7 +617,10 @@ async function exportExcel() {
                 const colName = VISIBLE[colNumber - 1];
                 cell.border = CELL_BORDER;
                 cell.font = { size: 10.5, name: 'Calibri' };
-                if (PERCENT_COLUMNS.has(colName)) {
+                if (FORCE_TEXT_COLUMNS.has(colName)) {
+                    cell.numFmt = '@';
+                    cell.alignment = { horizontal: 'left', vertical: 'middle' };
+                } else if (PERCENT_COLUMNS.has(colName)) {
                     cell.numFmt = '0.00%';
                     cell.alignment = { horizontal: 'right', vertical: 'middle' };
                 } else if (INTEGER_COLUMNS.has(colName)) {
@@ -525,7 +689,7 @@ function detectNumericColumns() {
     DYNAMIC_NUMERIC.clear();
     const SAMPLE = 80;
     for (const col of COLUMNS) {
-        if (NUMERIC_COLUMNS.has(col) || INTEGER_COLUMNS.has(col) || PERCENT_COLUMNS.has(col)) continue;
+        if (NUMERIC_COLUMNS.has(col) || INTEGER_COLUMNS.has(col) || PERCENT_COLUMNS.has(col) || FORCE_TEXT_COLUMNS.has(col)) continue;
         let numericCount = 0, total = 0;
         for (let i = 0; i < Math.min(allRows.length, SAMPLE); i++) {
             const v = allRows[i][col];
