@@ -1,11 +1,7 @@
 /**
  * invoice-ocr-app.js
- * UI orchestration for the Invoice OCR tool: upload -> render (PDF pages to
- * canvas) -> OCR via backend (POST /api/ocr, Python + bundled Tesseract on
- * Vercel) -> editable preview -> export to Excel (SheetJS).
- *
- * Depends on globals: pdfjsLib, XLSX. Field parsing happens server-side
- * (api/ocr.py); the client just renders whatever `fields` the API returns.
+ * UI orchestration cho công cụ OCR hóa đơn
+ * Tối ưu cho độ chính xác cao
  */
 (function (global) {
   'use strict';
@@ -25,10 +21,8 @@
 
   const OCR_ENDPOINT = '/api/ocr';
 
-  let rows = []; // { id, fileName, thumbUrl, fields: {...}, status }
+  let rows = [];
   let rowSeq = 0;
-
-  // ---- DOM refs (resolved on init) ----
   let el = {};
 
   function qs(id) {
@@ -52,24 +46,26 @@
     };
   }
 
-  // ---- backend OCR call ----
-
   function blobToBase64(blob) {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
-      reader.onload = () => resolve(reader.result); // data:...;base64,XXXX
+      reader.onload = () => resolve(reader.result);
       reader.onerror = () => reject(reader.error);
       reader.readAsDataURL(blob);
     });
   }
 
   async function callOcrApi(blob) {
-    const dataUrl = await blobToBase64(blob);
+    // Nén ảnh để giảm kích thước
+    const compressedBlob = await compressImage(blob);
+    const dataUrl = await blobToBase64(compressedBlob);
+    
     const res = await fetch(OCR_ENDPOINT, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ image: dataUrl }),
     });
+    
     let json;
     try {
       json = await res.json();
@@ -79,7 +75,39 @@
     if (!res.ok) {
       throw new Error(json.error || `Lỗi máy chủ (HTTP ${res.status})`);
     }
-    return json; // { text, fields }
+    return json;
+  }
+
+  // Nén ảnh để tối ưu
+  async function compressImage(blob) {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.onload = function() {
+        const canvas = document.createElement('canvas');
+        let width = img.width;
+        let height = img.height;
+        
+        // Giới hạn kích thước
+        const MAX_SIZE = 2000;
+        if (width > MAX_SIZE || height > MAX_SIZE) {
+          const ratio = Math.min(MAX_SIZE / width, MAX_SIZE / height);
+          width = Math.round(width * ratio);
+          height = Math.round(height * ratio);
+        }
+        
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        
+        // Vẽ ảnh với chất lượng cao
+        ctx.drawImage(img, 0, 0, width, height);
+        
+        canvas.toBlob((b) => {
+          resolve(b);
+        }, 'image/png', 1.0);
+      };
+      img.src = URL.createObjectURL(blob);
+    });
   }
 
   function updateProgress(fraction, label) {
@@ -90,8 +118,7 @@
     if (label) el.progressLabel.textContent = label;
   }
 
-  // ---- file -> image(s) ----
-
+  // Chuyển đổi file sang ảnh với chất lượng cao
   async function fileToImages(file) {
     if (file.type === 'application/pdf' || /\.pdf$/i.test(file.name)) {
       return pdfToImages(file);
@@ -103,10 +130,11 @@
     const buf = await file.arrayBuffer();
     const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
     const images = [];
+    
     for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
       const page = await pdf.getPage(pageNum);
-      // Tăng scale lên 4.0 để có ảnh chất lượng cao hơn
-      const viewport = page.getViewport({ scale: 4.0 });
+      // Scale cao để OCR tốt hơn
+      const viewport = page.getViewport({ scale: 3.5 });
       const canvas = document.createElement('canvas');
       canvas.width = viewport.width;
       canvas.height = viewport.height;
@@ -119,10 +147,10 @@
         background: 'white'
       }).promise;
       
-      // Tăng cường chất lượng ảnh
+      // Tăng cường ảnh
       const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-      const enhancedData = enhanceImage(imageData);
-      ctx.putImageData(enhancedData, 0, 0);
+      const enhanced = enhanceImageForOCR(imageData);
+      ctx.putImageData(enhanced, 0, 0);
       
       const blob = await new Promise((res) => canvas.toBlob(res, 'image/png', 1.0));
       images.push({
@@ -133,36 +161,36 @@
     return images;
   }
 
-  // Hàm tăng cường chất lượng ảnh
-  function enhanceImage(imageData) {
+  // Tăng cường ảnh cho OCR
+  function enhanceImageForOCR(imageData) {
     const data = imageData.data;
     const enhanced = new Uint8ClampedArray(data);
     
     // Tăng độ tương phản và làm sắc nét
-    const factor = 1.3;
-    const threshold = 128;
-    
     for (let i = 0; i < enhanced.length; i += 4) {
-      // Chuyển sang grayscale nếu cần
+      // Chuyển sang grayscale với trọng số
       const gray = 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
       
       // Tăng độ tương phản
-      let enhancedGray = ((gray / 255 - 0.5) * factor + 0.5) * 255;
+      let enhancedGray = ((gray / 255 - 0.5) * 1.5 + 0.5) * 255;
       enhancedGray = Math.max(0, Math.min(255, enhancedGray));
       
-      // Binary threshold để làm rõ chữ
-      const binary = enhancedGray > threshold ? 255 : 0;
+      // Làm sắc nét bằng cách tăng contrast ở vùng tối/sáng
+      if (enhancedGray < 128) {
+        enhancedGray = Math.max(0, enhancedGray * 0.8);
+      } else {
+        enhancedGray = Math.min(255, enhancedGray * 1.2);
+      }
       
-      enhanced[i] = binary;
-      enhanced[i + 1] = binary;
-      enhanced[i + 2] = binary;
+      enhanced[i] = enhancedGray;
+      enhanced[i + 1] = enhancedGray;
+      enhanced[i + 2] = enhancedGray;
     }
     
     return new ImageData(enhanced, imageData.width, imageData.height);
   }
 
-  // ---- row management ----
-
+  // Row management
   function addQueueEntry(fileName) {
     const li = document.createElement('li');
     li.className = 'list-group-item d-flex justify-content-between align-items-center';
@@ -195,20 +223,17 @@
       for (let i = 0; i < images.length; i++) {
         const { blob, pageLabel } = images[i];
         setQueueStatus(li, `OCR (${i + 1}/${images.length})...`, 'bg-info');
-        updateProgress(i / images.length, `${pageLabel}: đang OCR trên máy chủ...`);
+        updateProgress(i / images.length, `${pageLabel}: đang OCR...`);
         
-        // Retry logic nếu thất bại
+        // Gọi API với retry
         let ocrResult = null;
-        let retries = 2;
-        while (retries >= 0 && !ocrResult) {
+        for (let attempt = 0; attempt < 3; attempt++) {
           try {
             ocrResult = await callOcrApi(blob);
+            break;
           } catch (err) {
-            console.warn(`OCR attempt ${2 - retries} failed:`, err);
-            retries--;
-            if (retries >= 0) {
-              await new Promise(resolve => setTimeout(resolve, 1000));
-            }
+            console.warn(`Attempt ${attempt + 1} failed:`, err);
+            if (attempt < 2) await new Promise(resolve => setTimeout(resolve, 1000 * (attempt + 1)));
           }
         }
         
@@ -251,8 +276,6 @@
     el.exportBtn.disabled = rows.length === 0;
   }
 
-  // ---- preview table ----
-
   function renderPreviewRow(row) {
     const tr = document.createElement('tr');
     tr.id = row.id;
@@ -291,8 +314,6 @@
     el.exportBtn.disabled = rows.length === 0;
   }
 
-  // ---- export ----
-
   function exportToExcel() {
     if (!rows.length) return;
     const header = FIELD_DEFS.map((f) => f.label);
@@ -300,7 +321,7 @@
 
     const ws = XLSX.utils.aoa_to_sheet([header, ...data]);
     ws['!cols'] = FIELD_DEFS.map((f) =>
-      f.key === 'diaChi' || f.key === 'khachHang' ? { wch: 40 } : { wch: 16 }
+      f.key === 'diaChi' || f.key === 'khachHang' ? { wch: 50 } : { wch: 20 }
     );
 
     const wb = XLSX.utils.book_new();
@@ -309,8 +330,6 @@
     const ts = new Date().toISOString().slice(0, 10);
     XLSX.writeFile(wb, `bang-ke-hoa-don-${ts}.xlsx`);
   }
-
-  // ---- clear ----
 
   function clearAll() {
     rows.forEach((r) => URL.revokeObjectURL(r.thumbUrl));
@@ -324,11 +343,9 @@
     el.fileInput.value = '';
   }
 
-  // ---- init / wiring ----
-
   function init() {
     initDom();
-    if (!el.fileInput) return; // page doesn't have this widget
+    if (!el.fileInput) return;
 
     el.fileInput.addEventListener('change', () => {
       const files = Array.from(el.fileInput.files || []);
@@ -361,7 +378,6 @@
     el.exportBtn.addEventListener('click', exportToExcel);
     el.clearBtn.addEventListener('click', clearAll);
 
-    // lightbox for thumbnails
     el.previewTableBody.addEventListener('click', (e) => {
       const img = e.target.closest('img[data-full]');
       if (img) window.open(img.dataset.full, '_blank');
@@ -374,6 +390,5 @@
   }
 
   document.addEventListener('DOMContentLoaded', init);
-
   ns.App = { processAll, exportToExcel, clearAll };
 })(window);

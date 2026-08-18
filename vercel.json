@@ -3,6 +3,7 @@
   "functions": {
     "api/ocr.py": {
       "includeFiles": "api/vendor/**",
+      "memory": 3008,
       "maxDuration": 60
     }
   },

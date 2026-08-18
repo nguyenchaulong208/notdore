@@ -1,12 +1,7 @@
 """
 api/ocr.py
-Vercel Python serverless function. Receives a base64 image, runs it through
-a self-contained Tesseract binary (bundled under api/vendor/tesseract/,
-built for Amazon Linux 2023 by bweigel/aws-lambda-tesseract-layer), and
-returns both the raw OCR text and the parsed fields.
-
-No external Python dependencies required (stdlib only) — tesseract's
-bundled leptonica handles PNG/JPEG decoding natively.
+Vercel Python serverless function với Tesseract OCR
+Sử dụng Pillow thay vì OpenCV/NumPy để tránh lỗi build trên Python 3.12
 """
 
 from http.server import BaseHTTPRequestHandler
@@ -19,9 +14,10 @@ import base64
 import unicodedata
 import logging
 from io import BytesIO
+from PIL import Image, ImageEnhance, ImageFilter, ImageOps
 
 # Cấu hình logging
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -30,249 +26,381 @@ TESSERACT_BIN = os.path.join(VENDOR_DIR, 'bin', 'tesseract')
 TESSERACT_LIB = os.path.join(VENDOR_DIR, 'lib')
 TESSDATA_DIR = os.path.join(VENDOR_DIR, 'tesseract', 'share', 'tessdata')
 
-MAX_UPLOAD_BYTES = 15 * 1024 * 1024  # 15MB safety cap per image
+MAX_UPLOAD_BYTES = 15 * 1024 * 1024
 
 # ------------------------------------------------------------------
-# Field parser — mirrors js/invoice-ocr-parser.js field-for-field.
-# Keep both in sync if label patterns change.
+# Parser tối ưu cho hóa đơn Việt Nam
 # ------------------------------------------------------------------
 
 def strip_diacritics(s):
+    """Bỏ dấu tiếng Việt"""
+    if not s:
+        return s
     s = s.replace('đ', 'd').replace('Đ', 'D')
-    nfkd = unicodedata.normalize('NFD', s)
-    return ''.join(c for c in nfkd if unicodedata.category(c) != 'Mn')
+    try:
+        nfkd = unicodedata.normalize('NFD', s)
+        return ''.join(c for c in nfkd if unicodedata.category(c) != 'Mn')
+    except:
+        return s
 
 def norm_label(s):
+    """Chuẩn hóa label để so sánh"""
+    if not s:
+        return ''
     s = strip_diacritics(s).lower()
-    return re.sub(r'[^a-z0-9]', '', s)
+    # Xóa các ký tự đặc biệt
+    s = re.sub(r'[^a-z0-9\s]', '', s)
+    return ' '.join(s.split())
 
-# Mở rộng các pattern để nhận diện tốt hơn
-LABELS = [
-    ('soHoaDon', [
-        'sohoadon', 'so hoa don', 'so hd', 'invoice no', 'invoice number',
-        'số hóa đơn', 'hóa đơn số', 'hd số', 'invoice'
-    ]),
-    ('maTraCuu', [
-        'matracuu', 'ma tra cuu', 'tra cuu', 'ma tc', 'reference code',
-        'mã tra cứu', 'tra cứu'
-    ]),
-    ('soTien', [
-        'sotien', 'so tien', 'tong tien', 'total', 'amount', 
-        'số tiền', 'tổng tiền', 'thanh toán'
-    ]),
-    ('maSoThue', [
-        'masothue', 'ma so thue', 'mst', 'tax code', 'tax number',
-        'mã số thuế', 'thuế'
-    ]),
-    ('khachHang', [
-        'khachhang', 'ten khach hang', 'customer', 'ten don vi',
-        'khách hàng', 'tên khách hàng', 'đơn vị'
-    ]),
-    ('diaChi', [
-        'diachi', 'dia chi', 'address', 'địa chỉ'
-    ]),
-    ('ngay', [
-        'ngay', 'date', 'ngay thang', 'ngày', 'tháng'
-    ]),
+# Pattern matching mở rộng dựa trên mẫu thực tế
+LABEL_PATTERNS = {
+    'ngay': [
+        'ngay', 'date', 'ngày', 'ngay thang', 'date time',
+        'ngay gio', 'thoi gian'
+    ],
+    'soHoaDon': [
+        'so hoa don', 'sohoadon', 'so hd', 'invoice no', 'invoice number',
+        'số hoá đơn', 'số hóa đơn', 'hoa don so', 'hóa đơn số',
+        'invoice', 'inv no', 'so don hang', 'so hoa don'
+    ],
+    'maTraCuu': [
+        'ma tra cuu', 'matracuu', 'tra cuu', 'ma tc', 'reference code',
+        'mã tra cứu', 'ma tracuu', 'reference', 'ref code'
+    ],
+    'soTien': [
+        'so tien', 'sotien', 'tong tien', 'total', 'amount',
+        'số tiền', 'tổng tiền', 'thanh toan', 'tong cong',
+        'so tien vnd', 'total amount'
+    ],
+    'maSoThue': [
+        'ma so thue', 'masothue', 'mst', 'tax code', 'tax number',
+        'mã số thuế', 'ma khach hang', 'mst khach hang',
+        'ma so thue khach hang', 'mã khách hàng'
+    ],
+    'khachHang': [
+        'khach hang', 'khachhang', 'ten khach hang', 'customer',
+        'khách hàng', 'tên khách hàng', 'don vi', 'ten don vi',
+        'khach hang', 'customer name', 'company', 'ten cong ty'
+    ],
+    'diaChi': [
+        'dia chi', 'diachi', 'address', 'địa chỉ',
+        'dia chi khach hang', 'address'
+    ],
+    'link': [
+        'link tra cuu', 'http', 'https', 'tracuu', 'tra cứu',
+        'website', 'web', 'url'
+    ]
+}
+
+# Các từ khóa đánh dấu kết thúc section
+SECTION_END_KEYWORDS = [
+    'quy khach vui long', 'vuilong', 'hotline', 'hotro',
+    'cảm ơn', 'thank you', 'trân trọng', 'xin cảm ơn',
+    'signed', 'sign', 'receipt', 'equipment'
 ]
 
-MULTILINE_KEYS = {'khachHang', 'diaChi'}
+def is_section_end(text):
+    """Kiểm tra xem có phải là kết thúc section không"""
+    if not text:
+        return False
+    text_lower = text.lower()
+    for keyword in SECTION_END_KEYWORDS:
+        if keyword in text_lower:
+            return True
+    return False
 
-# Cải thiện regex
-DATE_RE = re.compile(r'\b(\d{1,2}[/-]\d{1,2}[/-]\d{2,4})(?:\s+(\d{1,2}:\d{2}(?::\d{2})?))?\b')
-DATE_RE_ALT = re.compile(r'\b(ngày|date)[\s:]+(\d{1,2}[/-]\d{1,2}[/-]\d{2,4})', re.IGNORECASE)
-URL_RE = re.compile(r'https?://[^\s"\'<>]+', re.IGNORECASE)
-SEP_RE = re.compile(r'^[.\-_·•\s]{3,}$')
-AMOUNT_RE = re.compile(r'[\d][\d.,\s]*\d|[\d]+')
-
-# Thêm các pattern mới
-SECTION_END_PATTERNS = [
-    'quykhachvuilong', 'hotline', 'hotro', 'vuilongquet',
-    'cảm ơn', 'thank you', 'trân trọng'
-]
-
-def is_section_end(line_norm):
-    return any(line_norm.startswith(p) for p in SECTION_END_PATTERNS)
-
-def find_label_key(line_norm):
-    # Tìm kiếm pattern trong line
-    for key, patterns in LABELS:
-        for p in patterns:
-            normalized_p = p.replace(' ', '')
-            # Kiểm tra nhiều cách
-            if (line_norm.startswith(p) or 
-                line_norm.startswith(normalized_p) or
-                p in line_norm or
-                normalized_p in line_norm):
-                return key
-    return None
-
-def value_after_colon(line):
-    idx = line.find(':')
-    if idx != -1:
-        return line[idx + 1:].strip()
-    # Thử tìm sau khoảng trắng
-    for sep in ['-', '–', '—']:
+def extract_value_from_line(line, patterns):
+    """Trích xuất giá trị từ dòng text"""
+    if not line:
+        return None
+    
+    line_lower = line.lower()
+    
+    # Thử tìm sau dấu :
+    if ':' in line:
+        parts = line.split(':', 1)
+        label_part = parts[0].strip()
+        value_part = parts[1].strip()
+        
+        if not value_part:
+            return None
+            
+        # Kiểm tra xem label có khớp pattern không
+        label_norm = norm_label(label_part)
+        for pattern in patterns:
+            if pattern in label_norm or label_norm in pattern:
+                return value_part
+    
+    # Thử tìm sau các dấu phân cách khác
+    for sep in ['-', '–', '—', '|']:
         if sep in line:
             parts = line.split(sep, 1)
-            if len(parts) > 1 and len(parts[1].strip()) > 0:
-                return parts[1].strip()
-    return ''
+            if len(parts) == 2:
+                label_part = parts[0].strip()
+                value_part = parts[1].strip()
+                if value_part:
+                    label_norm = norm_label(label_part)
+                    for pattern in patterns:
+                        if pattern in label_norm or label_norm in pattern:
+                            return value_part
+    
+    return None
 
 def parse_amount(value_str):
+    """Parse số tiền từ string"""
     if not value_str:
-        return '', None
-    # Tìm tất cả số
-    matches = AMOUNT_RE.findall(value_str)
-    if not matches:
-        return value_str.strip(), None
+        return None, None
+    
+    # Tìm số trong string
+    numbers = re.findall(r'[\d,.\s]+', value_str)
+    if not numbers:
+        return None, None
     
     # Lấy số cuối cùng (thường là tổng)
-    raw = matches[-1].strip()
-    # Xóa dấu phân cách hàng nghìn
-    digits = re.sub(r'[^\d]', '', raw)
-    number = int(digits) if digits else None
-    return raw, number
+    raw = numbers[-1].strip()
+    
+    # Xóa dấu phân cách
+    cleaned = re.sub(r'[,.]', '', raw)
+    cleaned = re.sub(r'\s', '', cleaned)
+    
+    try:
+        number = int(cleaned)
+        return raw, number
+    except:
+        return raw, None
 
-def clean_trailing_url_punct(url):
-    return re.sub(r'[.,;:)\]]+$', '', url)
+def clean_url(url):
+    """Làm sạch URL"""
+    if not url:
+        return None
+    
+    # Tìm URL trong string
+    url_match = re.search(r'https?://[^\s"\'<>]+', url, re.IGNORECASE)
+    if url_match:
+        url = url_match.group(0)
+        # Xóa dấu câu cuối
+        url = re.sub(r'[.,;:)\]]+$', '', url)
+        return url
+    
+    return None
 
-def parse_fields(raw_text):
-    text = (raw_text or '').replace('\r', '')
+def parse_invoice(text):
+    """Parse hóa đơn từ text OCR"""
+    if not text:
+        return {}
+    
     lines = [l.strip() for l in text.split('\n') if l.strip()]
     
-    logger.debug(f"Parsing {len(lines)} lines of text")
-    logger.debug(f"Text preview: {text[:500]}")
-
+    logger.info(f"Parsing {len(lines)} lines")
+    
     result = {
-        'ngay': '', 'soHoaDon': '', 'maTraCuu': '', 'soTien': '',
-        'soTienRaw': '', 'maSoThue': '', 'khachHang': '', 'diaChi': '', 'link': '',
+        'ngay': '',
+        'soHoaDon': '',
+        'maTraCuu': '',
+        'soTien': '',
+        'soTienRaw': '',
+        'maSoThue': '',
+        'khachHang': '',
+        'diaChi': '',
+        'link': ''
     }
     
-    current_multiline_key = None
-    found_dates = []
+    # 1. Tìm ngày tháng - ưu tiên dòng đầu
+    date_patterns = [
+        r'(\d{1,2}[/-]\d{1,2}[/-]\d{2,4})',
+        r'(\d{1,2}:\d{2}(?::\d{2})?)',
+        r'ngày\s*[:]?\s*(\d{1,2}[/-]\d{1,2}[/-]\d{2,4})',
+        r'date\s*[:]?\s*(\d{1,2}[/-]\d{1,2}[/-]\d{2,4})'
+    ]
     
-    for i, line in enumerate(lines):
-        logger.debug(f"Processing line {i}: {line[:50]}")
-        
-        line_norm = norm_label(line)
-
-        if is_section_end(line_norm) or SEP_RE.match(line):
-            current_multiline_key = None
-            continue
-
-        # Kiểm tra URL
-        url_match = URL_RE.search(line)
-        if url_match and not result['link']:
-            result['link'] = clean_trailing_url_punct(url_match.group(0))
-
-        # Tìm key trong line
-        key = find_label_key(line_norm)
-        
-        if key:
-            val = value_after_colon(line)
-            logger.debug(f"Found key: {key} with value: {val[:30]}")
-            
-            if key == 'soTien':
-                raw, number = parse_amount(val)
-                if raw:
-                    result['soTienRaw'] = raw
-                    result['soTien'] = number if number is not None else ''
-            else:
-                # Chỉ cập nhật nếu chưa có hoặc multiline
-                if not result[key] or key in MULTILINE_KEYS:
-                    if val:
-                        if result[key] and key in MULTILINE_KEYS:
-                            result[key] = (result[key] + ' ' + val).strip()
-                        else:
-                            result[key] = val
-            current_multiline_key = key if key in MULTILINE_KEYS else None
-            continue
-
-        # Xử lý multiline
-        if current_multiline_key and line:
-            result[current_multiline_key] = (result[current_multiline_key] + ' ' + line).strip()
-            continue
-
-        # Tìm ngày tháng trong line
+    for line in lines[:10]:  # Chỉ kiểm tra 10 dòng đầu
         if not result['ngay']:
-            date_match = DATE_RE.search(line)
-            if date_match:
-                date_str = f"{date_match.group(1)} {date_match.group(2)}" if date_match.group(2) else date_match.group(1)
-                found_dates.append(date_str)
+            for pattern in date_patterns:
+                match = re.search(pattern, line, re.IGNORECASE)
+                if match:
+                    date_str = match.group(1)
+                    # Kiểm tra xem có giờ không
+                    time_match = re.search(r'(\d{1,2}:\d{2}(?::\d{2})?)', line)
+                    if time_match:
+                        date_str += f" {time_match.group(1)}"
+                    result['ngay'] = date_str
+                    logger.info(f"Found date: {result['ngay']}")
+                    break
+    
+    # 2. Tìm các field đơn giản (số hóa đơn, mã tra cứu, mã số thuế)
+    for key in ['soHoaDon', 'maTraCuu', 'maSoThue']:
+        value = find_field_in_lines(lines, key)
+        if value:
+            result[key] = value
+            logger.info(f"Found {key}: {value}")
+    
+    # 3. Tìm số tiền đặc biệt
+    amount_value = find_field_in_lines(lines, 'soTien')
+    if amount_value:
+        raw, number = parse_amount(amount_value)
+        if raw:
+            result['soTienRaw'] = raw
+            result['soTien'] = str(number) if number else raw
+            logger.info(f"Found amount: {result['soTien']}")
+    
+    # 4. Tìm khách hàng và địa chỉ
+    customer_lines = []
+    address_lines = []
+    found_customer = False
+    found_address = False
+    
+    for line in lines:
+        if is_section_end(line):
+            break
             
-            # Tìm ngày tháng với prefix
-            date_match_alt = DATE_RE_ALT.search(line)
-            if date_match_alt:
-                found_dates.append(date_match_alt.group(2))
-
-        # Tìm các thông tin khác trong line không có label
-        # Thử tìm số tiền
-        if not result['soTien']:
-            amount_match = AMOUNT_RE.search(line)
-            if amount_match:
-                # Kiểm tra nếu là số tiền (có dấu phân cách)
-                amount_str = amount_match.group()
-                if ',' in amount_str or '.' in amount_str or len(amount_str) > 4:
-                    raw, number = parse_amount(amount_str)
-                    if raw and number and number > 1000:
-                        result['soTienRaw'] = raw
-                        result['soTien'] = number
-
-    # Fallback cho ngày tháng
-    if not result['ngay'] and found_dates:
-        result['ngay'] = found_dates[0]
-    elif not result['ngay']:
-        # Tìm ngày trong toàn bộ text
-        date_match = DATE_RE.search(text)
-        if date_match:
-            result['ngay'] = f"{date_match.group(1)} {date_match.group(2)}" if date_match.group(2) else date_match.group(1)
-
-    # Fallback cho URL nếu chưa tìm thấy
+        if not found_customer:
+            value = extract_value_from_line(line, LABEL_PATTERNS['khachHang'])
+            if value:
+                customer_lines.append(value)
+                found_customer = True
+                continue
+        
+        if found_customer and not found_address:
+            # Nếu đã tìm thấy khách hàng, các dòng tiếp theo có thể là địa chỉ
+            # Kiểm tra xem có phải là địa chỉ không (chứa số nhà, đường, etc)
+            line_lower = line.lower()
+            if any(keyword in line_lower for keyword in ['đường', 'phường', 'quận', 'huyện', 'tỉnh', 'tp', 'kcn']):
+                address_lines.append(line)
+                found_address = True
+            elif len(line) > 10 and not re.search(r'\d{1,2}[/-]\d{1,2}[/-]\d{2,4}', line):
+                # Nếu là dòng văn bản dài và không chứa ngày tháng
+                if not found_address:
+                    address_lines.append(line)
+    
+    # Kết hợp khách hàng và địa chỉ
+    if customer_lines:
+        result['khachHang'] = ' '.join(customer_lines)
+    
+    if address_lines:
+        result['diaChi'] = ' '.join(address_lines)
+    
+    # 5. Fallback: tìm khách hàng và địa chỉ từ dòng chứa keyword
+    if not result['khachHang']:
+        for line in lines:
+            if any(kw in line.lower() for kw in ['ten don vi', 'ten khach hang', 'khach hang']):
+                parts = line.split(':', 1)
+                if len(parts) == 2:
+                    result['khachHang'] = parts[1].strip()
+                    break
+    
+    if not result['diaChi']:
+        for line in lines:
+            if any(kw in line.lower() for kw in ['dia chi', 'địa chỉ']):
+                parts = line.split(':', 1)
+                if len(parts) == 2:
+                    result['diaChi'] = parts[1].strip()
+                    break
+    
+    # 6. Tìm link
+    for line in lines:
+        url = clean_url(line)
+        if url:
+            result['link'] = url
+            logger.info(f"Found link: {url}")
+            break
+    
+    # Fallback: tìm link trong toàn bộ text
     if not result['link']:
-        url_match = URL_RE.search(text)
-        if url_match:
-            result['link'] = clean_trailing_url_punct(url_match.group(0))
-
-    logger.debug(f"Parsed result: {json.dumps(result, ensure_ascii=False)}")
+        url = clean_url(text)
+        if url:
+            result['link'] = url
+    
+    # 7. Clean data
+    for key in result:
+        if isinstance(result[key], str):
+            # Xóa khoảng trắng thừa
+            result[key] = ' '.join(result[key].split())
+            
+            # Xóa các ký tự đặc biệt không cần thiết
+            if key != 'link':
+                result[key] = re.sub(r'^[:.\s-]+', '', result[key])
+                result[key] = re.sub(r'[:.\s-]+$', '', result[key])
+    
+    logger.info(f"Final result: {json.dumps(result, ensure_ascii=False)}")
     return result
 
+def find_field_in_lines(lines, field_key):
+    """Tìm field trong danh sách dòng text"""
+    patterns = LABEL_PATTERNS.get(field_key, [])
+    
+    for line in lines:
+        if is_section_end(line):
+            break
+            
+        # Thử extract value
+        value = extract_value_from_line(line, patterns)
+        if value:
+            return value
+        
+        # Nếu không tìm thấy với pattern, thử kiểm tra chứa keyword
+        line_norm = norm_label(line)
+        for pattern in patterns:
+            if pattern in line_norm:
+                # Lấy phần sau keyword
+                idx = line_norm.find(pattern)
+                if idx != -1:
+                    # Tìm vị trí tương ứng trong line gốc
+                    remaining = line[idx + len(pattern):].strip()
+                    if remaining:
+                        # Nếu bắt đầu bằng dấu : hoặc khoảng trắng, lấy phần sau
+                        if remaining.startswith(':') or remaining.startswith(' '):
+                            remaining = remaining.lstrip(': ').strip()
+                        # Lấy từ đầu tiên hoặc cả dòng nếu ngắn
+                        words = remaining.split()
+                        if words:
+                            if len(words) == 1:
+                                return words[0]
+                            # Kiểm tra nếu là số hoặc mã
+                            if re.match(r'^[A-Z0-9]+$', words[0], re.IGNORECASE):
+                                return words[0]
+                            return ' '.join(words[:3])  # Lấy 3 từ đầu
+                break
+    
+    return None
+
 # ------------------------------------------------------------------
-# OCR
+# Tesseract OCR với tiền xử lý (chỉ dùng Pillow)
 # ------------------------------------------------------------------
 
 def preprocess_image(image_path):
-    """Tiền xử lý ảnh để tăng độ chính xác OCR"""
+    """Tiền xử lý ảnh để tăng độ chính xác OCR - chỉ dùng Pillow"""
     try:
-        from PIL import Image
-        import cv2
-        import numpy as np
-        
-        # Đọc ảnh
-        img = cv2.imread(image_path)
-        if img is None:
-            logger.warning(f"Cannot read image: {image_path}")
-            return image_path
+        # Mở ảnh
+        img = Image.open(image_path)
         
         # Chuyển sang grayscale
-        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        if img.mode != 'L':
+            img = img.convert('L')
         
         # Tăng độ tương phản
-        gray = cv2.equalizeHist(gray)
+        enhancer = ImageEnhance.Contrast(img)
+        img = enhancer.enhance(1.8)
         
-        # Áp dụng adaptive threshold
-        thresh = cv2.adaptiveThreshold(
-            gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, 
-            cv2.THRESH_BINARY, 11, 2
-        )
+        # Tăng độ sáng
+        enhancer = ImageEnhance.Brightness(img)
+        img = enhancer.enhance(1.2)
         
-        # Denoise
-        denoised = cv2.fastNlMeansDenoising(thresh)
+        # Tăng độ sắc nét
+        enhancer = ImageEnhance.Sharpness(img)
+        img = enhancer.enhance(2.5)
+        
+        # Làm sạch noise
+        img = img.filter(ImageFilter.MedianFilter(size=3))
+        
+        # Áp dụng threshold để làm rõ chữ
+        threshold = 180
+        img = img.point(lambda p: p > threshold and 255)
         
         # Lưu ảnh đã xử lý
         processed_path = image_path.replace('.png', '_processed.png')
-        cv2.imwrite(processed_path, denoised)
-        logger.debug(f"Preprocessed image saved: {processed_path}")
+        img.save(processed_path, 'PNG', quality=100, optimize=True)
+        logger.info(f"Preprocessed image: {processed_path}")
+        
         return processed_path
         
     except Exception as e:
@@ -280,7 +408,7 @@ def preprocess_image(image_path):
         return image_path
 
 def run_tesseract(image_path):
-    """Run Tesseract OCR với nhiều PSM modes và chọn kết quả tốt nhất"""
+    """Chạy Tesseract OCR với cấu hình tối ưu"""
     env = os.environ.copy()
     env['LD_LIBRARY_PATH'] = TESSERACT_LIB + ':' + env.get('LD_LIBRARY_PATH', '')
     env['TESSDATA_PREFIX'] = TESSDATA_DIR
@@ -290,17 +418,15 @@ def run_tesseract(image_path):
     except OSError:
         pass
 
-    # Thử các PSM modes khác nhau
-    psm_modes = ['3', '4', '6', '7']  # 3: auto, 4: single column, 6: block, 7: single line
+    # Thử nhiều PSM modes
+    psm_modes = ['3', '4', '6']  # 3: auto, 4: single column, 6: block
     best_text = ""
     best_score = 0
-    best_path = None
 
     for psm in psm_modes:
         try:
             out_base = image_path + f'_out_{psm}'
             
-            # Thử với các cấu hình khác nhau
             result = subprocess.run(
                 [
                     TESSERACT_BIN, image_path, out_base,
@@ -308,7 +434,6 @@ def run_tesseract(image_path):
                     '--psm', psm,
                     '-c', 'tessedit_char_whitelist=0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz:./- ',
                     '-c', 'textord_min_linesize=2.5',
-                    '-c', 'tessedit_pageseg_mode=' + psm,
                 ],
                 capture_output=True, text=True, timeout=30, env=env,
             )
@@ -320,19 +445,20 @@ def run_tesseract(image_path):
                         text = f.read()
                     
                     # Đánh giá chất lượng text
-                    score = len(text.split()) + len(re.findall(r'\d', text)) * 2
+                    word_count = len(text.split())
+                    digit_count = len(re.findall(r'\d', text))
+                    score = word_count + digit_count * 2
+                    
                     if score > best_score:
                         best_score = score
                         best_text = text
-                        best_path = txt_path
                     
-                    # Xóa file tạm
                     try:
                         os.remove(txt_path)
                     except OSError:
                         pass
                         
-            logger.debug(f"PSM {psm} completed with score {score if result.returncode == 0 else 'error'}")
+            logger.info(f"PSM {psm} completed, score: {best_score}")
             
         except subprocess.TimeoutExpired:
             logger.warning(f"PSM {psm} timed out")
@@ -341,28 +467,15 @@ def run_tesseract(image_path):
             logger.warning(f"PSM {psm} failed: {e}")
             continue
 
-    # Nếu không có kết quả, thử với PSM mặc định
-    if not best_text:
-        logger.warning("All PSM modes failed, trying default")
-        out_base = image_path + '_out_default'
-        result = subprocess.run(
-            [TESSERACT_BIN, image_path, out_base, '-l', 'vie+eng', '--psm', '6'],
-            capture_output=True, text=True, timeout=25, env=env,
-        )
-        if result.returncode == 0:
-            txt_path = out_base + '.txt'
-            if os.path.exists(txt_path):
-                with open(txt_path, 'r', encoding='utf-8') as f:
-                    best_text = f.read()
-                try:
-                    os.remove(txt_path)
-                except OSError:
-                    pass
-
     if not best_text:
         raise RuntimeError('Tesseract failed to produce output')
 
+    logger.info(f"OCR result length: {len(best_text)} chars")
     return best_text
+
+# ------------------------------------------------------------------
+# Vercel Handler
+# ------------------------------------------------------------------
 
 class handler(BaseHTTPRequestHandler):
     def _send_json(self, code, obj):
@@ -399,30 +512,36 @@ class handler(BaseHTTPRequestHandler):
                 self._send_json(400, {'error': 'missing_image'})
                 return
             
-            # Xóa data URL prefix nếu có
             if ',' in image_b64[:60]:
                 image_b64 = image_b64.split(',', 1)[1]
             
-            image_bytes = base64.b64decode(image_b64)
-            logger.debug(f"Received image size: {len(image_bytes)} bytes")
+            try:
+                image_bytes = base64.b64decode(image_b64)
+            except Exception as e:
+                self._send_json(400, {'error': f'invalid_base64: {str(e)}'})
+                return
+                
+            logger.info(f"Received image: {len(image_bytes)} bytes")
 
-            # Lưu ảnh tạm
+            # Lưu ảnh
             with tempfile.NamedTemporaryFile(suffix='.png', delete=False, dir='/tmp') as tmp:
                 tmp.write(image_bytes)
                 tmp_path = tmp.name
             
-            # Tiền xử lý ảnh
+            # Tiền xử lý
             processed_path = preprocess_image(tmp_path)
             
             # OCR
             text = run_tesseract(processed_path)
-            logger.debug(f"OCR result length: {len(text)} characters")
-            logger.debug(f"OCR preview: {text[:200]}")
-
-            # Parse fields
-            fields = parse_fields(text)
+            logger.info(f"OCR completed: {len(text)} chars")
             
-            self._send_json(200, {'text': text, 'fields': fields})
+            # Parse
+            fields = parse_invoice(text)
+            
+            self._send_json(200, {
+                'text': text,
+                'fields': fields
+            })
             
         except subprocess.TimeoutExpired:
             logger.error("OCR timeout")
@@ -431,13 +550,12 @@ class handler(BaseHTTPRequestHandler):
             logger.error(f"OCR error: {e}", exc_info=True)
             self._send_json(500, {'error': str(e)})
         finally:
-            # Dọn dẹp file tạm
             if tmp_path and os.path.exists(tmp_path):
                 try:
                     os.remove(tmp_path)
                 except OSError:
                     pass
-            # Xóa file processed nếu tồn tại
+            
             processed_path = tmp_path.replace('.png', '_processed.png') if tmp_path else None
             if processed_path and os.path.exists(processed_path):
                 try:
