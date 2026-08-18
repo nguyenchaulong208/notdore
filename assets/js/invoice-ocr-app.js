@@ -276,7 +276,14 @@
       );
       if (files.length) processAll(files);
     });
-    el.dropZone.addEventListener('click', () => el.fileInput.click());
+    el.dropZone.addEventListener('click', (e) => {
+      // fileInput is nested inside dropZone, so the click() call below
+      // dispatches an event that bubbles back up to dropZone. Guard
+      // against that to avoid infinite recursion (which was blocking
+      // the native file picker from opening at all).
+      if (e.target === el.fileInput) return;
+      el.fileInput.click();
+    });
 
     el.exportBtn.addEventListener('click', exportToExcel);
     el.clearBtn.addEventListener('click', clearAll);
