@@ -38,7 +38,7 @@
       Tải lên ảnh chụp hoặc PDF phiếu báo tra cứu hóa đơn — công cụ tự động nhận diện
       Ngày, Số hóa đơn, Mã tra cứu, Số tiền, Mã số thuế, Khách hàng, Địa chỉ, Link tra cứu,
       cho phép sửa lại trước khi xuất bảng kê Excel.
-      Xử lý hoàn toàn trên trình duyệt — ảnh không được gửi lên máy chủ.
+      OCR được xử lý trên máy chủ (Python + Tesseract) để tăng độ chính xác.
     </p>
   </div>
 
@@ -101,12 +101,11 @@
 </div>
 
 <!-- CDN libs (jsdelivr — confirmed reliable CDN for worker/module contexts in this project) -->
-<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+<!-- pdf.js: still needed client-side to render PDF pages to PNG before sending to the OCR backend -->
 <script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
-<!-- App modules -->
-<script src="assets/js/invoice-ocr-parser.js"></script>
+<!-- App module (OCR + field parsing now happen server-side in api/ocr.py) -->
 <script src="assets/js/invoice-ocr-app.js"></script>
 
 </body>
