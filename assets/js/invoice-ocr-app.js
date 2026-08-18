@@ -105,19 +105,60 @@
     const images = [];
     for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
       const page = await pdf.getPage(pageNum);
-      const viewport = page.getViewport({ scale: 2.5 }); // higher scale = better OCR
+      // Tăng scale lên 4.0 để có ảnh chất lượng cao hơn
+      const viewport = page.getViewport({ scale: 4.0 });
       const canvas = document.createElement('canvas');
       canvas.width = viewport.width;
       canvas.height = viewport.height;
       const ctx = canvas.getContext('2d');
-      await page.render({ canvasContext: ctx, viewport }).promise;
-      const blob = await new Promise((res) => canvas.toBlob(res, 'image/png'));
+      
+      // Render với chất lượng cao
+      await page.render({ 
+        canvasContext: ctx, 
+        viewport,
+        background: 'white'
+      }).promise;
+      
+      // Tăng cường chất lượng ảnh
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const enhancedData = enhanceImage(imageData);
+      ctx.putImageData(enhancedData, 0, 0);
+      
+      const blob = await new Promise((res) => canvas.toBlob(res, 'image/png', 1.0));
       images.push({
         blob,
         pageLabel: pdf.numPages > 1 ? `${file.name} (trang ${pageNum})` : file.name,
       });
     }
     return images;
+  }
+
+  // Hàm tăng cường chất lượng ảnh
+  function enhanceImage(imageData) {
+    const data = imageData.data;
+    const enhanced = new Uint8ClampedArray(data);
+    
+    // Tăng độ tương phản và làm sắc nét
+    const factor = 1.3;
+    const threshold = 128;
+    
+    for (let i = 0; i < enhanced.length; i += 4) {
+      // Chuyển sang grayscale nếu cần
+      const gray = 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
+      
+      // Tăng độ tương phản
+      let enhancedGray = ((gray / 255 - 0.5) * factor + 0.5) * 255;
+      enhancedGray = Math.max(0, Math.min(255, enhancedGray));
+      
+      // Binary threshold để làm rõ chữ
+      const binary = enhancedGray > threshold ? 255 : 0;
+      
+      enhanced[i] = binary;
+      enhanced[i + 1] = binary;
+      enhanced[i + 2] = binary;
+    }
+    
+    return new ImageData(enhanced, imageData.width, imageData.height);
   }
 
   // ---- row management ----
@@ -155,7 +196,27 @@
         const { blob, pageLabel } = images[i];
         setQueueStatus(li, `OCR (${i + 1}/${images.length})...`, 'bg-info');
         updateProgress(i / images.length, `${pageLabel}: đang OCR trên máy chủ...`);
-        const { fields } = await callOcrApi(blob);
+        
+        // Retry logic nếu thất bại
+        let ocrResult = null;
+        let retries = 2;
+        while (retries >= 0 && !ocrResult) {
+          try {
+            ocrResult = await callOcrApi(blob);
+          } catch (err) {
+            console.warn(`OCR attempt ${2 - retries} failed:`, err);
+            retries--;
+            if (retries >= 0) {
+              await new Promise(resolve => setTimeout(resolve, 1000));
+            }
+          }
+        }
+        
+        if (!ocrResult) {
+          throw new Error('OCR failed after retries');
+        }
+        
+        const { fields } = ocrResult;
         const thumbUrl = URL.createObjectURL(blob);
         rows.push({
           id: 'row-' + (++rowSeq),
@@ -169,7 +230,7 @@
       setQueueStatus(li, 'Hoàn tất', 'bg-success');
     } catch (err) {
       console.error('OCR error for', file.name, err);
-      setQueueStatus(li, 'Lỗi', 'bg-danger');
+      setQueueStatus(li, 'Lỗi: ' + err.message, 'bg-danger');
     }
   }
 
@@ -293,9 +354,6 @@
       if (files.length) processAll(files);
     });
     el.dropZone.addEventListener('click', (e) => {
-      // fileInput is nested inside dropZone, so the click() call below
-      // dispatches an event that bubbles back up to dropZone. Guard
-      // against that to avoid infinite recursion.
       if (e.target === el.fileInput) return;
       el.fileInput.click();
     });
