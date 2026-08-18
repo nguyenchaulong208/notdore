@@ -1,5 +1,11 @@
 {
   "installCommand": "npm install --ignore-scripts",
+  "functions": {
+    "api/ocr.py": {
+      "includeFiles": "api/vendor/**",
+      "maxDuration": 60
+    }
+  },
   "headers": [
     {
       "source": "/(.*)",
