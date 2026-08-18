@@ -126,40 +126,40 @@
     return [{ blob: file, pageLabel: file.name }];
   }
 
-  async function pdfToImages(file) {
+  // Trong invoice-ocr-app.js
+async function pdfToImages(file) {
     const buf = await file.arrayBuffer();
     const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
     const images = [];
     
     for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
-      const page = await pdf.getPage(pageNum);
-      // Scale cao để OCR tốt hơn
-      const viewport = page.getViewport({ scale: 3.5 });
-      const canvas = document.createElement('canvas');
-      canvas.width = viewport.width;
-      canvas.height = viewport.height;
-      const ctx = canvas.getContext('2d');
-      
-      // Render với chất lượng cao
-      await page.render({ 
-        canvasContext: ctx, 
-        viewport,
-        background: 'white'
-      }).promise;
-      
-      // Tăng cường ảnh
-      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-      const enhanced = enhanceImageForOCR(imageData);
-      ctx.putImageData(enhanced, 0, 0);
-      
-      const blob = await new Promise((res) => canvas.toBlob(res, 'image/png', 1.0));
-      images.push({
-        blob,
-        pageLabel: pdf.numPages > 1 ? `${file.name} (trang ${pageNum})` : file.name,
-      });
+        const page = await pdf.getPage(pageNum);
+        // Giảm scale để tiết kiệm memory
+        const viewport = page.getViewport({ scale: 2.0 });
+        const canvas = document.createElement('canvas');
+        canvas.width = viewport.width;
+        canvas.height = viewport.height;
+        const ctx = canvas.getContext('2d');
+        
+        await page.render({ 
+            canvasContext: ctx, 
+            viewport,
+            background: 'white'
+        }).promise;
+        
+        // Giảm quality để tiết kiệm memory
+        const blob = await new Promise((res) => canvas.toBlob(res, 'image/png', 0.8));
+        images.push({
+            blob,
+            pageLabel: pdf.numPages > 1 ? `${file.name} (trang ${pageNum})` : file.name,
+        });
+        
+        // Giải phóng memory
+        canvas.width = 0;
+        canvas.height = 0;
     }
     return images;
-  }
+}
 
   // Tăng cường ảnh cho OCR
   function enhanceImageForOCR(imageData) {
