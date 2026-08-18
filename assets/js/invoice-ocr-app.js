@@ -1,11 +1,11 @@
 /**
  * invoice-ocr-app.js
  * UI orchestration for the Invoice OCR tool: upload -> render (PDF pages to
- * canvas) -> OCR (Tesseract.js) -> parse (IOCR.Parser) -> editable preview
- * -> export to Excel (SheetJS). Fully client-side, no backend.
+ * canvas) -> OCR via backend (POST /api/ocr, Python + bundled Tesseract on
+ * Vercel) -> editable preview -> export to Excel (SheetJS).
  *
- * Depends on globals: Tesseract, pdfjsLib, XLSX, and window.IOCR.Parser
- * (from invoice-ocr-parser.js, load that file first).
+ * Depends on globals: pdfjsLib, XLSX. Field parsing happens server-side
+ * (api/ocr.py); the client just renders whatever `fields` the API returns.
  */
 (function (global) {
   'use strict';
@@ -23,7 +23,8 @@
     { key: 'link', label: 'Link tra cứu' },
   ];
 
-  let worker = null;
+  const OCR_ENDPOINT = '/api/ocr';
+
   let rows = []; // { id, fileName, thumbUrl, fields: {...}, status }
   let rowSeq = 0;
 
@@ -51,18 +52,34 @@
     };
   }
 
-  // ---- worker lifecycle ----
+  // ---- backend OCR call ----
 
-  async function ensureWorker() {
-    if (worker) return worker;
-    worker = await Tesseract.createWorker(['vie', 'eng'], 1, {
-      logger: (m) => {
-        if (m.status === 'recognizing text' && typeof m.progress === 'number') {
-          updateProgress(m.progress);
-        }
-      },
+  function blobToBase64(blob) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result); // data:...;base64,XXXX
+      reader.onerror = () => reject(reader.error);
+      reader.readAsDataURL(blob);
     });
-    return worker;
+  }
+
+  async function callOcrApi(blob) {
+    const dataUrl = await blobToBase64(blob);
+    const res = await fetch(OCR_ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ image: dataUrl }),
+    });
+    let json;
+    try {
+      json = await res.json();
+    } catch {
+      throw new Error(`Phản hồi không hợp lệ từ máy chủ (HTTP ${res.status})`);
+    }
+    if (!res.ok) {
+      throw new Error(json.error || `Lỗi máy chủ (HTTP ${res.status})`);
+    }
+    return json; // { text, fields }
   }
 
   function updateProgress(fraction, label) {
@@ -133,13 +150,12 @@
       const images = await fileToImages(file);
 
       setQueueStatus(li, `OCR (0/${images.length})...`, 'bg-info');
-      const w = await ensureWorker();
 
       for (let i = 0; i < images.length; i++) {
         const { blob, pageLabel } = images[i];
         setQueueStatus(li, `OCR (${i + 1}/${images.length})...`, 'bg-info');
-        const { data } = await w.recognize(blob);
-        const fields = ns.Parser.parseFields(data.text);
+        updateProgress(i / images.length, `${pageLabel}: đang OCR trên máy chủ...`);
+        const { fields } = await callOcrApi(blob);
         const thumbUrl = URL.createObjectURL(blob);
         rows.push({
           id: 'row-' + (++rowSeq),
@@ -279,8 +295,7 @@
     el.dropZone.addEventListener('click', (e) => {
       // fileInput is nested inside dropZone, so the click() call below
       // dispatches an event that bubbles back up to dropZone. Guard
-      // against that to avoid infinite recursion (which was blocking
-      // the native file picker from opening at all).
+      // against that to avoid infinite recursion.
       if (e.target === el.fileInput) return;
       el.fileInput.click();
     });
@@ -294,7 +309,7 @@
       if (img) window.open(img.dataset.full, '_blank');
     });
 
-    if (pdfjsLib && pdfjsLib.GlobalWorkerOptions) {
+    if (typeof pdfjsLib !== 'undefined' && pdfjsLib.GlobalWorkerOptions) {
       pdfjsLib.GlobalWorkerOptions.workerSrc =
         'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
     }
