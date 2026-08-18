@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OCR Phiếu Báo Tra Cứu Hóa Đơn | NotDore</title>
+
+<!-- TODO: thay bằng include header/nav/footer chung của NotDore -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.2/css/all.min.css">
+
+<style>
+  :root { --iocr-accent: #2563eb; }
+  body { background: #f6f7fb; }
+  .iocr-wrap { max-width: 1200px; margin: 0 auto; padding: 32px 16px 80px; }
+  .iocr-dropzone {
+    border: 2px dashed #b7c0d8; border-radius: 12px; padding: 40px 20px;
+    text-align: center; cursor: pointer; background: #fff; transition: .15s;
+  }
+  .iocr-dropzone.iocr-drop-active { border-color: var(--iocr-accent); background: #eef2ff; }
+  .iocr-dropzone i { font-size: 2.2rem; color: var(--iocr-accent); }
+  .iocr-editable-cell {
+    min-width: 130px; font-size: .85rem; outline: none;
+  }
+  .iocr-editable-cell:focus { background: #fff8db; }
+  #iocrPreviewTable th { font-size: .8rem; white-space: nowrap; background: #f1f3f9; }
+  #iocrPreviewTable td { vertical-align: middle; }
+  .iocr-table-scroll { overflow-x: auto; overflow-y: hidden; }
+  .iocr-table-scroll table { min-width: 1100px; }
+</style>
+</head>
+<body>
+
+<div class="iocr-wrap">
+  <div class="mb-4">
+    <h1 class="h3 fw-bold mb-1"><i class="fa fa-receipt me-2 text-primary"></i>OCR Phiếu Báo Tra Cứu Hóa Đơn</h1>
+    <p class="text-muted mb-0">
+      Tải lên ảnh chụp hoặc PDF phiếu báo tra cứu hóa đơn — công cụ tự động nhận diện
+      Ngày, Số hóa đơn, Mã tra cứu, Số tiền, Mã số thuế, Khách hàng, Địa chỉ, Link tra cứu,
+      cho phép sửa lại trước khi xuất bảng kê Excel.
+      Xử lý hoàn toàn trên trình duyệt — ảnh không được gửi lên máy chủ.
+    </p>
+  </div>
+
+  <!-- Upload -->
+  <div id="iocrDropZone" class="iocr-dropzone mb-3">
+    <i class="fa fa-cloud-upload-alt"></i>
+    <p class="mt-2 mb-1 fw-semibold">Kéo thả ảnh / PDF vào đây, hoặc bấm để chọn file</p>
+    <p class="text-muted small mb-0">Hỗ trợ nhiều file cùng lúc · JPG, PNG, PDF</p>
+    <input type="file" id="iocrFileInput" accept="image/*,application/pdf" multiple hidden>
+  </div>
+
+  <div class="d-flex gap-2 mb-3">
+    <button id="iocrProcessBtn" class="btn btn-primary d-none"><i class="fa fa-play me-1"></i>Xử lý</button>
+    <button id="iocrExportBtn" class="btn btn-success" disabled><i class="fa fa-file-excel me-1"></i>Xuất Excel</button>
+    <button id="iocrClearBtn" class="btn btn-outline-secondary"><i class="fa fa-broom me-1"></i>Xóa tất cả</button>
+  </div>
+
+  <!-- Queue -->
+  <ul id="iocrQueueList" class="list-group mb-3"></ul>
+
+  <!-- Progress -->
+  <div id="iocrProgressWrap" class="mb-4 d-none">
+    <div class="d-flex justify-content-between small mb-1">
+      <span id="iocrProgressLabel">Đang xử lý...</span>
+    </div>
+    <div class="progress" style="height: 8px;">
+      <div id="iocrProgressBar" class="progress-bar" role="progressbar" style="width:0%"></div>
+    </div>
+  </div>
+
+  <!-- Empty state -->
+  <div id="iocrEmptyState" class="text-center text-muted py-5">
+    <i class="fa fa-inbox fa-2x mb-2"></i>
+    <p class="mb-0">Chưa có phiếu nào được xử lý.</p>
+  </div>
+
+  <!-- Preview -->
+  <div id="iocrPreviewSection" class="d-none">
+    <h2 class="h6 fw-bold mb-2">Xem trước &amp; chỉnh sửa <span class="text-muted fw-normal">(bấm vào ô để sửa)</span></h2>
+    <div class="iocr-table-scroll bg-white rounded shadow-sm">
+      <table id="iocrPreviewTable" class="table table-sm table-bordered mb-0">
+        <thead>
+          <tr>
+            <th style="width:64px">Ảnh</th>
+            <th>Ngày</th>
+            <th>Số hóa đơn</th>
+            <th>Mã tra cứu</th>
+            <th>Số tiền</th>
+            <th>Mã số thuế</th>
+            <th>Khách hàng</th>
+            <th>Địa chỉ</th>
+            <th>Link tra cứu</th>
+            <th style="width:48px"></th>
+          </tr>
+        </thead>
+        <tbody id="iocrPreviewTableBody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- CDN libs (jsdelivr — confirmed reliable CDN for worker/module contexts in this project) -->
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+<!-- App modules -->
+<script src="/js/invoice-ocr-parser.js"></script>
+<script src="/js/invoice-ocr-app.js"></script>
+
+</body>
+</html>
