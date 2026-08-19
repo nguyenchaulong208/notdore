@@ -155,13 +155,18 @@
         const { blob, pageLabel } = images[i];
         setQueueStatus(li, `OCR (${i + 1}/${images.length})...`, 'bg-info');
         updateProgress(i / images.length, `${pageLabel}: đang OCR trên máy chủ...`);
-        const { fields } = await callOcrApi(blob);
+        const { fields, text, version } = await callOcrApi(blob);
+        if (version && !ns._loggedVersion) {
+          console.info('[IOCR] api/ocr.py version:', version);
+          ns._loggedVersion = true;
+        }
         const thumbUrl = URL.createObjectURL(blob);
         rows.push({
           id: 'row-' + (++rowSeq),
           fileName: pageLabel,
           thumbUrl,
           fields,
+          rawText: text || '',
           status: 'ok',
         });
         renderPreviewRow(rows[rows.length - 1]);
@@ -216,8 +221,18 @@
     const delBtn = document.createElement('button');
     delBtn.className = 'btn btn-sm btn-outline-danger';
     delBtn.innerHTML = '<i class="fa fa-trash"></i>';
+    delBtn.title = 'Xóa dòng';
     delBtn.addEventListener('click', () => removeRow(row.id));
     actionTd.appendChild(delBtn);
+
+    if (row.rawText) {
+      const rawBtn = document.createElement('button');
+      rawBtn.className = 'btn btn-sm btn-outline-secondary ms-1';
+      rawBtn.innerHTML = '<i class="fa fa-file-lines"></i>';
+      rawBtn.title = 'Xem text OCR gốc (để đối chiếu khi kết quả sai)';
+      rawBtn.addEventListener('click', () => alert(row.rawText));
+      actionTd.appendChild(rawBtn);
+    }
     tr.appendChild(actionTd);
 
     el.previewTableBody.appendChild(tr);
