@@ -1,7 +1,11 @@
 /**
  * invoice-ocr-app.js
- * UI orchestration cho công cụ OCR hóa đơn
- * Tối ưu cho độ chính xác cao
+ * UI orchestration for the Invoice OCR tool: upload -> render (PDF pages to
+ * canvas) -> OCR via backend (POST /api/ocr, Python + bundled Tesseract on
+ * Vercel) -> editable preview -> export to Excel (SheetJS).
+ *
+ * Depends on globals: pdfjsLib, XLSX. Field parsing happens server-side
+ * (api/ocr.py); the client just renders whatever `fields` the API returns.
  */
 (function (global) {
   'use strict';
@@ -21,8 +25,10 @@
 
   const OCR_ENDPOINT = '/api/ocr';
 
-  let rows = [];
+  let rows = []; // { id, fileName, thumbUrl, fields: {...}, status }
   let rowSeq = 0;
+
+  // ---- DOM refs (resolved on init) ----
   let el = {};
 
   function qs(id) {
@@ -46,26 +52,24 @@
     };
   }
 
+  // ---- backend OCR call ----
+
   function blobToBase64(blob) {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
-      reader.onload = () => resolve(reader.result);
+      reader.onload = () => resolve(reader.result); // data:...;base64,XXXX
       reader.onerror = () => reject(reader.error);
       reader.readAsDataURL(blob);
     });
   }
 
   async function callOcrApi(blob) {
-    // Nén ảnh để giảm kích thước
-    const compressedBlob = await compressImage(blob);
-    const dataUrl = await blobToBase64(compressedBlob);
-    
+    const dataUrl = await blobToBase64(blob);
     const res = await fetch(OCR_ENDPOINT, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ image: dataUrl }),
     });
-    
     let json;
     try {
       json = await res.json();
@@ -75,39 +79,7 @@
     if (!res.ok) {
       throw new Error(json.error || `Lỗi máy chủ (HTTP ${res.status})`);
     }
-    return json;
-  }
-
-  // Nén ảnh để tối ưu
-  async function compressImage(blob) {
-    return new Promise((resolve) => {
-      const img = new Image();
-      img.onload = function() {
-        const canvas = document.createElement('canvas');
-        let width = img.width;
-        let height = img.height;
-        
-        // Giới hạn kích thước
-        const MAX_SIZE = 2000;
-        if (width > MAX_SIZE || height > MAX_SIZE) {
-          const ratio = Math.min(MAX_SIZE / width, MAX_SIZE / height);
-          width = Math.round(width * ratio);
-          height = Math.round(height * ratio);
-        }
-        
-        canvas.width = width;
-        canvas.height = height;
-        const ctx = canvas.getContext('2d');
-        
-        // Vẽ ảnh với chất lượng cao
-        ctx.drawImage(img, 0, 0, width, height);
-        
-        canvas.toBlob((b) => {
-          resolve(b);
-        }, 'image/png', 1.0);
-      };
-      img.src = URL.createObjectURL(blob);
-    });
+    return json; // { text, fields }
   }
 
   function updateProgress(fraction, label) {
@@ -118,7 +90,8 @@
     if (label) el.progressLabel.textContent = label;
   }
 
-  // Chuyển đổi file sang ảnh với chất lượng cao
+  // ---- file -> image(s) ----
+
   async function fileToImages(file) {
     if (file.type === 'application/pdf' || /\.pdf$/i.test(file.name)) {
       return pdfToImages(file);
@@ -126,71 +99,29 @@
     return [{ blob: file, pageLabel: file.name }];
   }
 
-  // Trong invoice-ocr-app.js
-async function pdfToImages(file) {
+  async function pdfToImages(file) {
     const buf = await file.arrayBuffer();
     const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
     const images = [];
-    
     for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
-        const page = await pdf.getPage(pageNum);
-        // Giảm scale để tiết kiệm memory
-        const viewport = page.getViewport({ scale: 2.0 });
-        const canvas = document.createElement('canvas');
-        canvas.width = viewport.width;
-        canvas.height = viewport.height;
-        const ctx = canvas.getContext('2d');
-        
-        await page.render({ 
-            canvasContext: ctx, 
-            viewport,
-            background: 'white'
-        }).promise;
-        
-        // Giảm quality để tiết kiệm memory
-        const blob = await new Promise((res) => canvas.toBlob(res, 'image/png', 0.8));
-        images.push({
-            blob,
-            pageLabel: pdf.numPages > 1 ? `${file.name} (trang ${pageNum})` : file.name,
-        });
-        
-        // Giải phóng memory
-        canvas.width = 0;
-        canvas.height = 0;
+      const page = await pdf.getPage(pageNum);
+      const viewport = page.getViewport({ scale: 2.5 }); // higher scale = better OCR
+      const canvas = document.createElement('canvas');
+      canvas.width = viewport.width;
+      canvas.height = viewport.height;
+      const ctx = canvas.getContext('2d');
+      await page.render({ canvasContext: ctx, viewport }).promise;
+      const blob = await new Promise((res) => canvas.toBlob(res, 'image/png'));
+      images.push({
+        blob,
+        pageLabel: pdf.numPages > 1 ? `${file.name} (trang ${pageNum})` : file.name,
+      });
     }
     return images;
-}
-
-  // Tăng cường ảnh cho OCR
-  function enhanceImageForOCR(imageData) {
-    const data = imageData.data;
-    const enhanced = new Uint8ClampedArray(data);
-    
-    // Tăng độ tương phản và làm sắc nét
-    for (let i = 0; i < enhanced.length; i += 4) {
-      // Chuyển sang grayscale với trọng số
-      const gray = 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
-      
-      // Tăng độ tương phản
-      let enhancedGray = ((gray / 255 - 0.5) * 1.5 + 0.5) * 255;
-      enhancedGray = Math.max(0, Math.min(255, enhancedGray));
-      
-      // Làm sắc nét bằng cách tăng contrast ở vùng tối/sáng
-      if (enhancedGray < 128) {
-        enhancedGray = Math.max(0, enhancedGray * 0.8);
-      } else {
-        enhancedGray = Math.min(255, enhancedGray * 1.2);
-      }
-      
-      enhanced[i] = enhancedGray;
-      enhanced[i + 1] = enhancedGray;
-      enhanced[i + 2] = enhancedGray;
-    }
-    
-    return new ImageData(enhanced, imageData.width, imageData.height);
   }
 
-  // Row management
+  // ---- row management ----
+
   function addQueueEntry(fileName) {
     const li = document.createElement('li');
     li.className = 'list-group-item d-flex justify-content-between align-items-center';
@@ -223,25 +154,8 @@ async function pdfToImages(file) {
       for (let i = 0; i < images.length; i++) {
         const { blob, pageLabel } = images[i];
         setQueueStatus(li, `OCR (${i + 1}/${images.length})...`, 'bg-info');
-        updateProgress(i / images.length, `${pageLabel}: đang OCR...`);
-        
-        // Gọi API với retry
-        let ocrResult = null;
-        for (let attempt = 0; attempt < 3; attempt++) {
-          try {
-            ocrResult = await callOcrApi(blob);
-            break;
-          } catch (err) {
-            console.warn(`Attempt ${attempt + 1} failed:`, err);
-            if (attempt < 2) await new Promise(resolve => setTimeout(resolve, 1000 * (attempt + 1)));
-          }
-        }
-        
-        if (!ocrResult) {
-          throw new Error('OCR failed after retries');
-        }
-        
-        const { fields } = ocrResult;
+        updateProgress(i / images.length, `${pageLabel}: đang OCR trên máy chủ...`);
+        const { fields } = await callOcrApi(blob);
         const thumbUrl = URL.createObjectURL(blob);
         rows.push({
           id: 'row-' + (++rowSeq),
@@ -255,7 +169,7 @@ async function pdfToImages(file) {
       setQueueStatus(li, 'Hoàn tất', 'bg-success');
     } catch (err) {
       console.error('OCR error for', file.name, err);
-      setQueueStatus(li, 'Lỗi: ' + err.message, 'bg-danger');
+      setQueueStatus(li, 'Lỗi', 'bg-danger');
     }
   }
 
@@ -275,6 +189,8 @@ async function pdfToImages(file) {
     el.processBtn.disabled = false;
     el.exportBtn.disabled = rows.length === 0;
   }
+
+  // ---- preview table ----
 
   function renderPreviewRow(row) {
     const tr = document.createElement('tr');
@@ -314,6 +230,8 @@ async function pdfToImages(file) {
     el.exportBtn.disabled = rows.length === 0;
   }
 
+  // ---- export ----
+
   function exportToExcel() {
     if (!rows.length) return;
     const header = FIELD_DEFS.map((f) => f.label);
@@ -321,7 +239,7 @@ async function pdfToImages(file) {
 
     const ws = XLSX.utils.aoa_to_sheet([header, ...data]);
     ws['!cols'] = FIELD_DEFS.map((f) =>
-      f.key === 'diaChi' || f.key === 'khachHang' ? { wch: 50 } : { wch: 20 }
+      f.key === 'diaChi' || f.key === 'khachHang' ? { wch: 40 } : { wch: 16 }
     );
 
     const wb = XLSX.utils.book_new();
@@ -330,6 +248,8 @@ async function pdfToImages(file) {
     const ts = new Date().toISOString().slice(0, 10);
     XLSX.writeFile(wb, `bang-ke-hoa-don-${ts}.xlsx`);
   }
+
+  // ---- clear ----
 
   function clearAll() {
     rows.forEach((r) => URL.revokeObjectURL(r.thumbUrl));
@@ -343,9 +263,11 @@ async function pdfToImages(file) {
     el.fileInput.value = '';
   }
 
+  // ---- init / wiring ----
+
   function init() {
     initDom();
-    if (!el.fileInput) return;
+    if (!el.fileInput) return; // page doesn't have this widget
 
     el.fileInput.addEventListener('change', () => {
       const files = Array.from(el.fileInput.files || []);
@@ -371,6 +293,9 @@ async function pdfToImages(file) {
       if (files.length) processAll(files);
     });
     el.dropZone.addEventListener('click', (e) => {
+      // fileInput is nested inside dropZone, so the click() call below
+      // dispatches an event that bubbles back up to dropZone. Guard
+      // against that to avoid infinite recursion.
       if (e.target === el.fileInput) return;
       el.fileInput.click();
     });
@@ -378,6 +303,7 @@ async function pdfToImages(file) {
     el.exportBtn.addEventListener('click', exportToExcel);
     el.clearBtn.addEventListener('click', clearAll);
 
+    // lightbox for thumbnails
     el.previewTableBody.addEventListener('click', (e) => {
       const img = e.target.closest('img[data-full]');
       if (img) window.open(img.dataset.full, '_blank');
@@ -390,5 +316,6 @@ async function pdfToImages(file) {
   }
 
   document.addEventListener('DOMContentLoaded', init);
+
   ns.App = { processAll, exportToExcel, clearAll };
 })(window);
