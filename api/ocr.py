@@ -44,6 +44,11 @@ TESSERACT_BIN = os.path.join(VENDOR_DIR, 'bin', 'tesseract')
 TESSERACT_LIB = os.path.join(VENDOR_DIR, 'lib')
 TESSDATA_DIR = os.path.join(VENDOR_DIR, 'tesseract', 'share', 'tessdata')
 
+# bump this on every meaningful change so the deployed version can be
+# confirmed at a glance (check the "version" field in the API response,
+# e.g. via DevTools Network tab) instead of guessing which file is live
+OCR_VERSION = '2026-08-19-v3'
+
 MAX_UPLOAD_BYTES = 15 * 1024 * 1024
 MAX_LONG_EDGE = 2600  # only downscale genuinely oversized phone photos
 
@@ -152,10 +157,10 @@ LABEL_FULL = {
 
 def is_section_end(line_norm):
     return (
-        line_norm.startswith('quykhachvuilong')
-        or line_norm.startswith('hotline')
-        or line_norm.startswith('hotro')
-        or line_norm.startswith('vuilongquet')
+        'quykhachvuilong' in line_norm
+        or 'hotline' in line_norm
+        or 'hotro' in line_norm
+        or 'vuilongquet' in line_norm
     )
 
 
@@ -194,7 +199,13 @@ def value_after_sep(line):
 def parse_amount(value_str):
     if not value_str:
         return '', None
-    m = re.search(r'[\d][\d.,\s]*\d|\d', value_str)
+    # Prefer a properly-grouped number (groups of exactly 3 digits after
+    # each separator) — this avoids merging an unrelated stray digit that
+    # happens to sit right after the real amount separated by just a space
+    # (e.g. "1925000 4" must NOT become 19250004).
+    m = re.search(r'\d{1,3}(?:[.,\s]\d{3})+', value_str)
+    if not m:
+        m = re.search(r'\d+', value_str)  # fallback: plain contiguous digits only
     raw = m.group(0).strip() if m else value_str.strip()
     digits = re.sub(r'[^\d]', '', raw)
     number = int(digits) if digits else None
@@ -317,6 +328,11 @@ class handler(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(body)
 
+    def do_GET(self):
+        # quick way to confirm which version is actually deployed:
+        # GET https://<domain>/api/ocr
+        self._send_json(200, {'status': 'ok', 'version': OCR_VERSION})
+
     def do_OPTIONS(self):
         self.send_response(204)
         self.send_header('Access-Control-Allow-Origin', '*')
@@ -354,7 +370,7 @@ class handler(BaseHTTPRequestHandler):
             processed_path = preprocess_image(tmp_path)
             text = run_tesseract(processed_path)
             fields = parse_fields(text)
-            self._send_json(200, {'text': text, 'fields': fields})
+            self._send_json(200, {'text': text, 'fields': fields, 'version': OCR_VERSION})
         except subprocess.TimeoutExpired:
             self._send_json(504, {'error': 'ocr_timeout'})
         except Exception as e:
