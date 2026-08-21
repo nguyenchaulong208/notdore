@@ -47,7 +47,7 @@ TESSDATA_DIR = os.path.join(VENDOR_DIR, 'tesseract', 'share', 'tessdata')
 # bump this on every meaningful change so the deployed version can be
 # confirmed at a glance (check the "version" field in the API response,
 # e.g. via DevTools Network tab) instead of guessing which file is live
-OCR_VERSION = '2026-08-19-v3'
+OCR_VERSION = '2026-08-19-v4-independent-fields'
 
 MAX_UPLOAD_BYTES = 15 * 1024 * 1024
 MAX_LONG_EDGE = 2600  # only downscale genuinely oversized phone photos
@@ -231,80 +231,143 @@ def extract_shaped_value(key, raw_val):
     return val
 
 
+def classify_line(line):
+    """Independently classify a single line: which field label (if any) it
+    declares, ignoring all other lines/fields."""
+    if not line:
+        return None
+    line_norm = norm_label(line)
+    sep_m = re.search(r'[:;]', line)
+    has_sep = sep_m is not None
+    label_norm = norm_label(line[:sep_m.start()]) if has_sep else line_norm
+    value = line[sep_m.end():].strip() if has_sep else ''
+
+    info = {
+        'raw': line,
+        'has_sep': has_sep,
+        'label_norm': label_norm,
+        'value': value,
+        'key': None,
+        'is_section_end': is_section_end(line_norm),
+        'is_separator_line': bool(SEP_RE.match(line)),
+    }
+
+    if info['is_section_end'] or info['is_separator_line'] or not has_sep:
+        return info
+
+    # "Mã khách hàng" (customer CODE) vs "Khách hàng" (customer NAME) —
+    # textually close enough to fool the fuzzy matcher; exclude explicitly.
+    if len(label_norm) >= 10 and (
+        'makhachhang' in label_norm
+        or difflib.SequenceMatcher(None, label_norm, 'makhachhang').ratio() >= 0.72
+    ):
+        info['key'] = 'EXCLUDE'
+        return info
+
+    key = find_label_key(label_norm)
+    if not key:
+        key = find_label_key_fallback(label_norm)
+    if not key and label_norm.endswith('don') and len(label_norm) <= 10:
+        key = 'soHoaDon'
+    if not key:
+        key = fuzzy_label_match(label_norm)
+    info['key'] = key
+    return info
+
+
+MAX_CONTINUATION_LINES = 3  # hard cap for khachHang/diaChi — a safety net so
+                            # a missed stop-marker can never let a multi-line
+                            # field run away and swallow unrelated content
+
+
+def extract_single(line_table, key):
+    """soHoaDon / maTraCuu / maSoThue: first line independently classified
+    as this key, anywhere in the document."""
+    for info in line_table:
+        if info and info.get('key') == key:
+            return extract_shaped_value(key, info['value'])
+    return ''
+
+
+def extract_amount(line_table):
+    for info in line_table:
+        if info and info.get('key') == 'soTien':
+            return parse_amount(info['value'])
+    return '', None
+
+
+def extract_ngay(line_table, full_text):
+    for info in line_table:
+        if info and info.get('key') == 'ngay':
+            dm = DATE_RE.search(info['value']) or DATE_RE.search(info['raw'])
+            if dm:
+                return f"{dm.group(1)} {dm.group(2)}" if dm.group(2) else dm.group(1)
+    # fallback: any bare date pattern in the whole text, independent of labels
+    dm = DATE_RE.search(full_text)
+    if dm:
+        return f"{dm.group(1)} {dm.group(2)}" if dm.group(2) else dm.group(1)
+    return ''
+
+
+def extract_multiline(line_table, key):
+    """khachHang / diaChi: find the labeled start line, then append
+    following lines only while none of them independently look like the
+    start of a DIFFERENT known field, a section-end, or a separator —
+    capped at MAX_CONTINUATION_LINES regardless, so a detection miss can
+    never cause runaway absorption of unrelated content (e.g. footer/link)."""
+    start = None
+    for idx, info in enumerate(line_table):
+        if info and info.get('key') == key:
+            start = idx
+            break
+    if start is None:
+        return ''
+
+    parts = [clean_trailing_noise(line_table[start]['value'])]
+    taken = 0
+    idx = start + 1
+    while idx < len(line_table) and taken < MAX_CONTINUATION_LINES:
+        info = line_table[idx]
+        if info is None:  # blank line ends the block
+            break
+        if info['is_section_end'] or info['is_separator_line']:
+            break
+        if info.get('key'):  # any other recognized field label -> stop
+            break
+        cleaned = clean_trailing_noise(info['raw'])
+        if cleaned:
+            parts.append(cleaned)
+        taken += 1
+        idx += 1
+
+    return ' '.join(p for p in parts if p).strip()
+
+
 def parse_fields(raw_text):
     text = (raw_text or '').replace('\r', '')
     lines = [l.strip() for l in text.split('\n')]
 
+    # OCR already ran once, fully, upstream — `text` is the complete cached
+    # result. Classify every line exactly once here; every field below then
+    # reads only from this shared table, independently of one another, so
+    # one field's misdetection can never cascade into another field.
+    line_table = [classify_line(l) if l else None for l in lines]
+
     result = {
-        'ngay': '', 'soHoaDon': '', 'maTraCuu': '', 'soTien': '',
-        'soTienRaw': '', 'maSoThue': '', 'khachHang': '', 'diaChi': '', 'link': '',
+        'ngay': extract_ngay(line_table, text),
+        'soHoaDon': extract_single(line_table, 'soHoaDon'),
+        'maTraCuu': extract_single(line_table, 'maTraCuu'),
+        'maSoThue': extract_single(line_table, 'maSoThue'),
+        'khachHang': extract_multiline(line_table, 'khachHang'),
+        'diaChi': extract_multiline(line_table, 'diaChi'),
+        'soTienRaw': '',
+        'soTien': '',
+        'link': '',
     }
-    current_multiline_key = None
 
-    for line in lines:
-        if not line:
-            current_multiline_key = None
-            continue
-        line_norm = norm_label(line)
-        if is_section_end(line_norm) or SEP_RE.match(line):
-            current_multiline_key = None
-            continue
-
-        sep_m = re.search(r'[:;]', line)
-        has_sep = sep_m is not None
-        label_norm = norm_label(line[:sep_m.start()]) if has_sep else line_norm
-
-        # "Mã khách hàng" (customer CODE) vs "Khách hàng" (customer NAME) —
-        # textually close enough to fool the fuzzy matcher; exclude explicitly.
-        if has_sep and len(label_norm) >= 10 and (
-            'makhachhang' in label_norm
-            or difflib.SequenceMatcher(None, label_norm, 'makhachhang').ratio() >= 0.72
-        ):
-            current_multiline_key = None
-            continue
-
-        key = find_label_key(label_norm)
-        if not key and has_sep:
-            key = find_label_key_fallback(label_norm)
-        if not key and has_sep and not result['soHoaDon'] and label_norm.endswith('don') and len(label_norm) <= 10:
-            key = 'soHoaDon'
-        if not key and has_sep:
-            fk = fuzzy_label_match(label_norm)
-            if fk and not result.get(fk):
-                key = fk
-
-        if key:
-            val = value_after_sep(line)
-            if key == 'soTien':
-                raw, number = parse_amount(val)
-                result['soTienRaw'] = raw
-                result['soTien'] = number if number is not None else ''
-            elif key in VALUE_SHAPE:
-                if not result[key]:
-                    result[key] = extract_shaped_value(key, val)
-            elif key in MULTILINE_KEYS:
-                cleaned = clean_trailing_noise(val)
-                result[key] = (result[key] + ' ' + cleaned).strip() if result[key] else cleaned
-            elif not result[key]:
-                result[key] = val
-            current_multiline_key = key if key in MULTILINE_KEYS else None
-            continue
-
-        if current_multiline_key:
-            cleaned = clean_trailing_noise(line)
-            if cleaned:
-                result[current_multiline_key] = (result[current_multiline_key] + ' ' + cleaned).strip()
-            continue
-
-        if not result['ngay']:
-            dm = DATE_RE.search(line)
-            if dm:
-                result['ngay'] = f"{dm.group(1)} {dm.group(2)}" if dm.group(2) else dm.group(1)
-
-    if not result['ngay']:
-        dm = DATE_RE.search(text)
-        if dm:
-            result['ngay'] = f"{dm.group(1)} {dm.group(2)}" if dm.group(2) else dm.group(1)
+    raw_amount, number = extract_amount(line_table)
+    result['soTienRaw'] = raw_amount
+    result['soTien'] = number if number is not None else ''
 
     um = URL_RE.search(text)
     if um:
