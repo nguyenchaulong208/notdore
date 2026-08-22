@@ -47,7 +47,7 @@ TESSDATA_DIR = os.path.join(VENDOR_DIR, 'tesseract', 'share', 'tessdata')
 # bump this on every meaningful change so the deployed version can be
 # confirmed at a glance (check the "version" field in the API response,
 # e.g. via DevTools Network tab) instead of guessing which file is live
-OCR_VERSION = '2026-08-22-v8-clean-code-and-text-layout'
+OCR_VERSION = '2026-08-22-v10-no-forced-code-correction'
 
 MAX_UPLOAD_BYTES = 15 * 1024 * 1024
 MAX_LONG_EDGE = 2600  # only downscale genuinely oversized phone photos
