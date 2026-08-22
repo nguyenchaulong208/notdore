@@ -33,7 +33,7 @@ import unicodedata
 import difflib
 import gc
 import logging
-from PIL import Image
+from PIL import Image, ImageOps, ImageEnhance, ImageFilter
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -47,7 +47,7 @@ TESSDATA_DIR = os.path.join(VENDOR_DIR, 'tesseract', 'share', 'tessdata')
 # bump this on every meaningful change so the deployed version can be
 # confirmed at a glance (check the "version" field in the API response,
 # e.g. via DevTools Network tab) instead of guessing which file is live
-OCR_VERSION = '2026-08-19-v4-independent-fields'
+OCR_VERSION = '2026-08-22-v5-multi-pass-image-enhancement'
 
 MAX_UPLOAD_BYTES = 15 * 1024 * 1024
 MAX_LONG_EDGE = 2600  # only downscale genuinely oversized phone photos
@@ -57,9 +57,8 @@ MAX_LONG_EDGE = 2600  # only downscale genuinely oversized phone photos
 # ------------------------------------------------------------------
 
 def preprocess_image(image_path):
-    """Only downscales oversized photos to cap processing time — no
-    grayscale/contrast enhancement (tested to sometimes hurt more than help
-    on real receipt photos at this resolution)."""
+    """Downscale only oversized photos.  OCR variants are created separately
+    in run_tesseract so the original image remains available as a fallback."""
     try:
         img = Image.open(image_path)
         if max(img.size) <= MAX_LONG_EDGE:
@@ -77,6 +76,87 @@ def preprocess_image(image_path):
         return image_path
 
 
+def _ocr_quality_score(text):
+    """Prefer OCR output that contains invoice labels and useful values.
+
+    Different layouts benefit from different Tesseract segmentation modes.
+    Scoring lets us keep the complete text from the best pass instead of
+    concatenating incompatible passes and duplicating fields.
+    """
+    normalized = strip_diacritics(text or '').lower()
+    compact = re.sub(r'[^a-z0-9]', '', normalized)
+    score = 0
+
+    expected_labels = (
+        ('sohoadon', 8),
+        ('matracuu', 8),
+        ('sotien', 7),
+        ('masothue', 7),
+        ('khachhang', 6),
+        ('tendonvi', 6),
+        ('diachi', 5),
+        ('ngay', 5),
+    )
+    for label, points in expected_labels:
+        if label in compact:
+            score += points
+
+    score += min(len(re.findall(r'\d{4,}', text or '')), 5)
+    score += min(len((text or '').splitlines()), 40) / 40
+    return score
+
+
+def _build_ocr_variants(image_path):
+    """Return (path, temporary) variants for difficult phone photographs."""
+    variants = [(image_path, False)]
+    enhanced_path = image_path + '_enhanced.png'
+
+    try:
+        img = Image.open(image_path)
+        if img.mode not in ('RGB', 'L'):
+            img = img.convert('RGB')
+
+        # Upscaling helps small thermal-printer glyphs.  Keep the long edge
+        # bounded because the request may contain a large phone photograph.
+        long_edge = max(img.size)
+        scale = 2.0 if long_edge < 2200 else 1.25
+        size = (max(1, int(img.width * scale)), max(1, int(img.height * scale)))
+        gray = ImageOps.grayscale(img.resize(size, Image.Resampling.LANCZOS))
+        gray = ImageOps.autocontrast(gray, cutoff=1)
+        gray = ImageEnhance.Contrast(gray).enhance(1.35)
+        gray = ImageEnhance.Sharpness(gray).enhance(1.5)
+        gray = gray.filter(ImageFilter.UnsharpMask(radius=1.2, percent=130, threshold=3))
+        gray.save(enhanced_path, 'PNG', optimize=True)
+        variants.append((enhanced_path, True))
+        del img, gray
+    except Exception as e:
+        logger.warning(f'Enhanced OCR variant failed: {e}')
+
+    return variants
+
+
+def _run_tesseract_pass(image_path, psm, env):
+    out_base = image_path + f'_out_{psm}'
+    result = subprocess.run(
+        [TESSERACT_BIN, image_path, out_base, '-l', 'vie+eng',
+         '--oem', '1', '--psm', str(psm)],
+        capture_output=True, text=True, timeout=25, env=env,
+    )
+    txt_path = out_base + '.txt'
+    try:
+        if result.returncode != 0:
+            raise RuntimeError(
+                f'tesseract exited {result.returncode}: {result.stderr.strip()}'
+            )
+        with open(txt_path, 'r', encoding='utf-8') as f:
+            return f.read()
+    finally:
+        try:
+            os.remove(txt_path)
+        except OSError:
+            pass
+
+
 def run_tesseract(image_path):
     env = os.environ.copy()
     env['LD_LIBRARY_PATH'] = TESSERACT_LIB + ':' + env.get('LD_LIBRARY_PATH', '')
@@ -86,22 +166,30 @@ def run_tesseract(image_path):
     except OSError:
         pass
 
-    out_base = image_path + '_out'
-    result = subprocess.run(
-        [TESSERACT_BIN, image_path, out_base, '-l', 'vie+eng', '--psm', '6'],
-        capture_output=True, text=True, timeout=25, env=env,
-    )
-    if result.returncode != 0:
-        raise RuntimeError(f'tesseract exited {result.returncode}: {result.stderr.strip()}')
-
-    txt_path = out_base + '.txt'
-    with open(txt_path, 'r', encoding='utf-8') as f:
-        text = f.read()
+    variants = _build_ocr_variants(image_path)
+    candidates = []
+    first_error = None
     try:
-        os.remove(txt_path)
-    except OSError:
-        pass
-    return text
+        # PSM 6 suits structured receipts; PSM 11 suits full-page invoices
+        # and layouts with larger gaps between text blocks.
+        for variant_path, _ in variants:
+            for psm in (6, 11):
+                try:
+                    text = _run_tesseract_pass(variant_path, psm, env)
+                    candidates.append((_ocr_quality_score(text), text))
+                except Exception as e:
+                    first_error = first_error or e
+
+        if not candidates:
+            raise first_error or RuntimeError('Tesseract returned no OCR text')
+        return max(candidates, key=lambda item: item[0])[1]
+    finally:
+        for variant_path, temporary in variants:
+            if temporary:
+                try:
+                    os.remove(variant_path)
+                except OSError:
+                    pass
 
 
 # ------------------------------------------------------------------
