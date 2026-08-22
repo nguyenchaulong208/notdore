@@ -47,7 +47,7 @@ TESSDATA_DIR = os.path.join(VENDOR_DIR, 'tesseract', 'share', 'tessdata')
 # bump this on every meaningful change so the deployed version can be
 # confirmed at a glance (check the "version" field in the API response,
 # e.g. via DevTools Network tab) instead of guessing which file is live
-OCR_VERSION = '2026-08-22-v7-accents-normalized-fields'
+OCR_VERSION = '2026-08-22-v8-clean-code-and-text-layout'
 
 MAX_UPLOAD_BYTES = 15 * 1024 * 1024
 MAX_LONG_EDGE = 2600  # only downscale genuinely oversized phone photos
@@ -239,7 +239,10 @@ SEP_RE = re.compile(r'^[.\-_·•\s]{3,}$')
 
 VALUE_SHAPE = {
     'soHoaDon': re.compile(r'\d{4,12}'),
-    'maTraCuu': re.compile(r'[A-Za-z0-9]{7,16}'),
+    # The provider lookup codes in the supplied receipts are 11 characters.
+    # Keep the first valid 11-character token so OCR noise after the code
+    # cannot be appended to the returned value.
+    'maTraCuu': re.compile(r'[A-Za-z0-9]{11}'),
     'maSoThue': re.compile(r'\d{10}(?:\d{3})?'),
 }
 
@@ -325,7 +328,13 @@ def extract_shaped_value(key, raw_val):
     pat = VALUE_SHAPE.get(key)
     if not pat:
         return raw_val
-    m = pat.search(raw_val)
+    candidate = raw_val or ''
+    if key == 'maTraCuu':
+        # Codes are sometimes spaced by OCR (for example "UWBO BQXZWM5").
+        # Remove whitespace before matching, but do not join arbitrary words
+        # because the value is read only from the labeled field line.
+        candidate = re.sub(r'\s+', '', candidate)
+    m = pat.search(candidate)
     val = m.group(0) if m else raw_val.strip()
     if key == 'maTraCuu':
         val = val.upper()
@@ -482,6 +491,27 @@ def parse_fields(raw_text):
     return result
 
 
+def tidy_ocr_text(raw_text):
+    """Make the cached OCR text readable without changing its line order.
+
+    Tesseract may emit non-breaking spaces, control characters, or a small
+    punctuation fragment at the beginning of a line.  Removing only those
+    formatting artifacts keeps the original words available for review and
+    avoids altering invoice values.
+    """
+    if not raw_text:
+        return ''
+    cleaned_lines = []
+    for raw_line in raw_text.replace('\r', '').split('\n'):
+        line = raw_line.replace('\xa0', ' ')
+        line = re.sub(r'[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]', '', line)
+        line = re.sub(r'[ \t]+', ' ', line).strip()
+        line = re.sub(r'^[`´’‘|\\~^]+(?:\s*[-:])?\s*', '', line)
+        if line:
+            cleaned_lines.append(line)
+    return '\n'.join(cleaned_lines)
+
+
 # ------------------------------------------------------------------
 # Vercel handler
 # ------------------------------------------------------------------
@@ -536,7 +566,7 @@ class handler(BaseHTTPRequestHandler):
             del image_bytes
 
             processed_path = preprocess_image(tmp_path)
-            text = run_tesseract(processed_path)
+            text = tidy_ocr_text(run_tesseract(processed_path))
             fields = parse_fields(text)
             self._send_json(200, {'text': text, 'fields': fields, 'version': OCR_VERSION})
         except subprocess.TimeoutExpired:
