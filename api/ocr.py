@@ -47,7 +47,7 @@ TESSDATA_DIR = os.path.join(VENDOR_DIR, 'tesseract', 'share', 'tessdata')
 # bump this on every meaningful change so the deployed version can be
 # confirmed at a glance (check the "version" field in the API response,
 # e.g. via DevTools Network tab) instead of guessing which file is live
-OCR_VERSION = '2026-08-22-v6-coherent-ocr-selection'
+OCR_VERSION = '2026-08-22-v7-accents-normalized-fields'
 
 MAX_UPLOAD_BYTES = 15 * 1024 * 1024
 MAX_LONG_EDGE = 2600  # only downscale genuinely oversized phone photos
@@ -445,7 +445,11 @@ def extract_multiline(line_table, key):
 
 
 def parse_fields(raw_text):
-    text = (raw_text or '').replace('\r', '')
+    # Parse on an accent-free copy.  The OCR engine can confuse Vietnamese
+    # diacritics with nearby glyphs; labels such as "Số hóa đơn" and "Địa
+    # chỉ" are much more stable when matching is done in one canonical form.
+    # The original OCR text is still returned by the API for manual review.
+    text = strip_diacritics((raw_text or '').replace('\r', ''))
     lines = [l.strip() for l in text.split('\n')]
 
     # OCR already ran once, fully, upstream — `text` is the complete cached
