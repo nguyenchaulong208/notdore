@@ -47,7 +47,7 @@ TESSDATA_DIR = os.path.join(VENDOR_DIR, 'tesseract', 'share', 'tessdata')
 # bump this on every meaningful change so the deployed version can be
 # confirmed at a glance (check the "version" field in the API response,
 # e.g. via DevTools Network tab) instead of guessing which file is live
-OCR_VERSION = '2026-08-22-v5-multi-pass-image-enhancement'
+OCR_VERSION = '2026-08-22-v7-accents-normalized-fields'
 
 MAX_UPLOAD_BYTES = 15 * 1024 * 1024
 MAX_LONG_EDGE = 2600  # only downscale genuinely oversized phone photos
@@ -76,7 +76,7 @@ def preprocess_image(image_path):
         return image_path
 
 
-def _ocr_quality_score(text):
+def _ocr_quality_score(text, psm):
     """Prefer OCR output that contains invoice labels and useful values.
 
     Different layouts benefit from different Tesseract segmentation modes.
@@ -102,7 +102,19 @@ def _ocr_quality_score(text):
             score += points
 
     score += min(len(re.findall(r'\d{4,}', text or '')), 5)
-    score += min(len((text or '').splitlines()), 40) / 40
+
+    # PSM 11 is useful for sparse layouts, but commonly returns a receipt as
+    # isolated fragments (one word per line).  PSM 6 preserves the natural
+    # rows on the sample receipts and should win unless PSM 11 is materially
+    # more complete.
+    lines = [line.strip() for line in (text or '').splitlines() if line.strip()]
+    short_lines = sum(len(line) <= 3 for line in lines)
+    if lines:
+        score += min(len(lines), 40) / 40
+        score -= min(short_lines * 0.35, 4)
+        score += min(sum(len(line) for line in lines) / 1000, 2)
+    if psm == 6:
+        score += 5
     return score
 
 
@@ -170,13 +182,14 @@ def run_tesseract(image_path):
     candidates = []
     first_error = None
     try:
-        # PSM 6 suits structured receipts; PSM 11 suits full-page invoices
-        # and layouts with larger gaps between text blocks.
+        # PSM 6 suits structured receipts and full-page invoices. PSM 11 is
+        # retained as a fallback for sparse layouts, but is penalized when it
+        # breaks a normal receipt into isolated lines.
         for variant_path, _ in variants:
-            for psm in (6, 11):
+            for psm in (6, 4, 11):
                 try:
                     text = _run_tesseract_pass(variant_path, psm, env)
-                    candidates.append((_ocr_quality_score(text), text))
+                    candidates.append((_ocr_quality_score(text, psm), text))
                 except Exception as e:
                     first_error = first_error or e
 
@@ -432,7 +445,11 @@ def extract_multiline(line_table, key):
 
 
 def parse_fields(raw_text):
-    text = (raw_text or '').replace('\r', '')
+    # Parse on an accent-free copy.  The OCR engine can confuse Vietnamese
+    # diacritics with nearby glyphs; labels such as "Số hóa đơn" and "Địa
+    # chỉ" are much more stable when matching is done in one canonical form.
+    # The original OCR text is still returned by the API for manual review.
+    text = strip_diacritics((raw_text or '').replace('\r', ''))
     lines = [l.strip() for l in text.split('\n')]
 
     # OCR already ran once, fully, upstream — `text` is the complete cached
