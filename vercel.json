@@ -23,5 +23,15 @@
         { "key": "Cache-Control", "value": "s-maxage=300, stale-while-revalidate=3600" }
       ]
     }
+  ],
+  "routes": [
+    {
+      "src": "/ads.txt",
+      "dest": "/ads.txt",
+      "headers": {
+        "Content-Type": "text/plain",
+        "Cache-Control": "public, max-age=0, must-revalidate"
+      }
+    }
   ]
 }
