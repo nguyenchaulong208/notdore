@@ -2,7 +2,6 @@
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
-<meta name="google-adsense-account" content="ca-pub-9767208027997083">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>OCR Phiếu Báo Tra Cứu Hóa Đơn | NotDore</title>
 
@@ -28,19 +27,34 @@
   #iocrPreviewTable td { vertical-align: middle; }
   .iocr-table-scroll { overflow-x: auto; overflow-y: hidden; }
   .iocr-table-scroll table { min-width: 1100px; }
+  .iocr-modal-backdrop {
+    position: fixed; inset: 0; background: rgba(15,23,42,.5);
+    display: flex; align-items: center; justify-content: center; z-index: 1050; padding: 16px;
+  }
+  .iocr-modal-card {
+    background: #fff; border-radius: 12px; padding: 24px; width: 100%; max-width: 440px;
+    box-shadow: 0 20px 50px rgba(0,0,0,.25);
+  }
 </style>
 </head>
 <body>
 
 <div class="iocr-wrap">
-  <div class="mb-4">
-    <h1 class="h3 fw-bold mb-1"><i class="fa fa-receipt me-2 text-primary"></i>OCR Phiếu Báo Tra Cứu Hóa Đơn</h1>
-    <p class="text-muted mb-0">
-      Tải lên ảnh chụp hoặc PDF phiếu báo tra cứu hóa đơn — công cụ tự động nhận diện
-      Ngày, Số hóa đơn, Mã tra cứu, Số tiền, Mã số thuế, Khách hàng, Địa chỉ, Link tra cứu,
-      cho phép sửa lại trước khi xuất bảng kê Excel.
-      OCR được xử lý trên máy chủ (Python + Tesseract) để tăng độ chính xác.
-    </p>
+  <div class="mb-4 d-flex justify-content-between align-items-start flex-wrap gap-2">
+    <div>
+      <h1 class="h3 fw-bold mb-1"><i class="fa fa-receipt me-2 text-primary"></i>OCR Phiếu Báo Tra Cứu Hóa Đơn</h1>
+      <p class="text-muted mb-0">
+        Tải lên ảnh chụp hoặc PDF phiếu báo tra cứu hóa đơn — công cụ tự động nhận diện
+        Ngày, Số hóa đơn, Mã tra cứu, Số tiền, Mã số thuế, Khách hàng, Địa chỉ, Link tra cứu,
+        cho phép sửa lại trước khi xuất bảng kê Excel.
+        PDF điện tử được đọc trực tiếp (không cần AI). Ảnh chụp được nhận diện bằng AI
+        (Gemini/DeepSeek) — gọi thẳng từ trình duyệt bằng API key miễn phí của chính bạn,
+        ảnh không gửi lên máy chủ NotDore.
+      </p>
+    </div>
+    <button id="iocrSettingsBtn" class="btn btn-outline-secondary flex-shrink-0" title="Chưa cấu hình API key AI — bấm để thiết lập">
+      <i class="fa fa-gear me-1"></i>Cài đặt AI
+    </button>
   </div>
 
   <!-- Upload -->
@@ -101,12 +115,52 @@
   </div>
 </div>
 
+<!-- Settings modal: AI provider + API key (stored only in this browser's localStorage) -->
+<div id="iocrSettingsBackdrop" class="iocr-modal-backdrop d-none">
+  <div class="iocr-modal-card">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h2 class="h5 fw-bold mb-0">Cài đặt AI nhận diện ảnh</h2>
+      <button id="iocrSettingsCloseBtn" class="btn-close" aria-label="Đóng"></button>
+    </div>
+    <p class="text-muted small">
+      Cần API key <strong>miễn phí</strong> của riêng bạn để nhận diện ảnh chụp bằng AI.
+      Key chỉ lưu trong trình duyệt này (localStorage) — không gửi lên máy chủ NotDore,
+      chỉ dùng để gọi thẳng tới nhà cung cấp AI bạn chọn bên dưới.
+    </p>
+    <div class="mb-3">
+      <label class="form-label small fw-semibold">Nhà cung cấp</label>
+      <select id="iocrSettingsProvider" class="form-select">
+        <option value="gemini">Google Gemini (khuyến nghị)</option>
+        <option value="deepseek">DeepSeek (vision — đang thử nghiệm)</option>
+      </select>
+    </div>
+    <div class="mb-2">
+      <label class="form-label small fw-semibold">API key</label>
+      <input id="iocrSettingsApiKey" type="password" class="form-control" placeholder="Dán API key vào đây">
+    </div>
+    <p class="small mb-3">
+      Chưa có key? <a id="iocrSettingsHelpLink" href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">Lấy key miễn phí tại đây</a> (không cần thẻ tín dụng).
+    </p>
+    <div id="iocrSettingsStatus" class="small text-success mb-2"></div>
+    <div class="d-flex gap-2">
+      <button id="iocrSettingsSaveBtn" class="btn btn-primary flex-grow-1"><i class="fa fa-check me-1"></i>Lưu</button>
+      <button id="iocrSettingsClearBtn" class="btn btn-outline-danger"><i class="fa fa-trash me-1"></i>Xóa key</button>
+    </div>
+  </div>
+</div>
+
 <!-- CDN libs (jsdelivr — confirmed reliable CDN for worker/module contexts in this project) -->
-<!-- pdf.js: still needed client-side to render PDF pages to PNG before sending to the OCR backend -->
+<!-- pdf.js: renders scanned PDF pages to PNG for AI vision, and reads the
+     text layer directly for real digital PDFs (no AI call needed for those) -->
 <script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
-<!-- App module (OCR + field parsing now happen server-side in api/ocr.py) -->
+<!-- App modules — fully client-side, no backend: -->
+<!-- VAT invoice PDF text-layer parser (regex, no AI) -->
+<script src="assets/js/invoice-ocr-vat-parser.js"></script>
+<!-- Vision AI caller (Gemini/DeepSeek, direct from browser, user's own key) -->
+<script src="assets/js/invoice-ocr-vision.js"></script>
+<!-- UI orchestration -->
 <script src="assets/js/invoice-ocr-app.js"></script>
 
 </body>
