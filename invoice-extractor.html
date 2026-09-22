@@ -26,6 +26,8 @@
 <div class="container py-4">
   <h4 class="mb-3"><i class="fa-solid fa-file-invoice text-primary"></i> Trích xuất Hóa đơn/Biên lai (PDF) qua LM Studio</h4>
 
+  <div id="libWarning" class="alert alert-danger d-none"></div>
+
   <div class="card">
     <div class="card-body">
       <h6 class="fw-bold mb-3">1. Cấu hình LM Studio</h6>
@@ -104,7 +106,20 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
-pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.worker.min.js";
+// --- Library availability check (runs first, never throws, so UI wiring below always runs) ---
+const missingLibs = [];
+if (typeof pdfjsLib === 'undefined') missingLibs.push('pdf.js (đọc PDF)');
+if (typeof XLSX === 'undefined') missingLibs.push('SheetJS (xuất Excel)');
+if (missingLibs.length){
+  const w = document.getElementById('libWarning');
+  w.classList.remove('d-none');
+  w.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> Không tải được thư viện: <b>${missingLibs.join(', ')}</b>. ` +
+    `Nguyên nhân thường gặp: mạng đang chặn CDN (cdnjs.cloudflare.com / cdn.jsdelivr.net) — do proxy công ty, tường lửa, hoặc không có internet lúc mở file. ` +
+    `Hãy kiểm tra kết nối internet rồi tải lại trang (F5). Các nút bấm sẽ không hoạt động cho tới khi thư viện tải được.`;
+} else {
+  try { pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.worker.min.js"; }
+  catch(e){ console.error('pdfjsLib worker setup failed:', e); }
+}
 
 let selectedFiles = []; // {file, id}
 let results = []; // flattened row objects
