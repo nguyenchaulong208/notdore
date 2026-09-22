@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Trích xuất Hóa đơn/Biên lai qua LM Studio</title>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.1/css/all.min.css">
 <style>
   body{background:#f4f6f9;padding-bottom:60px}
   .card{border:none;border-radius:12px;box-shadow:0 2px 10px rgba(0,0,0,.06);margin-bottom:18px}
@@ -103,7 +103,7 @@
   </div>
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 // --- Library availability check (runs first, never throws, so UI wiring below always runs) ---
@@ -117,7 +117,7 @@ if (missingLibs.length){
     `Nguyên nhân thường gặp: mạng đang chặn CDN (cdnjs.cloudflare.com / cdn.jsdelivr.net) — do proxy công ty, tường lửa, hoặc không có internet lúc mở file. ` +
     `Hãy kiểm tra kết nối internet rồi tải lại trang (F5). Các nút bấm sẽ không hoạt động cho tới khi thư viện tải được.`;
 } else {
-  try { pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.worker.min.js"; }
+  try { pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js"; }
   catch(e){ console.error('pdfjsLib worker setup failed:', e); }
 }
 
