@@ -41,6 +41,7 @@
             <button class="btn btn-outline-secondary" id="loadModelsBtn" title="Tải danh sách model"><i class="fa-solid fa-rotate"></i></button>
           </div>
           <input id="modelInput" class="form-control form-control-sm mt-1" placeholder="hoặc gõ tên model thủ công">
+          <div id="modelStatus" class="small mt-1"></div>
         </div>
         <div class="col-md-2">
           <label class="form-label small">Số file / lô</label>
@@ -156,19 +157,37 @@ function renderFileList(){
   processBtn.disabled = selectedFiles.length === 0;
 }
 
+const modelStatus = document.getElementById('modelStatus');
+
 loadModelsBtn.onclick = async () => {
+  modelStatus.className = 'small mt-1 text-muted';
+  modelStatus.textContent = 'Đang tải...';
+  const base = document.getElementById('baseUrl').value.replace(/\/$/, '');
   try {
-    const base = document.getElementById('baseUrl').value.replace(/\/$/, '');
     const res = await fetch(`${base}/models`);
+    if (!res.ok) {
+      const body = await res.text().catch(() => '');
+      throw new Error(`HTTP ${res.status} ${res.statusText} ${body ? '- ' + body.slice(0,200) : ''}`);
+    }
     const data = await res.json();
+    const list = data.data || [];
     modelSelect.innerHTML = '<option value="">-- chọn model --</option>';
-    (data.data || []).forEach(m => {
+    list.forEach(m => {
       const opt = document.createElement('option');
       opt.value = m.id; opt.textContent = m.id;
       modelSelect.appendChild(opt);
     });
+    if (list.length === 0) {
+      modelStatus.className = 'small mt-1 text-warning';
+      modelStatus.textContent = 'Kết nối OK nhưng LM Studio chưa load model nào (Load một model trong tab Local Server rồi tải lại).';
+    } else {
+      modelStatus.className = 'small mt-1 text-success';
+      modelStatus.textContent = `Đã tải ${list.length} model.`;
+    }
   } catch(err){
-    alert('Không tải được danh sách model. Kiểm tra Local Server của LM Studio đang bật và Base URL đúng.\n' + err.message);
+    modelStatus.className = 'small mt-1 text-danger';
+    modelStatus.textContent = 'Lỗi: ' + err.message + ' — Kiểm tra: (1) Local Server trong LM Studio đang bật (đèn xanh), (2) đã Load một model, (3) mục Settings > "Enable CORS" trong LM Studio đang bật, (4) Base URL đúng cổng (mặc định 1234).';
+    console.error('loadModels error:', err);
   }
 };
 
