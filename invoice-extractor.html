@@ -46,15 +46,23 @@
           <div id="modelStatus" class="small mt-1"></div>
         </div>
         <div class="col-md-2">
-          <label class="form-label small">Số file / lô</label>
-          <input id="batchSize" type="number" min="1" max="5" value="5" class="form-control form-control-sm">
+          <label class="form-label small">Số file / lô (tối đa)</label>
+          <input id="batchSize" type="number" min="1" max="10" value="5" class="form-control form-control-sm">
         </div>
         <div class="col-md-2">
           <label class="form-label small">Timeout (giây)</label>
-          <input id="timeoutSec" type="number" min="30" value="120" class="form-control form-control-sm">
+          <input id="timeoutSec" type="number" min="30" value="180" class="form-control form-control-sm">
+        </div>
+        <div class="col-md-2">
+          <label class="form-label small">Ký tự tối đa/lô</label>
+          <input id="maxChars" type="number" min="1000" step="500" value="6000" class="form-control form-control-sm">
+        </div>
+        <div class="col-md-2">
+          <label class="form-label small">Số luồng song song</label>
+          <input id="concurrency" type="number" min="1" max="6" value="2" class="form-control form-control-sm">
         </div>
       </div>
-      <div class="form-text mt-2">LM Studio phải đang bật "Local Server" và cho phép CORS. Việc chia lô (mặc định 5 file) giúp tránh giới hạn ngữ cảnh khi gửi nhiều file cùng lúc — công cụ sẽ tự động gửi tuần tự nhiều lô cho đến khi xử lý hết toàn bộ danh sách.</div>
+      <div class="form-text mt-2">Công cụ tự chia lô theo <b>cả</b> số file lẫn tổng số ký tự (tránh vượt ngữ cảnh model). Nếu 1 lô trả kết quả lỗi/thiếu, công cụ tự động chia đôi và gửi lại đến khi xử lý được từng file — đảm bảo không bỏ sót. Tăng "số luồng song song" để xử lý nhiều lô cùng lúc (nếu LM Studio của bạn xử lý được request đồng thời); để 1 nếu máy yếu hoặc muốn ổn định tuyệt đối.</div>
     </div>
   </div>
 
@@ -209,13 +217,56 @@ loadModelsBtn.onclick = async () => {
 async function extractPdfText(file){
   const buf = await file.arrayBuffer();
   const pdf = await pdfjsLib.getDocument({data: buf}).promise;
-  let text = '';
-  for (let i = 1; i <= pdf.numPages; i++){
-    const page = await pdf.getPage(i);
+  let fullText = '';
+  for (let p = 1; p <= pdf.numPages; p++){
+    const page = await pdf.getPage(p);
     const content = await page.getTextContent();
-    text += content.items.map(it => it.str).join(' ') + '\n';
+    const items = content.items
+      .map(it => ({str: it.str, x: it.transform[4], y: it.transform[5]}))
+      .filter(it => it.str.trim() !== '');
+    // Sắp xếp lại theo đúng thứ tự đọc: trên->dưới, trái->phải (pdf.js không đảm bảo thứ tự này)
+    items.sort((a, b) => b.y - a.y || a.x - b.x);
+    const TOL = 3; // dung sai gộp cùng 1 dòng (pt)
+    const lines = [];
+    let curLine = [], curY = null;
+    items.forEach(it => {
+      if (curY === null || Math.abs(it.y - curY) <= TOL){
+        curLine.push(it);
+        if (curY === null) curY = it.y;
+      } else {
+        lines.push(curLine.sort((a,b) => a.x - b.x));
+        curLine = [it]; curY = it.y;
+      }
+    });
+    if (curLine.length) lines.push(curLine.sort((a,b) => a.x - b.x));
+    fullText += lines.map(line => line.map(w => w.str).join(' ')).join('\n') + '\n';
   }
-  return text.trim();
+  return fullText.trim();
+}
+
+function buildDynamicBatches(items, maxCount, maxChars){
+  const batches = [];
+  let cur = [], curChars = 0;
+  items.forEach(sf => {
+    const len = sf.text.length;
+    if (cur.length > 0 && (cur.length >= maxCount || curChars + len > maxChars)){
+      batches.push(cur); cur = []; curChars = 0;
+    }
+    cur.push(sf); curChars += len;
+  });
+  if (cur.length) batches.push(cur);
+  return batches;
+}
+
+async function runPool(items, limit, worker){
+  let idx = 0;
+  const runners = new Array(Math.min(limit, items.length) || 1).fill(0).map(async () => {
+    while (idx < items.length){
+      const cur = items[idx++];
+      await worker(cur);
+    }
+  });
+  await Promise.all(runners);
 }
 
 function chunk(arr, size){
@@ -251,11 +302,12 @@ function buildUserPrompt(items){
   return items.map((it, idx) => `--- FILE ${idx + 1}: ${it.name} ---\n${it.text}\n`).join('\n');
 }
 
-async function callLMStudio(userPrompt){
+async function callLMStudio(userPrompt, batchLen){
   const base = document.getElementById('baseUrl').value.replace(/\/$/, '');
   const model = modelInput.value.trim() || modelSelect.value;
   if (!model) throw new Error('Chưa chọn model.');
-  const timeoutMs = (parseInt(document.getElementById('timeoutSec').value) || 120) * 1000;
+  const timeoutMs = (parseInt(document.getElementById('timeoutSec').value) || 180) * 1000;
+  const maxTokens = Math.min(8000, 500 + (batchLen || 1) * 700); // đủ lớn để JSON không bị cắt cụt
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
   try {
@@ -266,15 +318,20 @@ async function callLMStudio(userPrompt){
       body: JSON.stringify({
         model,
         temperature: 0,
+        max_tokens: maxTokens,
         messages: [
           {role: 'system', content: SYSTEM_PROMPT},
           {role: 'user', content: userPrompt}
         ]
       })
     });
-    if (!res.ok) throw new Error(`HTTP ${res.status}: ${await res.text()}`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}: ${(await res.text()).slice(0,300)}`);
     const data = await res.json();
-    return data.choices?.[0]?.message?.content || '';
+    const choice = data.choices?.[0];
+    const finishReason = choice?.finish_reason;
+    const content = choice?.message?.content || '';
+    if (finishReason === 'length') throw new Error('Phản hồi bị cắt do chạm giới hạn token — sẽ tự chia nhỏ lô và thử lại.');
+    return content;
   } finally {
     clearTimeout(timer);
   }
@@ -299,52 +356,94 @@ function updateProgress(done, total, msg){
   progressText.textContent = msg || '';
 }
 
+let resultsMap = new Map(); // sf.id -> record row
+
+function setResult(sf, rec, errorMsg){
+  resultsMap.set(sf.id, {file_name: sf.file.name, ...rec, _error: errorMsg || ''});
+}
+
+function refreshResultsFromMap(){
+  results = selectedFiles.filter(sf => resultsMap.has(sf.id)).map(sf => resultsMap.get(sf.id));
+  renderResults();
+}
+
+// Xử lý 1 nhóm file: nếu model trả thiếu/lỗi/sai số lượng, tự chia đôi và gửi lại
+// (đệ quy tới khi còn 1 file/lần gọi) để đảm bảo không bỏ sót dữ liệu.
+async function processFileGroup(group){
+  try {
+    const userPrompt = buildUserPrompt(group.map(sf => ({name: sf.file.name, text: sf.text})));
+    const raw = await callLMStudio(userPrompt, group.length);
+    const parsed = parseModelJson(raw);
+    const arr = Array.isArray(parsed) ? parsed : [parsed];
+    if (arr.length !== group.length){
+      throw new Error(`Model trả về ${arr.length} kết quả cho ${group.length} file đã gửi.`);
+    }
+    group.forEach((sf, i) => {
+      const rec = arr.find(r => r.file_index === i + 1) || arr[i] || {};
+      setResult(sf, rec, '');
+      sf.status = 'ok'; sf.note = '';
+    });
+  } catch(err){
+    if (group.length === 1){
+      const sf = group[0];
+      setResult(sf, {}, err.message);
+      sf.status = 'err'; sf.note = err.message;
+    } else {
+      const mid = Math.ceil(group.length / 2);
+      await processFileGroup(group.slice(0, mid));
+      await processFileGroup(group.slice(mid));
+    }
+  }
+  renderFileList();
+  refreshResultsFromMap();
+}
+
 processBtn.onclick = async () => {
   processBtn.disabled = true;
+  exportBtn.disabled = true;
+  resultsMap = new Map();
   results = [];
   resultsBody.innerHTML = '';
-  const batchSize = Math.min(Math.max(parseInt(document.getElementById('batchSize').value) || 5, 1), 5);
-  const batches = chunk(selectedFiles, batchSize);
-  let doneCount = 0;
+  selectedFiles.forEach(sf => { sf.status = 'pending'; sf.note = ''; sf.text = ''; });
+  renderFileList();
 
-  for (let b = 0; b < batches.length; b++){
-    const batch = batches[b];
-    batch.forEach(sf => { sf.status = 'busy'; sf.note = ''; });
-    renderFileList();
-    updateProgress(doneCount, selectedFiles.length, `Đang xử lý lô ${b + 1}/${batches.length} (${batch.length} file)...`);
+  const batchSizeMax = Math.min(Math.max(parseInt(document.getElementById('batchSize').value) || 5, 1), 10);
+  const maxChars = Math.max(parseInt(document.getElementById('maxChars').value) || 6000, 1000);
+  const concurrency = Math.min(Math.max(parseInt(document.getElementById('concurrency').value) || 1, 1), 6);
 
+  // Bước 1: đọc text tất cả PDF trước (song song), cache vào sf.text
+  let readDone = 0;
+  updateProgress(0, selectedFiles.length, 'Đang đọc nội dung PDF...');
+  await runPool(selectedFiles, Math.max(concurrency, 3), async (sf) => {
     try {
-      const items = [];
-      for (const sf of batch){
-        const text = await extractPdfText(sf.file);
-        items.push({name: sf.file.name, text});
-      }
-      const userPrompt = buildUserPrompt(items);
-      const raw = await callLMStudio(userPrompt);
-      const parsed = parseModelJson(raw);
-      const arr = Array.isArray(parsed) ? parsed : [parsed];
-
-      batch.forEach((sf, i) => {
-        const rec = arr.find(r => r.file_index === i + 1) || arr[i] || {};
-        results.push({file_name: sf.file.name, ...rec, _error: ''});
-        sf.status = 'ok';
-      });
+      sf.text = await extractPdfText(sf.file);
+      if (!sf.text) throw new Error('File PDF không có lớp text (có thể là ảnh scan) — cần OCR riêng.');
     } catch(err){
-      batch.forEach(sf => {
-        results.push({file_name: sf.file.name, _error: err.message});
-        sf.status = 'err';
-        sf.note = err.message;
-      });
+      sf.status = 'err'; sf.note = 'Lỗi đọc PDF: ' + err.message;
+      setResult(sf, {}, sf.note);
     }
-    doneCount += batch.length;
+    readDone++;
+    updateProgress(readDone, selectedFiles.length, `Đang đọc PDF... ${readDone}/${selectedFiles.length}`);
     renderFileList();
-    renderResults();
-    updateProgress(doneCount, selectedFiles.length, `Đã xử lý ${doneCount}/${selectedFiles.length} file`);
-  }
+  });
+  refreshResultsFromMap();
+
+  // Bước 2: chia lô động theo cả số file lẫn tổng ký tự, rồi gửi song song tới LM Studio
+  const toProcess = selectedFiles.filter(sf => sf.status !== 'err');
+  const batches = buildDynamicBatches(toProcess, batchSizeMax, maxChars);
+  updateProgress(readDone - toProcess.length, selectedFiles.length, `Đang gửi ${batches.length} lô tới LM Studio (song song ${concurrency})...`);
+
+  await runPool(batches, concurrency, async (batch) => {
+    batch.forEach(sf => { sf.status = 'busy'; });
+    renderFileList();
+    await processFileGroup(batch);
+    const done = selectedFiles.filter(sf => sf.status === 'ok' || sf.status === 'err').length;
+    updateProgress(done, selectedFiles.length, `Đã xử lý ${done}/${selectedFiles.length} file`);
+  });
 
   updateProgress(selectedFiles.length, selectedFiles.length, 'Hoàn tất.');
   processBtn.disabled = false;
-  exportBtn.disabled = results.length === 0;
+  exportBtn.disabled = resultsMap.size === 0;
 };
 
 function renderResults(){
