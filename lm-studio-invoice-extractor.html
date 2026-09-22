@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Trích xuất Hóa đơn/Biên lai qua LM Studio</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+  body{background:#f4f6f9;padding-bottom:60px}
+  .card{border:none;border-radius:12px;box-shadow:0 2px 10px rgba(0,0,0,.06);margin-bottom:18px}
+  #fileList{max-height:260px;overflow-y:auto}
+  .file-row{display:flex;align-items:center;justify-content:space-between;padding:6px 10px;border-bottom:1px solid #eee;font-size:.9rem}
+  .file-row.ok{color:#198754}
+  .file-row.err{color:#dc3545}
+  .file-row.pending{color:#6c757d}
+  .file-row.busy{color:#fd7e14}
+  #resultsWrap{overflow-x:auto;overflow-y:hidden}
+  #resultsTable{min-width:1400px;font-size:.85rem}
+  #resultsTable td,#resultsTable th{white-space:nowrap}
+  .progress{height:22px}
+  .badge-src{cursor:pointer}
+</style>
+</head>
+<body>
+<div class="container py-4">
+  <h4 class="mb-3"><i class="fa-solid fa-file-invoice text-primary"></i> Trích xuất Hóa đơn/Biên lai (PDF) qua LM Studio</h4>
+
+  <div class="card">
+    <div class="card-body">
+      <h6 class="fw-bold mb-3">1. Cấu hình LM Studio</h6>
+      <div class="row g-2">
+        <div class="col-md-4">
+          <label class="form-label small">Base URL</label>
+          <input id="baseUrl" class="form-control form-control-sm" value="http://localhost:1234/v1">
+        </div>
+        <div class="col-md-4">
+          <label class="form-label small">Model</label>
+          <div class="input-group input-group-sm">
+            <select id="modelSelect" class="form-select form-select-sm"><option value="">-- chọn hoặc gõ tay --</option></select>
+            <button class="btn btn-outline-secondary" id="loadModelsBtn" title="Tải danh sách model"><i class="fa-solid fa-rotate"></i></button>
+          </div>
+          <input id="modelInput" class="form-control form-control-sm mt-1" placeholder="hoặc gõ tên model thủ công">
+        </div>
+        <div class="col-md-2">
+          <label class="form-label small">Số file / lô</label>
+          <input id="batchSize" type="number" min="1" max="5" value="5" class="form-control form-control-sm">
+        </div>
+        <div class="col-md-2">
+          <label class="form-label small">Timeout (giây)</label>
+          <input id="timeoutSec" type="number" min="30" value="120" class="form-control form-control-sm">
+        </div>
+      </div>
+      <div class="form-text mt-2">LM Studio phải đang bật "Local Server" và cho phép CORS. Việc chia lô (mặc định 5 file) giúp tránh giới hạn ngữ cảnh khi gửi nhiều file cùng lúc — công cụ sẽ tự động gửi tuần tự nhiều lô cho đến khi xử lý hết toàn bộ danh sách.</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-body">
+      <h6 class="fw-bold mb-3">2. Chọn file PDF (có thể bấm "Thêm file" nhiều lần để gom từ nhiều thư mục khác nhau)</h6>
+      <div class="d-flex gap-2 mb-2">
+        <input type="file" id="fileInput" accept="application/pdf" multiple class="d-none">
+        <button class="btn btn-sm btn-outline-primary" id="addFilesBtn"><i class="fa-solid fa-plus"></i> Thêm file</button>
+        <button class="btn btn-sm btn-outline-danger" id="clearFilesBtn"><i class="fa-solid fa-trash"></i> Xóa danh sách</button>
+        <span class="ms-auto align-self-center small text-muted" id="fileCount">0 file đã chọn</span>
+      </div>
+      <div id="fileList" class="border rounded"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-body">
+      <div class="d-flex align-items-center gap-2 mb-2">
+        <button class="btn btn-primary" id="processBtn" disabled><i class="fa-solid fa-play"></i> Bắt đầu xử lý</button>
+        <button class="btn btn-success" id="exportBtn" disabled><i class="fa-solid fa-file-excel"></i> Xuất Excel</button>
+        <span id="progressText" class="small text-muted ms-2"></span>
+      </div>
+      <div class="progress d-none" id="progressWrap">
+        <div class="progress-bar" id="progressBar" style="width:0%">0%</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-body">
+      <h6 class="fw-bold mb-3">3. Kết quả (<span id="resultCount">0</span> hóa đơn/biên lai)</h6>
+      <div id="resultsWrap">
+        <table class="table table-sm table-bordered table-striped" id="resultsTable">
+          <thead class="table-light">
+            <tr>
+              <th>#</th><th>File nguồn</th><th>Loại</th><th>Ký hiệu</th><th>Số HĐ</th><th>Ngày</th>
+              <th>Đơn vị bán</th><th>MST bán</th><th>Đơn vị mua</th><th>MST mua</th>
+              <th>Nội dung</th><th>Tiền trước thuế</th><th>Thuế suất</th><th>Tiền thuế</th><th>Tổng tiền</th><th>HTTT</th><th>Ghi chú/Lỗi</th>
+            </tr>
+          </thead>
+          <tbody id="resultsBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script>
+pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.worker.min.js";
+
+let selectedFiles = []; // {file, id}
+let results = []; // flattened row objects
+let fileIdCounter = 0;
+
+const fileInput = document.getElementById('fileInput');
+const addFilesBtn = document.getElementById('addFilesBtn');
+const clearFilesBtn = document.getElementById('clearFilesBtn');
+const fileListEl = document.getElementById('fileList');
+const fileCountEl = document.getElementById('fileCount');
+const processBtn = document.getElementById('processBtn');
+const exportBtn = document.getElementById('exportBtn');
+const progressWrap = document.getElementById('progressWrap');
+const progressBar = document.getElementById('progressBar');
+const progressText = document.getElementById('progressText');
+const resultsBody = document.getElementById('resultsBody');
+const resultCountEl = document.getElementById('resultCount');
+const loadModelsBtn = document.getElementById('loadModelsBtn');
+const modelSelect = document.getElementById('modelSelect');
+const modelInput = document.getElementById('modelInput');
+
+addFilesBtn.onclick = () => fileInput.click();
+
+fileInput.onchange = (e) => {
+  const incoming = Array.from(e.target.files);
+  incoming.forEach(f => {
+    const dup = selectedFiles.some(sf => sf.file.name === f.name && sf.file.size === f.size);
+    if (!dup) selectedFiles.push({file: f, id: ++fileIdCounter, status: 'pending', note: ''});
+  });
+  fileInput.value = '';
+  renderFileList();
+};
+
+clearFilesBtn.onclick = () => { selectedFiles = []; renderFileList(); };
+
+function renderFileList(){
+  fileListEl.innerHTML = '';
+  selectedFiles.forEach(sf => {
+    const row = document.createElement('div');
+    row.className = 'file-row ' + sf.status;
+    const icon = sf.status === 'ok' ? 'fa-check' : sf.status === 'err' ? 'fa-xmark' : sf.status === 'busy' ? 'fa-spinner fa-spin' : 'fa-clock';
+    row.innerHTML = `<span><i class="fa-solid ${icon}"></i> ${sf.file.name} <small class="text-muted">(${(sf.file.size/1024).toFixed(0)} KB)</small></span>
+      <span>${sf.note ? '<small>'+sf.note+'</small> ' : ''}<button class="btn btn-sm btn-link text-danger p-0 remove-btn" data-id="${sf.id}"><i class="fa-solid fa-trash-can"></i></button></span>`;
+    fileListEl.appendChild(row);
+  });
+  fileListEl.querySelectorAll('.remove-btn').forEach(btn => {
+    btn.onclick = () => { selectedFiles = selectedFiles.filter(sf => sf.id != btn.dataset.id); renderFileList(); };
+  });
+  fileCountEl.textContent = `${selectedFiles.length} file đã chọn`;
+  processBtn.disabled = selectedFiles.length === 0;
+}
+
+loadModelsBtn.onclick = async () => {
+  try {
+    const base = document.getElementById('baseUrl').value.replace(/\/$/, '');
+    const res = await fetch(`${base}/models`);
+    const data = await res.json();
+    modelSelect.innerHTML = '<option value="">-- chọn model --</option>';
+    (data.data || []).forEach(m => {
+      const opt = document.createElement('option');
+      opt.value = m.id; opt.textContent = m.id;
+      modelSelect.appendChild(opt);
+    });
+  } catch(err){
+    alert('Không tải được danh sách model. Kiểm tra Local Server của LM Studio đang bật và Base URL đúng.\n' + err.message);
+  }
+};
+
+async function extractPdfText(file){
+  const buf = await file.arrayBuffer();
+  const pdf = await pdfjsLib.getDocument({data: buf}).promise;
+  let text = '';
+  for (let i = 1; i <= pdf.numPages; i++){
+    const page = await pdf.getPage(i);
+    const content = await page.getTextContent();
+    text += content.items.map(it => it.str).join(' ') + '\n';
+  }
+  return text.trim();
+}
+
+function chunk(arr, size){
+  const out = [];
+  for (let i = 0; i < arr.length; i += size) out.push(arr.slice(i, i + size));
+  return out;
+}
+
+const SYSTEM_PROMPT = `Bạn là trợ lý trích xuất dữ liệu từ hóa đơn/biên lai điện tử Việt Nam (VAT invoice, biên lai thu phí, phiếu thu...).
+Với mỗi tài liệu được cung cấp (đã được đánh số theo thứ tự file), hãy trả về MỘT đối tượng JSON trong một mảng JSON duy nhất, đúng thứ tự file đưa vào.
+Chỉ trả về JSON hợp lệ, KHÔNG có markdown, KHÔNG có giải thích, KHÔNG có \`\`\`.
+Schema mỗi đối tượng:
+{
+ "file_index": number (số thứ tự file, bắt đầu từ 1),
+ "loai_chung_tu": string (vd: "Hóa đơn GTGT", "Biên lai thu phí"),
+ "ky_hieu": string|null,
+ "so": string|null,
+ "ngay": string|null (định dạng dd/mm/yyyy),
+ "don_vi_ban": string|null,
+ "mst_ban": string|null,
+ "don_vi_mua": string|null,
+ "mst_mua": string|null,
+ "noi_dung": string|null (tóm tắt ngắn gọn hàng hóa/dịch vụ, nếu nhiều dòng thì nối bằng dấu ";"),
+ "tien_truoc_thue": number|null (số nguyên, không dấu phân cách),
+ "thue_suat": string|null (vd: "8%"),
+ "tien_thue": number|null (số nguyên),
+ "tong_tien": number|null (số nguyên),
+ "hinh_thuc_tt": string|null
+}
+Nếu tài liệu không có trường nào thì để null. Không được bỏ sót file nào, số phần tử JSON phải bằng số file được cung cấp.`;
+
+function buildUserPrompt(items){
+  return items.map((it, idx) => `--- FILE ${idx + 1}: ${it.name} ---\n${it.text}\n`).join('\n');
+}
+
+async function callLMStudio(userPrompt){
+  const base = document.getElementById('baseUrl').value.replace(/\/$/, '');
+  const model = modelInput.value.trim() || modelSelect.value;
+  if (!model) throw new Error('Chưa chọn model.');
+  const timeoutMs = (parseInt(document.getElementById('timeoutSec').value) || 120) * 1000;
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const res = await fetch(`${base}/chat/completions`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      signal: controller.signal,
+      body: JSON.stringify({
+        model,
+        temperature: 0,
+        messages: [
+          {role: 'system', content: SYSTEM_PROMPT},
+          {role: 'user', content: userPrompt}
+        ]
+      })
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}: ${await res.text()}`);
+    const data = await res.json();
+    return data.choices?.[0]?.message?.content || '';
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+function parseModelJson(raw){
+  let cleaned = raw.trim().replace(/^```json/i, '').replace(/^```/, '').replace(/```$/, '').trim();
+  try { return JSON.parse(cleaned); } catch(e) {}
+  const start = cleaned.indexOf('[');
+  const end = cleaned.lastIndexOf(']');
+  if (start !== -1 && end !== -1) {
+    try { return JSON.parse(cleaned.slice(start, end + 1)); } catch(e) {}
+  }
+  throw new Error('Không phân tích được JSON trả về từ model.');
+}
+
+function updateProgress(done, total, msg){
+  progressWrap.classList.remove('d-none');
+  const pct = total ? Math.round((done / total) * 100) : 0;
+  progressBar.style.width = pct + '%';
+  progressBar.textContent = pct + '%';
+  progressText.textContent = msg || '';
+}
+
+processBtn.onclick = async () => {
+  processBtn.disabled = true;
+  results = [];
+  resultsBody.innerHTML = '';
+  const batchSize = Math.min(Math.max(parseInt(document.getElementById('batchSize').value) || 5, 1), 5);
+  const batches = chunk(selectedFiles, batchSize);
+  let doneCount = 0;
+
+  for (let b = 0; b < batches.length; b++){
+    const batch = batches[b];
+    batch.forEach(sf => { sf.status = 'busy'; sf.note = ''; });
+    renderFileList();
+    updateProgress(doneCount, selectedFiles.length, `Đang xử lý lô ${b + 1}/${batches.length} (${batch.length} file)...`);
+
+    try {
+      const items = [];
+      for (const sf of batch){
+        const text = await extractPdfText(sf.file);
+        items.push({name: sf.file.name, text});
+      }
+      const userPrompt = buildUserPrompt(items);
+      const raw = await callLMStudio(userPrompt);
+      const parsed = parseModelJson(raw);
+      const arr = Array.isArray(parsed) ? parsed : [parsed];
+
+      batch.forEach((sf, i) => {
+        const rec = arr.find(r => r.file_index === i + 1) || arr[i] || {};
+        results.push({file_name: sf.file.name, ...rec, _error: ''});
+        sf.status = 'ok';
+      });
+    } catch(err){
+      batch.forEach(sf => {
+        results.push({file_name: sf.file.name, _error: err.message});
+        sf.status = 'err';
+        sf.note = err.message;
+      });
+    }
+    doneCount += batch.length;
+    renderFileList();
+    renderResults();
+    updateProgress(doneCount, selectedFiles.length, `Đã xử lý ${doneCount}/${selectedFiles.length} file`);
+  }
+
+  updateProgress(selectedFiles.length, selectedFiles.length, 'Hoàn tất.');
+  processBtn.disabled = false;
+  exportBtn.disabled = results.length === 0;
+};
+
+function renderResults(){
+  resultsBody.innerHTML = '';
+  results.forEach((r, i) => {
+    const tr = document.createElement('tr');
+    if (r._error) tr.classList.add('table-danger');
+    tr.innerHTML = `<td>${i+1}</td><td>${r.file_name || ''}</td><td>${r.loai_chung_tu || ''}</td>
+      <td>${r.ky_hieu || ''}</td><td>${r.so || ''}</td><td>${r.ngay || ''}</td>
+      <td>${r.don_vi_ban || ''}</td><td>${r.mst_ban || ''}</td>
+      <td>${r.don_vi_mua || ''}</td><td>${r.mst_mua || ''}</td>
+      <td>${r.noi_dung || ''}</td>
+      <td>${r.tien_truoc_thue ?? ''}</td><td>${r.thue_suat || ''}</td>
+      <td>${r.tien_thue ?? ''}</td><td>${r.tong_tien ?? ''}</td><td>${r.hinh_thuc_tt || ''}</td>
+      <td class="text-danger">${r._error || ''}</td>`;
+    resultsBody.appendChild(tr);
+  });
+  resultCountEl.textContent = results.length;
+}
+
+exportBtn.onclick = () => {
+  const headers = ['File nguồn','Loại chứng từ','Ký hiệu','Số','Ngày','Đơn vị bán','MST bán','Đơn vị mua','MST mua','Nội dung','Tiền trước thuế','Thuế suất','Tiền thuế','Tổng tiền','Hình thức TT','Lỗi'];
+  const rows = results.map(r => [
+    r.file_name || '', r.loai_chung_tu || '', r.ky_hieu || '', r.so || '', r.ngay || '',
+    r.don_vi_ban || '', r.mst_ban || '', r.don_vi_mua || '', r.mst_mua || '',
+    r.noi_dung || '', r.tien_truoc_thue ?? '', r.thue_suat || '', r.tien_thue ?? '', r.tong_tien ?? '', r.hinh_thuc_tt || '', r._error || ''
+  ]);
+  const ws = XLSX.utils.aoa_to_sheet([headers, ...rows]);
+  ws['!cols'] = headers.map(() => ({wch: 18}));
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Bang ke');
+  const stamp = new Date().toISOString().slice(0,19).replace(/[:T]/g,'-');
+  XLSX.writeFile(wb, `bang-ke-hoa-don-${stamp}.xlsx`);
+};
+</script>
+</body>
+</html>
