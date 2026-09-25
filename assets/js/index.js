@@ -31,7 +31,7 @@ const compareByIssuedDateDesc = (a, b) => {
 // ── Page detection ──────────────────────────────────────────────────────────────
 
 const isDocumentsPage = () => !!document.getElementById('sidebar-content');
-const isToolsPage     = () => !!document.getElementById('tools-content');
+const isToolsPage = () => !!document.getElementById('tools-content') || !!document.getElementById('tools-grid');
 
 // ── Sidebar "Văn bản mới nhất" (chỉ trang van-ban.html) ─────────────────────────
 
