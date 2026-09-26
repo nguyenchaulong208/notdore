@@ -155,10 +155,16 @@ QUY TẮC CHUNG:
     try {
       return await fetch(url, options);
     } catch (networkErr) {
-      throw new Error(
-        `Không gửi được yêu cầu tới ${provider} — có thể do mất mạng, bị trình chặn quảng cáo/CORS chặn, ` +
-        `hoặc ${provider} tạm thời không phản hồi. Chi tiết: ${networkErr.message || networkErr}`
-      );
+      // Trả về response giả để caller xử lý như HTTP error, tránh ném ngoại lệ làm lose thông tin status
+      const fakeRes = {
+        ok: false,
+        status: 0,
+        statusText: 'Network Error',
+        text: () => Promise.resolve(`Không gửi được yêu cầu tới ${provider} — ${networkErr.message || networkErr}`),
+        headers: new Headers(),
+      };
+      console.warn(`[safeFetch] ${provider} network error: ${networkErr.message || networkErr}`);
+      return fakeRes;
     }
   }
 
