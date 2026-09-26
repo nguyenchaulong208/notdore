@@ -139,7 +139,14 @@ QUY TẮC CHUNG:
     canvas.height = Math.round(img.height * ratio);
     const ctx = canvas.getContext('2d');
     ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-    const resizedDataUrl = canvas.toDataURL('image/jpeg', 0.88);
+    // Dùng toBlob (async, không block UI thread) thay vì toDataURL (sync, blocking)
+    const resizedBlob = await new Promise((resolve, reject) => {
+      canvas.toBlob((b) => {
+        if (b) resolve(b);
+        else reject(new Error('Không tạo được blob từ canvas.'));
+      }, 'image/jpeg', 0.88);
+    });
+    const resizedDataUrl = await blobToDataUrl(resizedBlob);
     const resizedMatch = /^data:([^;]+);base64,(.+)$/.exec(resizedDataUrl);
     return { base64: resizedMatch[2], mimeType: 'image/jpeg' };
   }
@@ -148,10 +155,16 @@ QUY TẮC CHUNG:
     try {
       return await fetch(url, options);
     } catch (networkErr) {
-      throw new Error(
-        `Không gửi được yêu cầu tới ${provider} — có thể do mất mạng, bị trình chặn quảng cáo/CORS chặn, ` +
-        `hoặc ${provider} tạm thời không phản hồi. Chi tiết: ${networkErr.message || networkErr}`
-      );
+      // Trả về response giả để caller xử lý như HTTP error, tránh ném ngoại lệ làm lose thông tin status
+      const fakeRes = {
+        ok: false,
+        status: 0,
+        statusText: 'Network Error',
+        text: () => Promise.resolve(`Không gửi được yêu cầu tới ${provider} — ${networkErr.message || networkErr}`),
+        headers: new Headers(),
+      };
+      console.warn(`[safeFetch] ${provider} network error: ${networkErr.message || networkErr}`);
+      return fakeRes;
     }
   }
 
@@ -193,78 +206,111 @@ QUY TẮC CHUNG:
 
   async function callGemini(apiKey, base64, mimeType) {
     const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
-    const res = await safeFetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-goog-api-key': apiKey },
-      body: JSON.stringify({
-        contents: [{
-          parts: [
-            { text: PROMPT },
-            { inline_data: { mime_type: mimeType, data: base64 } },
-          ],
-        }],
-        generationConfig: {
-          response_mime_type: 'application/json',
-          response_schema: RESPONSE_SCHEMA,
-          temperature: 0,
-        },
-      }),
-    }, 'Gemini');
-    if (!res.ok) {
-      const body = await res.text().catch(() => '');
-      throw new Error(mapHttpError(res.status, body, 'Gemini'));
-    }
-    const data = await res.json();
-    const candidate = data?.candidates?.[0];
-    const textOut = candidate?.content?.parts?.[0]?.text;
-    if (!textOut) {
-      const reason = candidate?.finishReason;
-      if (reason && reason !== 'STOP') {
-        throw new Error(`Gemini từ chối xử lý ảnh này (finishReason: ${reason}) — thử ảnh khác hoặc chụp lại rõ hơn.`);
+    const maxRetries = 3;
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+      const res = await safeFetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-goog-api-key': apiKey },
+        body: JSON.stringify({
+          contents: [{
+            parts: [
+              { text: PROMPT },
+              { inline_data: { mime_type: mimeType, data: base64 } },
+            ],
+          }],
+          generationConfig: {
+            response_mime_type: 'application/json',
+            response_schema: RESPONSE_SCHEMA,
+            temperature: 0,
+          },
+        }),
+      }, 'Gemini');
+      if (res.ok) {
+        const data = await res.json();
+        const candidate = data?.candidates?.[0];
+        const textOut = candidate?.content?.parts?.[0]?.text;
+        if (!textOut) {
+          const reason = candidate?.finishReason;
+          if (reason && reason !== 'STOP') {
+            throw new Error(`Gemini từ chối xử lý ảnh này (finishReason: ${reason}) — thử ảnh khác hoặc chụp lại rõ hơn.`);
+          }
+          throw new Error('Gemini không trả về nội dung hợp lệ (phản hồi rỗng).');
+        }
+        try {
+          return JSON.parse(textOut);
+        } catch {
+          throw new Error('Gemini trả về nội dung không đúng định dạng JSON mong đợi.');
+        }
       }
-      throw new Error('Gemini không trả về nội dung hợp lệ (phản hồi rỗng).');
+      // Xử lý lỗi HTTP
+      const body = await res.text().catch(() => '');
+      const status = res.status;
+      if (status === 503 || status === 502 || status === 504 || status === 429) {
+        if (attempt < maxRetries) {
+          const delayMs = status === 429
+            ? Math.min(2000 * Math.pow(2, attempt), 30000)  // 429: back off ngắn hơn, tối đa 30s
+            : Math.min(1000 * Math.pow(2, attempt), 15000);
+          console.warn(`Gemini ${status} — chờ ${delayMs}ms rồi thử lại (lần ${attempt + 1}/${maxRetries + 1})`);
+          await new Promise(r => setTimeout(r, delayMs));
+          continue;
+        }
+      }
+      throw new Error(mapHttpError(status, body, 'Gemini'));
     }
-    try {
-      return JSON.parse(textOut);
-    } catch {
-      throw new Error('Gemini trả về nội dung không đúng định dạng JSON mong đợi.');
-    }
+    throw new Error('Gemini không phản hồi sau nhiều lần thử lại.');
   }
 
   // ---- DeepSeek (experimental vision model, OpenAI-compatible schema) ----
 
   async function callDeepSeek(apiKey, base64, mimeType) {
-    const res = await safeFetch('https://api.deepseek.com/chat/completions', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
-      body: JSON.stringify({
-        model: DEEPSEEK_MODEL,
-        temperature: 0,
-        messages: [{
-          role: 'user',
-          content: [
-            { type: 'text', text: PROMPT + '\n\nTrả lời DUY NHẤT bằng một object JSON hợp lệ đúng các khóa: raw_text, ngay, soHoaDon, maTraCuu, soTien, maSoThue, khachHang, diaChi, link. Không thêm chữ nào khác, không dùng markdown code fence.' },
-            { type: 'image_url', image_url: { url: `data:${mimeType};base64,${base64}` } },
-          ],
-        }],
-      }),
-    }, 'DeepSeek');
-    if (!res.ok) {
+    const url = 'https://api.deepseek.com/chat/completions';
+    const maxRetries = 3;
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+      const res = await safeFetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
+        body: JSON.stringify({
+          model: DEEPSEEK_MODEL,
+          temperature: 0,
+          messages: [{
+            role: 'user',
+            content: [
+              { type: 'text', text: PROMPT + '\n\nTrả lời DUY NHẤT bằng một object JSON hợp lệ đúng các khóa: raw_text, ngay, soHoaDon, maTraCuu, soTien, maSoThue, khachHang, diaChi, link. Không thêm chữ nào khác, không dùng markdown code fence.' },
+              { type: 'image_url', image_url: { url: `data:${mimeType};base64,${base64}` } },
+            ],
+          }],
+        }),
+      }, 'DeepSeek');
+      if (res.ok) {
+        const data = await res.json();
+        let textOut = data?.choices?.[0]?.message?.content;
+        if (!textOut) throw new Error('DeepSeek không trả về nội dung hợp lệ.');
+        textOut = textOut.trim()
+          .replace(/^```json\s*/i, '')
+          .replace(/^```\s*/i, '')
+          .replace(/```\s*$/i, '');
+        try {
+          return JSON.parse(textOut);
+        } catch {
+          throw new Error('DeepSeek trả về nội dung không đúng định dạng JSON mong đợi.');
+        }
+      }
+      // Xử lý lỗi HTTP
       const body = await res.text().catch(() => '');
-      throw new Error(mapHttpError(res.status, body, 'DeepSeek'));
+      const status = res.status;
+      if (status === 503 || status === 502 || status === 504 || status === 429) {
+        if (attempt < maxRetries) {
+          const delayMs = status === 429
+            ? Math.min(2000 * Math.pow(2, attempt), 30000)
+            : Math.min(1000 * Math.pow(2, attempt), 15000);
+          console.warn(`DeepSeek ${status} — chờ ${delayMs}ms rồi thử lại (lần ${attempt + 1}/${maxRetries + 1})`);
+          await new Promise(r => setTimeout(r, delayMs));
+          continue;
+        }
+      }
+      throw new Error(mapHttpError(status, body, 'DeepSeek'));
     }
-    const data = await res.json();
-    let textOut = data?.choices?.[0]?.message?.content;
-    if (!textOut) throw new Error('DeepSeek không trả về nội dung hợp lệ.');
-    textOut = textOut.trim()
-      .replace(/^```json\s*/i, '')
-      .replace(/^```\s*/i, '')
-      .replace(/```\s*$/i, '');
-    try {
-      return JSON.parse(textOut);
-    } catch {
-      throw new Error('DeepSeek trả về nội dung không đúng định dạng JSON mong đợi.');
-    }
+    throw new Error('DeepSeek không phản hồi sau nhiều lần thử lại.');
   }
 
   // ---- public entry point ----

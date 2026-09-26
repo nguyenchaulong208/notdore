@@ -174,7 +174,7 @@
         const thumbBlob = await renderPageToBlob(page, 0.5); // cheap thumbnail only
         items.push({ text, thumbBlob, pageLabel });
       } else {
-        const blob = await renderPageToBlob(page, 2.5); // full res for AI vision
+        const blob = await renderPageToBlob(page, 2); // full res for AI vision
         items.push({ blob, pageLabel });
       }
     }
@@ -211,6 +211,9 @@
 
   async function processFile(file) {
     const li = addQueueEntry(file.name);
+    const MAX_RETRIES = 3;
+    const RETRYABLE_STATUSES = [503, 502, 504, 429];
+
     try {
       setQueueStatus(li, 'Đang chuyển đổi...', 'bg-info');
       const items = await fileToItems(file);
@@ -224,6 +227,11 @@
           updateProgress(i / items.length, `${item.pageLabel}: đọc trực tiếp từ PDF...`);
           result = parseVatInvoiceText(item.text);
         } else {
+          // Endpoint có thể bị block do file:// origin — chỉ chạy nếu trên HTTP
+          if (location.protocol === 'file:') {
+            throw new Error('Không thể gọi API từ file:// — vui lòng mở trang qua HTTP server (ví dụ: Live Server trong VS Code, hoặc deploy lên hosting). Chi tiết: trình duyệt chặn запросы từ file://.');
+          }
+
           const settings = ns.Vision.getSettings();
           if (!settings || !settings.apiKey) {
             setQueueStatus(li, 'Chưa cấu hình AI', 'bg-warning text-dark');
@@ -232,7 +240,28 @@
           }
           setQueueStatus(li, `Đang nhận diện AI (${i + 1}/${items.length})...`, 'bg-info');
           updateProgress(i / items.length, `${item.pageLabel}: đang gửi cho ${settings.provider === 'deepseek' ? 'DeepSeek' : 'Gemini'}...`);
-          result = await ns.Vision.recognizeImage(item.blob);
+
+          // Retry cho lỗi tạm thời của API
+          for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+            try {
+              result = await ns.Vision.recognizeImage(item.blob);
+              break; // success, thoát retry loop
+            } catch (err) {
+              if (attempt < MAX_RETRIES) {
+                // Kiểm tra xem lỗi có phải là 503/502/504/429 không
+                const errMsg = err.message || '';
+                const isRetryable = RETRYABLE_STATUSES.some(s => errMsg.includes(String(s)));
+                if (isRetryable) {
+                  const delay = Math.min(1000 * Math.pow(2, attempt), 20000);
+                  console.warn(`${file.name} lỗi ${errMsg.split('HTTP ')[1] || '?'} — chờ ${delay}ms rồi thử lại (lần ${attempt + 1}/${MAX_RETRIES + 1})`);
+                  await new Promise(r => setTimeout(r, delay));
+                  continue;
+                }
+              }
+              // Lỗi không retry được hoặc hết retry → throw lên ngoài
+              throw err;
+            }
+          }
         }
 
         const thumbUrl = item.thumbBlob
@@ -252,8 +281,14 @@
       setQueueStatus(li, 'Hoàn tất', 'bg-success');
     } catch (err) {
       console.error('Lỗi xử lý', file.name, err);
-      setQueueStatus(li, err.code === 'NO_API_KEY' ? 'Chưa cấu hình AI' : 'Lỗi', 'bg-danger');
-      if (err.code === 'NO_API_KEY') openSettings();
+      let msg = 'Lỗi';
+      if (err.code === 'NO_API_KEY') {
+        msg = 'Chưa cấu hình AI';
+        openSettings();
+      } else if (err.message && err.message.includes('file://')) {
+        msg = 'Lỗi bảo mật trình duyệt';
+      }
+      setQueueStatus(li, msg, 'bg-danger');
     }
   }
 
@@ -264,9 +299,14 @@
     el.previewSection.classList.remove('d-none');
     el.emptyState.classList.add('d-none');
 
+    // Xử lý tuần tự từng file — free tier chỉ có 5 RPM, parallel dễ bị 429
     for (let i = 0; i < files.length; i++) {
-      updateProgress(0, `File ${i + 1}/${files.length}: ${files[i].name}`);
+      updateProgress(i / files.length, `File ${i + 1}/${files.length}: ${files[i].name}`);
       await processFile(files[i]);
+      // Pacing: đảm bảo không vượt quá 5 request/phút (giới hạn free tier)
+      if (i < files.length - 1) {
+        await new Promise(r => setTimeout(r, 12000)); // chờ 12s giữa 2 file
+      }
     }
 
     updateProgress(1, 'Hoàn tất tất cả');
