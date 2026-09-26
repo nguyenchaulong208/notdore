@@ -174,7 +174,7 @@
         const thumbBlob = await renderPageToBlob(page, 0.5); // cheap thumbnail only
         items.push({ text, thumbBlob, pageLabel });
       } else {
-        const blob = await renderPageToBlob(page, 2.5); // full res for AI vision
+        const blob = await renderPageToBlob(page, 2); // full res for AI vision
         items.push({ blob, pageLabel });
       }
     }
@@ -264,10 +264,19 @@
     el.previewSection.classList.remove('d-none');
     el.emptyState.classList.add('d-none');
 
-    for (let i = 0; i < files.length; i++) {
-      updateProgress(0, `File ${i + 1}/${files.length}: ${files[i].name}`);
-      await processFile(files[i]);
-    }
+    // Xử lý song song, tối đa 2 files cùng lúc để tránh flood API
+    const CONCURRENCY = 2;
+    let i = 0;
+    const next = async () => {
+      if (i >= files.length) return;
+      const idx = i++;
+      updateProgress(idx / files.length, `File ${idx + 1}/${files.length}: ${files[idx].name}`);
+      await processFile(files[idx]);
+      await next();
+    };
+    const workers = [];
+    for (let w = 0; w < CONCURRENCY; w++) workers.push(next());
+    await Promise.all(workers);
 
     updateProgress(1, 'Hoàn tất tất cả');
     el.processBtn && (el.processBtn.disabled = false);
