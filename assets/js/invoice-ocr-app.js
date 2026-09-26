@@ -264,19 +264,15 @@
     el.previewSection.classList.remove('d-none');
     el.emptyState.classList.add('d-none');
 
-    // Xử lý song song, tối đa 2 files cùng lúc để tránh flood API
-    const CONCURRENCY = 2;
-    let i = 0;
-    const next = async () => {
-      if (i >= files.length) return;
-      const idx = i++;
-      updateProgress(idx / files.length, `File ${idx + 1}/${files.length}: ${files[idx].name}`);
-      await processFile(files[idx]);
-      await next();
-    };
-    const workers = [];
-    for (let w = 0; w < CONCURRENCY; w++) workers.push(next());
-    await Promise.all(workers);
+    // Xử lý tuần tự từng file — free tier chỉ có 5 RPM, parallel dễ bị 429
+    for (let i = 0; i < files.length; i++) {
+      updateProgress(i / files.length, `File ${i + 1}/${files.length}: ${files[i].name}`);
+      await processFile(files[i]);
+      // Pacing: đảm bảo không vượt quá 5 request/phút (giới hạn free tier)
+      if (i < files.length - 1) {
+        await new Promise(r => setTimeout(r, 12000)); // chờ 12s giữa 2 file
+      }
+    }
 
     updateProgress(1, 'Hoàn tất tất cả');
     el.processBtn && (el.processBtn.disabled = false);

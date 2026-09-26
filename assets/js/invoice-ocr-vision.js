@@ -239,9 +239,11 @@ QUY TẮC CHUNG:
       // Xử lý lỗi HTTP
       const body = await res.text().catch(() => '');
       const status = res.status;
-      if (status === 503 || status === 502 || status === 504) {
+      if (status === 503 || status === 502 || status === 504 || status === 429) {
         if (attempt < maxRetries) {
-          const delayMs = Math.min(1000 * Math.pow(2, attempt), 15000);
+          const delayMs = status === 429
+            ? Math.min(2000 * Math.pow(2, attempt), 30000)  // 429: back off ngắn hơn, tối đa 30s
+            : Math.min(1000 * Math.pow(2, attempt), 15000);
           console.warn(`Gemini ${status} — chờ ${delayMs}ms rồi thử lại (lần ${attempt + 1}/${maxRetries + 1})`);
           await new Promise(r => setTimeout(r, delayMs));
           continue;
@@ -290,9 +292,11 @@ QUY TẮC CHUNG:
       // Xử lý lỗi HTTP
       const body = await res.text().catch(() => '');
       const status = res.status;
-      if (status === 503 || status === 502 || status === 504) {
+      if (status === 503 || status === 502 || status === 504 || status === 429) {
         if (attempt < maxRetries) {
-          const delayMs = Math.min(1000 * Math.pow(2, attempt), 15000);
+          const delayMs = status === 429
+            ? Math.min(2000 * Math.pow(2, attempt), 30000)
+            : Math.min(1000 * Math.pow(2, attempt), 15000);
           console.warn(`DeepSeek ${status} — chờ ${delayMs}ms rồi thử lại (lần ${attempt + 1}/${maxRetries + 1})`);
           await new Promise(r => setTimeout(r, delayMs));
           continue;
