@@ -242,6 +242,8 @@
           updateProgress(i / items.length, `${item.pageLabel}: đang gửi cho ${settings.provider === 'deepseek' ? 'DeepSeek' : 'Gemini'}...`);
 
           // Retry cho lỗi tạm thời của API
+          const MAX_RETRIES = 5;
+          const RETRYABLE_STATUSES = [503, 502, 504, 429];
           for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
             try {
               result = await ns.Vision.recognizeImage(item.blob);
@@ -252,7 +254,8 @@
                 const errMsg = err.message || '';
                 const isRetryable = RETRYABLE_STATUSES.some(s => errMsg.includes(String(s)));
                 if (isRetryable) {
-                  const delay = Math.min(1000 * Math.pow(2, attempt), 20000);
+                  // Delay càng lâu ở lần sau: 2s, 4s, 8s, 16s, cap 30s
+                  const delay = Math.min(2000 * Math.pow(2, attempt), 30000);
                   console.warn(`${file.name} lỗi ${errMsg.split('HTTP ')[1] || '?'} — chờ ${delay}ms rồi thử lại (lần ${attempt + 1}/${MAX_RETRIES + 1})`);
                   await new Promise(r => setTimeout(r, delay));
                   continue;
