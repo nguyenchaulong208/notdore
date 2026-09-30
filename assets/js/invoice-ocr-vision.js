@@ -38,39 +38,50 @@
 
   // ---- shared prompt (both providers get the same instructions) ----
 
-  const PROMPT = `Bạn đang xem ảnh chụp một trong hai loại chứng từ tiếng Việt sau. Hãy xác định đúng loại rồi trích xuất chính xác 8 trường thông tin.
+  const PROMPT = `Bạn đang xem ảnh chụp một trong các loại chứng từ tiếng Việt sau. Hãy xác định đúng loại rồi trích xuất chính xác 9 trường thông tin.
 
 LOẠI 1 — "Phiếu báo tra cứu hóa đơn" (biên nhận của cảng/kho/logistics):
-- ngay: giá trị sau nhãn "Ngày:", hoặc dòng ngày/giờ in ngay dưới tiêu đề nếu không có nhãn
-- soHoaDon: giá trị sau nhãn "Số hóa đơn:"
-- maTraCuu: giá trị sau nhãn "Mã tra cứu:"
-- soTien: giá trị sau nhãn "Số tiền:"
-- maSoThue: giá trị sau nhãn "Mã Số Thuế:" hoặc "MST:" (bỏ trống nếu phiếu không có trường này)
-- khachHang: giá trị sau nhãn "Khách Hàng:" hoặc "Tên đơn vị:" — CHÚ Ý: khác với "Mã khách hàng" (là 1 mã số, không phải tên công ty, không lấy vào đây)
-- diaChi: giá trị sau nhãn "Địa Chỉ:", có thể xuống dòng, gộp thành 1 chuỗi
-- link: đường link tra cứu (URL) in ở cuối phiếu
+- icon hoặc tiêu đề thường có từ "PHIẾU BÁO", "TRA CỨU HÓA ĐƠN", "BÁO TRA CỨU"
+- ngay: giá trị sau nhãn "Ngày:" hoặc dòng ngày/giờ in ngay dưới tiêu đề
+- soHoaDon: giá trị sau nhãn "Số hóa đơn:" hoặc "Số:"
+- maTraCuu: giá trị sau nhãn "Mã tra cứu:" (thường là mã hash 32-40 ký tự, in cuối trang)
+- soTien: giá trị sau nhãn "Số tiền:" hoặc "Số tiền thanh toán:"
+- maSoThue: giá trị sau nhãn "Mã Số Thuế:" hoặc "MST:" — thường là 10 ký tự, bỏ trống nếu không có
+- khachHang: TÊN công ty/đơn vị (giá trị sau nhãn "Khách Hàng:" hoặc "Tên đơn vị:"), KHÔNG lấy mã số
+- diaChi: giá trị sau nhãn "Địa Chỉ:" — có thể xuống dòng, gộp thành 1 chuỗi
+- link: URL tra cứu in ở cuối phiếu (thường chứa "tax.gov.vn" hoặc "tra-cuu")
 
 LOẠI 2 — "Hóa đơn giá trị gia tăng" (hóa đơn điện tử, vd MISA meInvoice):
-Đây là 2 khối thông tin: bên BÁN (ở đầu trang, dưới dạng letterhead) và bên MUA (dưới mục "Họ tên người mua hàng"). CHỈ lấy thông tin của bên MUA cho các trường bên dưới:
-- ngay: ngày ghi trên hóa đơn (ngay dưới dòng tiêu đề "HÓA ĐƠN GIÁ TRỊ GIA TĂNG"), định dạng "Ngày X tháng Y năm Z" — KHÔNG lấy ngày của 1 hóa đơn khác được nhắc tới (vd dòng "Thay thế cho hóa đơn ... ngày X")
-- soHoaDon: giá trị sau nhãn "Số:" (số hóa đơn, KHÔNG phải "Số tài khoản", "Số tiền", "Số lượng")
-- maTraCuu: giá trị sau nhãn "Mã tra cứu:" (thường ở cuối trang, cùng dòng với "Tra cứu tại Website")
-- soTien: giá trị sau nhãn "Tổng tiền thanh toán:"
-- maSoThue: mã số thuế của bên MUA (trong khối "Họ tên người mua hàng"), KHÔNG phải MST của bên bán ở đầu trang
-- khachHang: giá trị sau nhãn "Tên đơn vị:" trong khối bên mua
-- diaChi: giá trị sau nhãn "Địa chỉ:" trong khối bên mua (không phải địa chỉ bên bán)
-- link: đường link tra cứu (URL) ở cuối trang
+- tiêu đề "HÓA ĐƠN GIÁ TRỊ GIA TĂNG" hoặc "HÓA ĐƠN ĐIỆN TỬ"
+- Có 2 khối: bên BÁN (đầu trang, letterhead) và bên MUA (dưới "Họ tên người mua hàng")
+- CHỈ lấy thông tin bên MÀU cho các trường sau:
+  - ngay: ngày trên hóa đơn (dưới tiêu đề), định dạng "dd/mm/yyyy" — KHÔNG lấy ngày của hóa đơn khác (vd "Thay thế cho hóa đơn... ngày...")
+  - soHoaDon: giá trị sau nhãn "Số:" — KHÔNG phải "Số tài khoản", "Số tiền", "Số lượng"
+  - maTraCuu: giá trị sau nhãn "Mã tra cứu:" — thường ở cuối trang, cạnh "Tra cứu tại Website"
+  - soTien: giá trị sau nhãn "Tổng tiền thanh toán:" hoặc "Tổng cộng:"
+  - maSoThue: MST của BỘ PHẬN MUA (trong khối "Họ tên người mua hàng"), KHÔNG phải MST bên bán ở đầu trang
+  - khachHang: TÊN bên mua (sau nhãn "Tên đơn vị:" trong khối bên mua), KHÔNG phải tên bên bán
+  - diaChi: ĐỊA CHỈ bên mua (sau nhãn "Địa chỉ:" trong khối bên mua)
+  - link: URL tra cứu cuối trang (thường chứa "tax.gov.vn" hoặc "meinvoice")
+
+LOẠI 3 — "Hóa đơn mua hàng thông thường" (hóa đơn không phải điện tử, vd hóa đơn xi mách, hóa đơn kho Tổng):
+- KHÔNG có tiêu đề "Phiếu báo tra cứu" và KHÔNG có "HÓA ĐƠN GIÁ TRỊ GIA TĂNG"
+- Các trường có thể khác layout, model cần đọc và suy luận
+- Nếu không tìm thấy trường nào, trả về "" cho trường đó
 
 QUY TẮC CHUNG:
-- Ngày luôn trả về theo định dạng dd/mm/yyyy.
-- soTien trả về dạng chuỗi số nguyên, chỉ chứa chữ số (bỏ hết dấu chấm/phẩy/khoảng trắng), ví dụ "1050000".
-- Nếu ảnh không có trường nào đó, hoặc không đọc rõ, trả về chuỗi rỗng "" cho trường đó — KHÔNG suy đoán hay bịa thông tin.
-- raw_text: chép lại toàn bộ chữ đọc được trên ảnh theo đúng thứ tự xuất hiện, giữ nguyên dấu tiếng Việt, dùng để đối chiếu khi cần.`;
+- Trả về "loai" là chuỗi tiếng Việt ngắn: "Phiếu báo tra cứu", "Hóa đơn GTGT", hoặc "Hóa đơn thông thường"
+- Ngày luôn dd/mm/yyyy (vd "13/08/2025")
+- soTien: chuỗi số nguyên, không dấu, không khoảng trắng, không chữ ('1050000')
+- Nếu không tìm thấy trường → trả về "" (không được suy đoán)
+- raw_text: chép toàn bộ chữ đọc được trên ảnh, giữ nguyên dấu tiếng Việt, đúng thứ tự xuất hiện
+- KHÔNG thêm bất kỳ chữ nào khác vào JSON, KHÔNG dùng markdown code fence.`;
 
   const RESPONSE_SCHEMA = {
     type: 'OBJECT',
     properties: {
       raw_text: { type: 'STRING' },
+      loai: { type: 'STRING' },
       ngay: { type: 'STRING' },
       soHoaDon: { type: 'STRING' },
       maTraCuu: { type: 'STRING' },
@@ -80,7 +91,7 @@ QUY TẮC CHUNG:
       diaChi: { type: 'STRING' },
       link: { type: 'STRING' },
     },
-    required: ['raw_text', 'ngay', 'soHoaDon', 'maTraCuu', 'soTien', 'maSoThue', 'khachHang', 'diaChi', 'link'],
+    required: ['raw_text', 'loai', 'ngay', 'soHoaDon', 'maTraCuu', 'soTien', 'maSoThue', 'khachHang', 'diaChi', 'link'],
   };
 
   // ---- helpers ----

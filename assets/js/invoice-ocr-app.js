@@ -14,6 +14,7 @@
   const ns = (global.IOCR = global.IOCR || {});
 
   const FIELD_DEFS = [
+    { key: 'loai', label: 'Loại' },
     { key: 'ngay', label: 'Ngày' },
     { key: 'soHoaDon', label: 'Số hóa đơn' },
     { key: 'maTraCuu', label: 'Mã tra cứu' },
