@@ -1,11 +1,9 @@
 /**
  * invoice-ocr-vision.js
- * Calls a vision-capable AI API (Gemini or DeepSeek) DIRECTLY from the
- * browser, using the user's own API key — the image and the key never
- * touch NotDore's server. Each user consumes their own free-tier quota
- * instead of sharing one, which is the whole point: this tool may get
- * many concurrent users, and a single shared key's free-tier limit
- * (~1000 req/day) would bottleneck everyone.
+ * Calls NVIDIA NIM API (OpenAI-compatible) DIRECTLY from the browser,
+ * using the user's own API key — the image and the key never touch
+ * NotDore's server. Each user consumes their own quota instead of
+ * sharing one.
  *
  * The key is stored only in the browser's localStorage.
  */
@@ -14,8 +12,8 @@
   const ns = (global.IOCR = global.IOCR || {});
 
   const STORAGE_KEY = 'iocr_ai_settings_v1';
-  const GEMINI_MODEL = 'gemini-flash-latest'; // Google's floating alias — always the current Flash model
-  const DEEPSEEK_MODEL = 'deepseek-v4-flash-vision-exp'; // experimental as of 2026 — flagged as such in the UI
+  const NVIDIA_BASE_URL = 'https://integrate.api.nvidia.com/v1';
+  const NVIDIA_DEFAULT_MODEL = 'z-ai/glm-5.3-flash';
 
   // ---- settings storage ----
 
@@ -36,7 +34,7 @@
     localStorage.removeItem(STORAGE_KEY);
   }
 
-  // ---- shared prompt (both providers get the same instructions) ----
+  // ---- shared prompt ----
 
   const PROMPT = `Bạn đang xem ảnh chụp một trong các loại chứng từ tiếng Việt sau. Hãy xác định đúng loại rồi trích xuất chính xác 9 trường thông tin.
 
@@ -76,23 +74,6 @@ QUY TẮC CHUNG:
 - Nếu không tìm thấy trường → trả về "" (không được suy đoán)
 - raw_text: chép toàn bộ chữ đọc được trên ảnh, giữ nguyên dấu tiếng Việt, đúng thứ tự xuất hiện
 - KHÔNG thêm bất kỳ chữ nào khác vào JSON, KHÔNG dùng markdown code fence.`;
-
-  const RESPONSE_SCHEMA = {
-    type: 'OBJECT',
-    properties: {
-      raw_text: { type: 'STRING' },
-      loai: { type: 'STRING' },
-      ngay: { type: 'STRING' },
-      soHoaDon: { type: 'STRING' },
-      maTraCuu: { type: 'STRING' },
-      soTien: { type: 'STRING' },
-      maSoThue: { type: 'STRING' },
-      khachHang: { type: 'STRING' },
-      diaChi: { type: 'STRING' },
-      link: { type: 'STRING' },
-    },
-    required: ['raw_text', 'loai', 'ngay', 'soHoaDon', 'maTraCuu', 'soTien', 'maSoThue', 'khachHang', 'diaChi', 'link'],
-  };
 
   // ---- helpers ----
 
@@ -181,7 +162,7 @@ QUY TẮC CHUNG:
 
   function mapHttpError(status, bodyText, provider) {
     if (status === 429) {
-      return `${provider} báo hết quota miễn phí cho hôm nay (rate limit) — thử lại sau, hoặc bật billing để bỏ giới hạn.`;
+      return `${provider} báo hết quota (rate limit) — thử lại sau, hoặc nâng cấp plan để bỏ giới hạn.`;
     }
     if (status === 401 || status === 403) {
       return `API key ${provider} không hợp lệ hoặc không có quyền truy cập — kiểm tra lại trong phần Cài đặt AI.`;
@@ -213,89 +194,44 @@ QUY TẮC CHUNG:
     return fields;
   }
 
-  // ---- Gemini ----
+  // ---- NVIDIA NIM API (OpenAI-compatible) ----
 
-  async function callGemini(apiKey, base64, mimeType) {
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
+  async function callNvidia(apiKey, base64, mimeType, model) {
+    const url = `${NVIDIA_BASE_URL}/chat/completions`;
+    const usedModel = model || NVIDIA_DEFAULT_MODEL;
     const maxRetries = 3;
+
     for (let attempt = 0; attempt <= maxRetries; attempt++) {
       const res = await safeFetch(url, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-goog-api-key': apiKey },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`,
+        },
         body: JSON.stringify({
-          contents: [{
-            parts: [
-              { text: PROMPT },
-              { inline_data: { mime_type: mimeType, data: base64 } },
-            ],
-          }],
-          generationConfig: {
-            response_mime_type: 'application/json',
-            response_schema: RESPONSE_SCHEMA,
-            temperature: 0,
-          },
-        }),
-      }, 'Gemini');
-      if (res.ok) {
-        const data = await res.json();
-        const candidate = data?.candidates?.[0];
-        const textOut = candidate?.content?.parts?.[0]?.text;
-        if (!textOut) {
-          const reason = candidate?.finishReason;
-          if (reason && reason !== 'STOP') {
-            throw new Error(`Gemini từ chối xử lý ảnh này (finishReason: ${reason}) — thử ảnh khác hoặc chụp lại rõ hơn.`);
-          }
-          throw new Error('Gemini không trả về nội dung hợp lệ (phản hồi rỗng).');
-        }
-        try {
-          return JSON.parse(textOut);
-        } catch {
-          throw new Error('Gemini trả về nội dung không đúng định dạng JSON mong đợi.');
-        }
-      }
-      // Xử lý lỗi HTTP
-      const body = await res.text().catch(() => '');
-      const status = res.status;
-      if (status === 503 || status === 502 || status === 504 || status === 429) {
-        if (attempt < maxRetries) {
-          const delayMs = status === 429
-            ? Math.min(2000 * Math.pow(2, attempt), 30000)  // 429: back off ngắn hơn, tối đa 30s
-            : Math.min(1000 * Math.pow(2, attempt), 15000);
-          console.warn(`Gemini ${status} — chờ ${delayMs}ms rồi thử lại (lần ${attempt + 1}/${maxRetries + 1})`);
-          await new Promise(r => setTimeout(r, delayMs));
-          continue;
-        }
-      }
-      throw new Error(mapHttpError(status, body, 'Gemini'));
-    }
-    throw new Error('Gemini không phản hồi sau nhiều lần thử lại.');
-  }
-
-  // ---- DeepSeek (experimental vision model, OpenAI-compatible schema) ----
-
-  async function callDeepSeek(apiKey, base64, mimeType) {
-    const url = 'https://api.deepseek.com/chat/completions';
-    const maxRetries = 3;
-    for (let attempt = 0; attempt <= maxRetries; attempt++) {
-      const res = await safeFetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
-        body: JSON.stringify({
-          model: DEEPSEEK_MODEL,
+          model: usedModel,
           temperature: 0,
+          max_tokens: 4096,
           messages: [{
             role: 'user',
             content: [
-              { type: 'text', text: PROMPT + '\n\nTrả lời DUY NHẤT bằng một object JSON hợp lệ đúng các khóa: raw_text, ngay, soHoaDon, maTraCuu, soTien, maSoThue, khachHang, diaChi, link. Không thêm chữ nào khác, không dùng markdown code fence.' },
-              { type: 'image_url', image_url: { url: `data:${mimeType};base64,${base64}` } },
+              {
+                type: 'text',
+                text: PROMPT + '\n\nTrả lời DUY NHẤT bằng một object JSON hợp lệ đúng các khóa: raw_text, loai, ngay, soHoaDon, maTraCuu, soTien, maSoThue, khachHang, diaChi, link. Không thêm chữ nào khác, không dùng markdown code fence.',
+              },
+              {
+                type: 'image_url',
+                image_url: { url: `data:${mimeType};base64,${base64}` },
+              },
             ],
           }],
         }),
-      }, 'DeepSeek');
+      }, 'NVIDIA');
+
       if (res.ok) {
         const data = await res.json();
         let textOut = data?.choices?.[0]?.message?.content;
-        if (!textOut) throw new Error('DeepSeek không trả về nội dung hợp lệ.');
+        if (!textOut) throw new Error('NVIDIA không trả về nội dung hợp lệ.');
         textOut = textOut.trim()
           .replace(/^```json\s*/i, '')
           .replace(/^```\s*/i, '')
@@ -303,9 +239,10 @@ QUY TẮC CHUNG:
         try {
           return JSON.parse(textOut);
         } catch {
-          throw new Error('DeepSeek trả về nội dung không đúng định dạng JSON mong đợi.');
+          throw new Error('NVIDIA trả về nội dung không đúng định dạng JSON mong đợi.');
         }
       }
+
       // Xử lý lỗi HTTP
       const body = await res.text().catch(() => '');
       const status = res.status;
@@ -314,14 +251,14 @@ QUY TẮC CHUNG:
           const delayMs = status === 429
             ? Math.min(2000 * Math.pow(2, attempt), 30000)
             : Math.min(1000 * Math.pow(2, attempt), 15000);
-          console.warn(`DeepSeek ${status} — chờ ${delayMs}ms rồi thử lại (lần ${attempt + 1}/${maxRetries + 1})`);
+          console.warn(`NVIDIA ${status} — chờ ${delayMs}ms rồi thử lại (lần ${attempt + 1}/${maxRetries + 1})`);
           await new Promise(r => setTimeout(r, delayMs));
           continue;
         }
       }
-      throw new Error(mapHttpError(status, body, 'DeepSeek'));
+      throw new Error(mapHttpError(status, body, 'NVIDIA'));
     }
-    throw new Error('DeepSeek không phản hồi sau nhiều lần thử lại.');
+    throw new Error('NVIDIA không phản hồi sau nhiều lần thử lại.');
   }
 
   // ---- public entry point ----
@@ -336,9 +273,7 @@ QUY TẮC CHUNG:
 
     const { base64, mimeType } = await downscaleIfNeeded(blob);
 
-    const parsed = settings.provider === 'deepseek'
-      ? await callDeepSeek(settings.apiKey, base64, mimeType)
-      : await callGemini(settings.apiKey, base64, mimeType);
+    const parsed = await callNvidia(settings.apiKey, base64, mimeType, settings.model);
 
     return { fields: mapResultToFields(parsed), text: parsed.raw_text || '' };
   }
