@@ -1,11 +1,9 @@
 /**
  * invoice-ocr-vision.js
- * Calls a vision-capable AI API (Gemini or DeepSeek) DIRECTLY from the
- * browser, using the user's own API key — the image and the key never
- * touch NotDore's server. Each user consumes their own free-tier quota
- * instead of sharing one, which is the whole point: this tool may get
- * many concurrent users, and a single shared key's free-tier limit
- * (~1000 req/day) would bottleneck everyone.
+ * Calls NVIDIA NIM API (OpenAI-compatible) DIRECTLY from the browser,
+ * using the user's own API key — the image and the key never touch
+ * NotDore's server. Each user consumes their own quota instead of
+ * sharing one.
  *
  * The key is stored only in the browser's localStorage.
  */
@@ -14,8 +12,8 @@
   const ns = (global.IOCR = global.IOCR || {});
 
   const STORAGE_KEY = 'iocr_ai_settings_v1';
-  const GEMINI_MODEL = 'gemini-flash-latest'; // Google's floating alias — always the current Flash model
-  const DEEPSEEK_MODEL = 'deepseek-v4-flash-vision-exp'; // experimental as of 2026 — flagged as such in the UI
+  const NVIDIA_BASE_URL = 'https://integrate.api.nvidia.com/v1';
+  const NVIDIA_DEFAULT_MODEL = 'z-ai/glm-5.3-flash';
 
   // ---- settings storage ----
 
@@ -36,52 +34,46 @@
     localStorage.removeItem(STORAGE_KEY);
   }
 
-  // ---- shared prompt (both providers get the same instructions) ----
+  // ---- shared prompt ----
 
-  const PROMPT = `Bạn đang xem ảnh chụp một trong hai loại chứng từ tiếng Việt sau. Hãy xác định đúng loại rồi trích xuất chính xác 8 trường thông tin.
+  const PROMPT = `Bạn đang xem ảnh chụp một trong các loại chứng từ tiếng Việt sau. Hãy xác định đúng loại rồi trích xuất chính xác 9 trường thông tin.
 
 LOẠI 1 — "Phiếu báo tra cứu hóa đơn" (biên nhận của cảng/kho/logistics):
-- ngay: giá trị sau nhãn "Ngày:", hoặc dòng ngày/giờ in ngay dưới tiêu đề nếu không có nhãn
-- soHoaDon: giá trị sau nhãn "Số hóa đơn:"
-- maTraCuu: giá trị sau nhãn "Mã tra cứu:"
-- soTien: giá trị sau nhãn "Số tiền:"
-- maSoThue: giá trị sau nhãn "Mã Số Thuế:" hoặc "MST:" (bỏ trống nếu phiếu không có trường này)
-- khachHang: giá trị sau nhãn "Khách Hàng:" hoặc "Tên đơn vị:" — CHÚ Ý: khác với "Mã khách hàng" (là 1 mã số, không phải tên công ty, không lấy vào đây)
-- diaChi: giá trị sau nhãn "Địa Chỉ:", có thể xuống dòng, gộp thành 1 chuỗi
-- link: đường link tra cứu (URL) in ở cuối phiếu
+- icon hoặc tiêu đề thường có từ "PHIẾU BÁO", "TRA CỨU HÓA ĐƠN", "BÁO TRA CỨU"
+- ngay: giá trị sau nhãn "Ngày:" hoặc dòng ngày/giờ in ngay dưới tiêu đề
+- soHoaDon: giá trị sau nhãn "Số hóa đơn:" hoặc "Số:"
+- maTraCuu: giá trị sau nhãn "Mã tra cứu:" (thường là mã hash 32-40 ký tự, in cuối trang)
+- soTien: giá trị sau nhãn "Số tiền:" hoặc "Số tiền thanh toán:"
+- maSoThue: giá trị sau nhãn "Mã Số Thuế:" hoặc "MST:" — thường là 10 ký tự, bỏ trống nếu không có
+- khachHang: TÊN công ty/đơn vị (giá trị sau nhãn "Khách Hàng:" hoặc "Tên đơn vị:"), KHÔNG lấy mã số
+- diaChi: giá trị sau nhãn "Địa Chỉ:" — có thể xuống dòng, gộp thành 1 chuỗi
+- link: URL tra cứu in ở cuối phiếu (thường chứa "tax.gov.vn" hoặc "tra-cuu")
 
 LOẠI 2 — "Hóa đơn giá trị gia tăng" (hóa đơn điện tử, vd MISA meInvoice):
-Đây là 2 khối thông tin: bên BÁN (ở đầu trang, dưới dạng letterhead) và bên MUA (dưới mục "Họ tên người mua hàng"). CHỈ lấy thông tin của bên MUA cho các trường bên dưới:
-- ngay: ngày ghi trên hóa đơn (ngay dưới dòng tiêu đề "HÓA ĐƠN GIÁ TRỊ GIA TĂNG"), định dạng "Ngày X tháng Y năm Z" — KHÔNG lấy ngày của 1 hóa đơn khác được nhắc tới (vd dòng "Thay thế cho hóa đơn ... ngày X")
-- soHoaDon: giá trị sau nhãn "Số:" (số hóa đơn, KHÔNG phải "Số tài khoản", "Số tiền", "Số lượng")
-- maTraCuu: giá trị sau nhãn "Mã tra cứu:" (thường ở cuối trang, cùng dòng với "Tra cứu tại Website")
-- soTien: giá trị sau nhãn "Tổng tiền thanh toán:"
-- maSoThue: mã số thuế của bên MUA (trong khối "Họ tên người mua hàng"), KHÔNG phải MST của bên bán ở đầu trang
-- khachHang: giá trị sau nhãn "Tên đơn vị:" trong khối bên mua
-- diaChi: giá trị sau nhãn "Địa chỉ:" trong khối bên mua (không phải địa chỉ bên bán)
-- link: đường link tra cứu (URL) ở cuối trang
+- tiêu đề "HÓA ĐƠN GIÁ TRỊ GIA TĂNG" hoặc "HÓA ĐƠN ĐIỆN TỬ"
+- Có 2 khối: bên BÁN (đầu trang, letterhead) và bên MUA (dưới "Họ tên người mua hàng")
+- CHỈ lấy thông tin bên MÀU cho các trường sau:
+  - ngay: ngày trên hóa đơn (dưới tiêu đề), định dạng "dd/mm/yyyy" — KHÔNG lấy ngày của hóa đơn khác (vd "Thay thế cho hóa đơn... ngày...")
+  - soHoaDon: giá trị sau nhãn "Số:" — KHÔNG phải "Số tài khoản", "Số tiền", "Số lượng"
+  - maTraCuu: giá trị sau nhãn "Mã tra cứu:" — thường ở cuối trang, cạnh "Tra cứu tại Website"
+  - soTien: giá trị sau nhãn "Tổng tiền thanh toán:" hoặc "Tổng cộng:"
+  - maSoThue: MST của BỘ PHẬN MUA (trong khối "Họ tên người mua hàng"), KHÔNG phải MST bên bán ở đầu trang
+  - khachHang: TÊN bên mua (sau nhãn "Tên đơn vị:" trong khối bên mua), KHÔNG phải tên bên bán
+  - diaChi: ĐỊA CHỈ bên mua (sau nhãn "Địa chỉ:" trong khối bên mua)
+  - link: URL tra cứu cuối trang (thường chứa "tax.gov.vn" hoặc "meinvoice")
+
+LOẠI 3 — "Hóa đơn mua hàng thông thường" (hóa đơn không phải điện tử, vd hóa đơn xi mách, hóa đơn kho Tổng):
+- KHÔNG có tiêu đề "Phiếu báo tra cứu" và KHÔNG có "HÓA ĐƠN GIÁ TRỊ GIA TĂNG"
+- Các trường có thể khác layout, model cần đọc và suy luận
+- Nếu không tìm thấy trường nào, trả về "" cho trường đó
 
 QUY TẮC CHUNG:
-- Ngày luôn trả về theo định dạng dd/mm/yyyy.
-- soTien trả về dạng chuỗi số nguyên, chỉ chứa chữ số (bỏ hết dấu chấm/phẩy/khoảng trắng), ví dụ "1050000".
-- Nếu ảnh không có trường nào đó, hoặc không đọc rõ, trả về chuỗi rỗng "" cho trường đó — KHÔNG suy đoán hay bịa thông tin.
-- raw_text: chép lại toàn bộ chữ đọc được trên ảnh theo đúng thứ tự xuất hiện, giữ nguyên dấu tiếng Việt, dùng để đối chiếu khi cần.`;
-
-  const RESPONSE_SCHEMA = {
-    type: 'OBJECT',
-    properties: {
-      raw_text: { type: 'STRING' },
-      ngay: { type: 'STRING' },
-      soHoaDon: { type: 'STRING' },
-      maTraCuu: { type: 'STRING' },
-      soTien: { type: 'STRING' },
-      maSoThue: { type: 'STRING' },
-      khachHang: { type: 'STRING' },
-      diaChi: { type: 'STRING' },
-      link: { type: 'STRING' },
-    },
-    required: ['raw_text', 'ngay', 'soHoaDon', 'maTraCuu', 'soTien', 'maSoThue', 'khachHang', 'diaChi', 'link'],
-  };
+- Trả về "loai" là chuỗi tiếng Việt ngắn: "Phiếu báo tra cứu", "Hóa đơn GTGT", hoặc "Hóa đơn thông thường"
+- Ngày luôn dd/mm/yyyy (vd "13/08/2025")
+- soTien: chuỗi số nguyên, không dấu, không khoảng trắng, không chữ ('1050000')
+- Nếu không tìm thấy trường → trả về "" (không được suy đoán)
+- raw_text: chép toàn bộ chữ đọc được trên ảnh, giữ nguyên dấu tiếng Việt, đúng thứ tự xuất hiện
+- KHÔNG thêm bất kỳ chữ nào khác vào JSON, KHÔNG dùng markdown code fence.`;
 
   // ---- helpers ----
 
@@ -170,7 +162,7 @@ QUY TẮC CHUNG:
 
   function mapHttpError(status, bodyText, provider) {
     if (status === 429) {
-      return `${provider} báo hết quota miễn phí cho hôm nay (rate limit) — thử lại sau, hoặc bật billing để bỏ giới hạn.`;
+      return `${provider} báo hết quota (rate limit) — thử lại sau, hoặc nâng cấp plan để bỏ giới hạn.`;
     }
     if (status === 401 || status === 403) {
       return `API key ${provider} không hợp lệ hoặc không có quyền truy cập — kiểm tra lại trong phần Cài đặt AI.`;
@@ -202,89 +194,44 @@ QUY TẮC CHUNG:
     return fields;
   }
 
-  // ---- Gemini ----
+  // ---- NVIDIA NIM API (OpenAI-compatible) ----
 
-  async function callGemini(apiKey, base64, mimeType) {
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
+  async function callNvidia(apiKey, base64, mimeType, model) {
+    const url = `${NVIDIA_BASE_URL}/chat/completions`;
+    const usedModel = model || NVIDIA_DEFAULT_MODEL;
     const maxRetries = 3;
+
     for (let attempt = 0; attempt <= maxRetries; attempt++) {
       const res = await safeFetch(url, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-goog-api-key': apiKey },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`,
+        },
         body: JSON.stringify({
-          contents: [{
-            parts: [
-              { text: PROMPT },
-              { inline_data: { mime_type: mimeType, data: base64 } },
-            ],
-          }],
-          generationConfig: {
-            response_mime_type: 'application/json',
-            response_schema: RESPONSE_SCHEMA,
-            temperature: 0,
-          },
-        }),
-      }, 'Gemini');
-      if (res.ok) {
-        const data = await res.json();
-        const candidate = data?.candidates?.[0];
-        const textOut = candidate?.content?.parts?.[0]?.text;
-        if (!textOut) {
-          const reason = candidate?.finishReason;
-          if (reason && reason !== 'STOP') {
-            throw new Error(`Gemini từ chối xử lý ảnh này (finishReason: ${reason}) — thử ảnh khác hoặc chụp lại rõ hơn.`);
-          }
-          throw new Error('Gemini không trả về nội dung hợp lệ (phản hồi rỗng).');
-        }
-        try {
-          return JSON.parse(textOut);
-        } catch {
-          throw new Error('Gemini trả về nội dung không đúng định dạng JSON mong đợi.');
-        }
-      }
-      // Xử lý lỗi HTTP
-      const body = await res.text().catch(() => '');
-      const status = res.status;
-      if (status === 503 || status === 502 || status === 504 || status === 429) {
-        if (attempt < maxRetries) {
-          const delayMs = status === 429
-            ? Math.min(2000 * Math.pow(2, attempt), 30000)  // 429: back off ngắn hơn, tối đa 30s
-            : Math.min(1000 * Math.pow(2, attempt), 15000);
-          console.warn(`Gemini ${status} — chờ ${delayMs}ms rồi thử lại (lần ${attempt + 1}/${maxRetries + 1})`);
-          await new Promise(r => setTimeout(r, delayMs));
-          continue;
-        }
-      }
-      throw new Error(mapHttpError(status, body, 'Gemini'));
-    }
-    throw new Error('Gemini không phản hồi sau nhiều lần thử lại.');
-  }
-
-  // ---- DeepSeek (experimental vision model, OpenAI-compatible schema) ----
-
-  async function callDeepSeek(apiKey, base64, mimeType) {
-    const url = 'https://api.deepseek.com/chat/completions';
-    const maxRetries = 3;
-    for (let attempt = 0; attempt <= maxRetries; attempt++) {
-      const res = await safeFetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
-        body: JSON.stringify({
-          model: DEEPSEEK_MODEL,
+          model: usedModel,
           temperature: 0,
+          max_tokens: 4096,
           messages: [{
             role: 'user',
             content: [
-              { type: 'text', text: PROMPT + '\n\nTrả lời DUY NHẤT bằng một object JSON hợp lệ đúng các khóa: raw_text, ngay, soHoaDon, maTraCuu, soTien, maSoThue, khachHang, diaChi, link. Không thêm chữ nào khác, không dùng markdown code fence.' },
-              { type: 'image_url', image_url: { url: `data:${mimeType};base64,${base64}` } },
+              {
+                type: 'text',
+                text: PROMPT + '\n\nTrả lời DUY NHẤT bằng một object JSON hợp lệ đúng các khóa: raw_text, loai, ngay, soHoaDon, maTraCuu, soTien, maSoThue, khachHang, diaChi, link. Không thêm chữ nào khác, không dùng markdown code fence.',
+              },
+              {
+                type: 'image_url',
+                image_url: { url: `data:${mimeType};base64,${base64}` },
+              },
             ],
           }],
         }),
-      }, 'DeepSeek');
+      }, 'NVIDIA');
+
       if (res.ok) {
         const data = await res.json();
         let textOut = data?.choices?.[0]?.message?.content;
-        if (!textOut) throw new Error('DeepSeek không trả về nội dung hợp lệ.');
+        if (!textOut) throw new Error('NVIDIA không trả về nội dung hợp lệ.');
         textOut = textOut.trim()
           .replace(/^```json\s*/i, '')
           .replace(/^```\s*/i, '')
@@ -292,9 +239,10 @@ QUY TẮC CHUNG:
         try {
           return JSON.parse(textOut);
         } catch {
-          throw new Error('DeepSeek trả về nội dung không đúng định dạng JSON mong đợi.');
+          throw new Error('NVIDIA trả về nội dung không đúng định dạng JSON mong đợi.');
         }
       }
+
       // Xử lý lỗi HTTP
       const body = await res.text().catch(() => '');
       const status = res.status;
@@ -303,14 +251,14 @@ QUY TẮC CHUNG:
           const delayMs = status === 429
             ? Math.min(2000 * Math.pow(2, attempt), 30000)
             : Math.min(1000 * Math.pow(2, attempt), 15000);
-          console.warn(`DeepSeek ${status} — chờ ${delayMs}ms rồi thử lại (lần ${attempt + 1}/${maxRetries + 1})`);
+          console.warn(`NVIDIA ${status} — chờ ${delayMs}ms rồi thử lại (lần ${attempt + 1}/${maxRetries + 1})`);
           await new Promise(r => setTimeout(r, delayMs));
           continue;
         }
       }
-      throw new Error(mapHttpError(status, body, 'DeepSeek'));
+      throw new Error(mapHttpError(status, body, 'NVIDIA'));
     }
-    throw new Error('DeepSeek không phản hồi sau nhiều lần thử lại.');
+    throw new Error('NVIDIA không phản hồi sau nhiều lần thử lại.');
   }
 
   // ---- public entry point ----
@@ -325,9 +273,7 @@ QUY TẮC CHUNG:
 
     const { base64, mimeType } = await downscaleIfNeeded(blob);
 
-    const parsed = settings.provider === 'deepseek'
-      ? await callDeepSeek(settings.apiKey, base64, mimeType)
-      : await callGemini(settings.apiKey, base64, mimeType);
+    const parsed = await callNvidia(settings.apiKey, base64, mimeType, settings.model);
 
     return { fields: mapResultToFields(parsed), text: parsed.raw_text || '' };
   }

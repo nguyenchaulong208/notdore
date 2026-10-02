@@ -51,7 +51,7 @@
 	<div class="container" style="max-width:1200px">
 		<a href="index.html" class="back-link"><i class="fas fa-arrow-left"></i>Quay lại trang chủ</a>
 		<h1 class="mb-1" style="font-family:'Quicksand',sans-serif;font-size:1.6rem;font-weight:700;"><i class="fas fa-receipt me-2" style="color:#ed6524"></i>OCR Phiếu Báo Tra Cứu Hóa Đơn</h1>
-		<p class="text-muted mb-4">Tải lên ảnh chụp hoặc PDF phiếu báo tra cứu hóa đơn — công cụ tự động nhận diện Ngày, Số hóa đơn, Mã tra cứu, Số tiền, Mã số thuế, Khách hàng, Địa chỉ, Link tra cứu, cho phép sửa lại trước khi xuất bảng kê Excel. PDF điện tử được đọc trực tiếp (không cần AI). Ảnh chụp được nhận diện bằng AI (Gemini/DeepSeek) — gọi thẳng từ trình duyệt bằng API key miễn phí của chính bạn, ảnh không gửi lên máy chủ NotDore.</p>
+		<p class="text-muted mb-4">Tải lên ảnh chụp hoặc PDF phiếu báo tra cứu hóa đơn — công cụ tự động nhận diện Ngày, Số hóa đơn, Mã tra cứu, Số tiền, Mã số thuế, Khách hàng, Địa chỉ, Link tra cứu, cho phép sửa lại trước khi xuất bảng kê Excel. PDF điện tử được đọc trực tiếp (không cần AI). Ảnh chụp được nhận diện bằng AI (NVIDIA NIM) — gọi thẳng từ trình duyệt bằng API key của chính bạn, ảnh không gửi lên máy chủ NotDore.</p>
 
 		<div class="iocr-wrap" style="padding:0;max-width:none">
   <div class="mb-4 d-flex justify-content-between align-items-start flex-wrap gap-2">
@@ -62,7 +62,7 @@
         Ngày, Số hóa đơn, Mã tra cứu, Số tiền, Mã số thuế, Khách hàng, Địa chỉ, Link tra cứu,
         cho phép sửa lại trước khi xuất bảng kê Excel.
         PDF điện tử được đọc trực tiếp (không cần AI). Ảnh chụp được nhận diện bằng AI
-        (Gemini/DeepSeek) — gọi thẳng từ trình duyệt bằng API key miễn phí của chính bạn,
+        (NVIDIA NIM) — gọi thẳng từ trình duyệt bằng API key của chính bạn,
         ảnh không gửi lên máy chủ NotDore.
       </p>
     </div>
@@ -129,7 +129,7 @@
   </div>
 </div>
 
-<!-- Settings modal: AI provider + API key (stored only in this browser's localStorage) -->
+<!-- Settings modal: AI provider (NVIDIA NIM) + API key (stored only in this browser's localStorage) -->
 <div id="iocrSettingsBackdrop" class="iocr-modal-backdrop d-none">
   <div class="iocr-modal-card">
     <div class="d-flex justify-content-between align-items-center mb-3">
@@ -137,23 +137,21 @@
       <button id="iocrSettingsCloseBtn" class="btn-close" aria-label="Đóng"></button>
     </div>
     <p class="text-muted small">
-      Cần API key <strong>miễn phí</strong> của riêng bạn để nhận diện ảnh chụp bằng AI.
+      Cần API key từ <strong>NVIDIA (build.nvidia.com)</strong> để nhận diện ảnh chụp bằng AI.
       Key chỉ lưu trong trình duyệt này (localStorage) — không gửi lên máy chủ NotDore,
-      chỉ dùng để gọi thẳng tới nhà cung cấp AI bạn chọn bên dưới.
+      chỉ dùng để gọi thẳng tới NVIDIA NIM API.
     </p>
     <div class="mb-3">
-      <label class="form-label small fw-semibold">Nhà cung cấp</label>
-      <select id="iocrSettingsProvider" class="form-select">
-        <option value="gemini">Google Gemini (khuyến nghị)</option>
-        <option value="deepseek">DeepSeek (vision — đang thử nghiệm)</option>
-      </select>
+      <label class="form-label small fw-semibold">Model</label>
+      <input id="iocrSettingsModel" type="text" class="form-control" placeholder="z-ai/glm-5.3-flash" value="z-ai/glm-5.3-flash">
+      <div class="form-text">Tên model trên NVIDIA NIM (ví dụ: z-ai/glm-5.3-flash, meta/llama-3.2-90b-vision-instruct)</div>
     </div>
     <div class="mb-2">
       <label class="form-label small fw-semibold">API key</label>
-      <input id="iocrSettingsApiKey" type="password" class="form-control" placeholder="Dán API key vào đây">
+      <input id="iocrSettingsApiKey" type="password" class="form-control" placeholder="Dán API key NVIDIA vào đây (nvapi-...)">
     </div>
     <p class="small mb-3">
-      Chưa có key? <a id="iocrSettingsHelpLink" href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">Lấy key miễn phí tại đây</a> (không cần thẻ tín dụng).
+      Chưa có key? <a id="iocrSettingsHelpLink" href="https://build.nvidia.com/settings/api-keys" target="_blank" rel="noopener">Lấy key tại build.nvidia.com</a>
     </p>
     <div id="iocrSettingsStatus" class="small text-success mb-2"></div>
     <div class="d-flex gap-2">
@@ -172,7 +170,7 @@
 <!-- App modules — fully client-side, no backend: -->
 <!-- VAT invoice PDF text-layer parser (regex, no AI) -->
 <script src="assets/js/invoice-ocr-vat-parser.js"></script>
-<!-- Vision AI caller (Gemini/DeepSeek, direct from browser, user's own key) -->
+<!-- Vision AI caller (NVIDIA NIM, direct from browser, user's own key) -->
 <script src="assets/js/invoice-ocr-vision.js"></script>
 <!-- UI orchestration -->
 <script src="assets/js/invoice-ocr-app.js"></script>

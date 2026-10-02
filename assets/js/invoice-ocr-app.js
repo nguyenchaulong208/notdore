@@ -2,7 +2,7 @@
  * invoice-ocr-app.js
  * UI orchestration for the Invoice OCR tool. Fully client-side, no backend:
  *   - PDF with a real text layer -> IOCR.VatParser (regex, no AI call)
- *   - Photos / scanned PDFs      -> IOCR.Vision (Gemini or DeepSeek,
+ *   - Photos / scanned PDFs      -> IOCR.Vision (NVIDIA NIM API,
  *                                   called directly from the browser using
  *                                   the user's OWN API key — image and key
  *                                   never touch NotDore's server)
@@ -14,6 +14,7 @@
   const ns = (global.IOCR = global.IOCR || {});
 
   const FIELD_DEFS = [
+    { key: 'loai', label: 'Loại' },
     { key: 'ngay', label: 'Ngày' },
     { key: 'soHoaDon', label: 'Số hóa đơn' },
     { key: 'maTraCuu', label: 'Mã tra cứu' },
@@ -49,7 +50,7 @@
       emptyState: qs('iocrEmptyState'),
       settingsBtn: qs('iocrSettingsBtn'),
       settingsModalBackdrop: qs('iocrSettingsBackdrop'),
-      settingsProvider: qs('iocrSettingsProvider'),
+      settingsModel: qs('iocrSettingsModel'),
       settingsApiKey: qs('iocrSettingsApiKey'),
       settingsSaveBtn: qs('iocrSettingsSaveBtn'),
       settingsClearBtn: qs('iocrSettingsClearBtn'),
@@ -69,22 +70,11 @@
 
   // ---- Settings modal (API key + provider) ----
 
-  const PROVIDER_HELP_URLS = {
-    gemini: 'https://aistudio.google.com/apikey',
-    deepseek: 'https://platform.deepseek.com/api_keys',
-  };
-
   function refreshSettingsUi() {
     const s = ns.Vision.getSettings();
-    if (el.settingsProvider) el.settingsProvider.value = (s && s.provider) || 'gemini';
+    if (el.settingsModel) el.settingsModel.value = (s && s.model) || 'z-ai/glm-5.3-flash';
     if (el.settingsApiKey) el.settingsApiKey.value = (s && s.apiKey) || '';
-    updateSettingsHelpLink();
     updateSettingsButtonBadge();
-  }
-
-  function updateSettingsHelpLink() {
-    if (!el.settingsHelpLink || !el.settingsProvider) return;
-    el.settingsHelpLink.href = PROVIDER_HELP_URLS[el.settingsProvider.value] || '#';
   }
 
   function updateSettingsButtonBadge() {
@@ -94,7 +84,7 @@
     el.settingsBtn.classList.toggle('btn-outline-secondary', configured);
     el.settingsBtn.classList.toggle('btn-warning', !configured);
     el.settingsBtn.title = configured
-      ? `Đã cấu hình ${s.provider === 'deepseek' ? 'DeepSeek' : 'Gemini'}`
+      ? `Đã cấu hình NVIDIA NIM (${s.model || 'z-ai/glm-5.3-flash'})`
       : 'Chưa cấu hình API key AI — bấm để thiết lập';
   }
 
@@ -108,13 +98,13 @@
   }
 
   function saveSettingsFromForm() {
-    const provider = el.settingsProvider.value;
+    const model = (el.settingsModel ? el.settingsModel.value.trim() : '') || 'z-ai/glm-5.3-flash';
     const apiKey = el.settingsApiKey.value.trim();
     if (!apiKey) {
       if (el.settingsStatus) el.settingsStatus.textContent = 'Vui lòng nhập API key.';
       return;
     }
-    ns.Vision.saveSettings({ provider, apiKey });
+    ns.Vision.saveSettings({ provider: 'nvidia', model, apiKey });
     updateSettingsButtonBadge();
     if (el.settingsStatus) el.settingsStatus.textContent = 'Đã lưu — chỉ lưu trong trình duyệt này.';
     setTimeout(closeSettings, 600);
@@ -239,9 +229,11 @@
             return;
           }
           setQueueStatus(li, `Đang nhận diện AI (${i + 1}/${items.length})...`, 'bg-info');
-          updateProgress(i / items.length, `${item.pageLabel}: đang gửi cho ${settings.provider === 'deepseek' ? 'DeepSeek' : 'Gemini'}...`);
+          updateProgress(i / items.length, `${item.pageLabel}: đang gửi cho NVIDIA NIM...`);
 
           // Retry cho lỗi tạm thời của API
+          const MAX_RETRIES = 5;
+          const RETRYABLE_STATUSES = [503, 502, 504, 429];
           for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
             try {
               result = await ns.Vision.recognizeImage(item.blob);
@@ -252,7 +244,8 @@
                 const errMsg = err.message || '';
                 const isRetryable = RETRYABLE_STATUSES.some(s => errMsg.includes(String(s)));
                 if (isRetryable) {
-                  const delay = Math.min(1000 * Math.pow(2, attempt), 20000);
+                  // Delay càng lâu ở lần sau: 2s, 4s, 8s, 16s, cap 30s
+                  const delay = Math.min(2000 * Math.pow(2, attempt), 30000);
                   console.warn(`${file.name} lỗi ${errMsg.split('HTTP ')[1] || '?'} — chờ ${delay}ms rồi thử lại (lần ${attempt + 1}/${MAX_RETRIES + 1})`);
                   await new Promise(r => setTimeout(r, delay));
                   continue;
@@ -450,7 +443,6 @@
     if (el.settingsCloseBtn) el.settingsCloseBtn.addEventListener('click', closeSettings);
     if (el.settingsSaveBtn) el.settingsSaveBtn.addEventListener('click', saveSettingsFromForm);
     if (el.settingsClearBtn) el.settingsClearBtn.addEventListener('click', clearSettingsFromForm);
-    if (el.settingsProvider) el.settingsProvider.addEventListener('change', updateSettingsHelpLink);
     if (el.settingsModalBackdrop) {
       el.settingsModalBackdrop.addEventListener('click', (e) => {
         if (e.target === el.settingsModalBackdrop) closeSettings();
