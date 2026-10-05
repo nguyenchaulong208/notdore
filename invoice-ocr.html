@@ -38,14 +38,40 @@
     box-shadow: 0 20px 50px rgba(0,0,0,.25);
   }
 </style>
+    <link rel="stylesheet" href="assets/css/anime.css">
 </head>
 <body>
-	<header class="header">
-		<div class="branding">
-			<div class="container-fluid position-relative py-3">
-				<div class="logo-wrapper"><div class="site-logo"><a class="navbar-brand" href="index.html"><img class="logo-icon me-2" src="assets/images/site-logo.svg" alt="logo"><span class="logo-text">NotDore</span></a></div>
-			</div></div></div></div>
-	</header>
+    <!-- Floating sakura petals -->
+    <div class="sakura-container" aria-hidden="true">
+        <div class="sakura"></div><div class="sakura"></div><div class="sakura"></div>
+        <div class="sakura"></div><div class="sakura"></div><div class="sakura"></div>
+        <div class="sakura"></div><div class="sakura"></div><div class="sakura"></div>
+        <div class="sakura"></div><div class="sakura"></div><div class="sakura"></div>
+    </div>
+    <div class="sparkle" style="top:15%;left:10%;animation-delay:0s;"></div>
+    <div class="sparkle" style="top:30%;left:80%;animation-delay:1s;"></div>
+    <div class="sparkle" style="top:60%;left:40%;animation-delay:2s;"></div>
+    <div class="sparkle" style="top:80%;left:70%;animation-delay:0.5s;"></div>
+    <div class="sparkle" style="top:45%;left:90%;animation-delay:3s;"></div>
+
+	<header class="anime-header">
+        <div class="container-fluid">
+            <a class="anime-brand" href="index.html">
+                <svg class="anime-brand-logo" viewBox="0 0 38 38" fill="none">
+                    <circle cx="19" cy="19" r="18" stroke="url(#logoGrad)" stroke-width="2" fill="none"/>
+                    <path d="M19 8 L22.5 15 L30 15.5 L24.5 20.5 L26.5 28 L19 24 L11.5 28 L13.5 20.5 L8 15.5 L15.5 15 Z" fill="url(#logoGrad)"/>
+                    <defs><linearGradient id="logoGrad" x1="0" y1="0" x2="38" y2="38">
+                        <stop offset="0%" stop-color="#ff6b9d"/>
+                        <stop offset="100%" stop-color="#b47aff"/>
+                    </linearGradient></defs>
+                </svg>
+                <span class="anime-brand-name">NotDore</span>
+            </a>
+            <nav class="anime-nav">
+                <a href="index.html" class="anime-btn anime-btn--outline" style="font-size:0.85rem;padding:0.5rem 1.25rem;">← Trang chủ</a>
+            </nav>
+        </div>
+    </header>
 
 	<section class="tool-page">
 	<div class="container" style="max-width:1200px">
