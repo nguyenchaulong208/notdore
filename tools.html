@@ -1,87 +1,133 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-    <title>Công cụ làm việc - NotDore</title>
+    <title>Tất cả công cụ — NotDore</title>
     <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<meta name="google-adsense-account" content="ca-pub-9767208027997083">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Bộ sưu tập công cụ Excel, Python, AI Templates và tài liệu hữu ích cho kế toán, thuế, nhân sự">
+    <meta name="description" content="Bộ sưu tập đầy đủ các công cụ Excel, Python, AI Templates và tài liệu">
     <link rel="shortcut icon" href="favicon.ico">
-    <link href="https://fonts.googleapis.com/css?family=Quicksand:700|Roboto:400,400i,700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;700&display=swap" rel="stylesheet">
     <script defer src="assets/fontawesome/js/all.min.js"></script>
-    <link id="theme-style" rel="stylesheet" href="assets/css/theme.css">
-    <link rel="stylesheet" href="assets/css/tools.css">
+    <link rel="stylesheet" href="assets/css/anime.css">
 </head>
 <body>
-    <header class="header">
-        <div class="branding"><div class="container-fluid position-relative py-3"><div class="logo-wrapper"><div class="site-logo">
-            <a class="navbar-brand" href="index.html"><img class="logo-icon me-2" src="assets/images/site-logo.svg" alt="logo"><span class="logo-text">NotDore</span></a>
-        </div></div></div></div>
-    </header>
 
-    <section class="hero-section" id="hero-section">
-        <div class="container"><div class="row"><div class="col-12 col-lg-8 pt-5 mb-5 align-self-center">
-            <div class="promo pe-md-3 pe-lg-5">
-                <h1 class="headline mb-3">Công cụ làm việc</h1>
-                <div class="subheadline mb-4">Bộ sưu tập các hàm Excel, file VBA, Power Query, script Python, AI Templates và tài liệu tham khảo hữu ích cho công việc.</div>
-                <div class="cta-holder row gx-md-3 gy-3 gy-md-0"><div class="col-12 col-md-auto">
-                    <a href="#tools-grid" class="btn btn-primary w-100 scrollto">Khám phá ngay</a>
-                </div></div>
+    <!-- Floating sakura petals -->
+    <div class="sakura-container" aria-hidden="true">
+        <div class="sakura"></div><div class="sakura"></div><div class="sakura"></div>
+        <div class="sakura"></div><div class="sakura"></div><div class="sakura"></div>
+        <div class="sakura"></div><div class="sakura"></div><div class="sakura"></div>
+        <div class="sakura"></div><div class="sakura"></div><div class="sakura"></div>
+    </div>
+
+    <div class="anime-container">
+
+        <!-- Header -->
+        <header class="anime-header">
+            <a class="anime-brand" href="index.html">
+                <svg class="anime-brand-logo" viewBox="0 0 38 38" fill="none">
+                    <circle cx="19" cy="19" r="18" stroke="url(#logoGrad)" stroke-width="2" fill="none"/>
+                    <path d="M19 8 L22.5 15 L30 15.5 L24.5 20.5 L26.5 28 L19 24 L11.5 28 L13.5 20.5 L8 15.5 L15.5 15 Z" fill="url(#logoGrad)"/>
+                    <defs>
+                        <linearGradient id="logoGrad" x1="0" y1="0" x2="38" y2="38">
+                            <stop offset="0%" stop-color="#ff6b9d"/>
+                            <stop offset="100%" stop-color="#b47aff"/>
+                        </linearGradient>
+                    </defs>
+                </svg>
+                <span class="anime-brand-name">NotDore</span>
+            </a>
+            <nav class="anime-nav">
+                <a href="index.html" class="anime-btn anime-btn--outline">← Trang chủ</a>
+            </nav>
+        </header>
+
+        <!-- Page header -->
+        <section class="anime-section" style="padding-bottom:1rem;">
+            <span class="anime-hero-kicker">📚 Thư viện</span>
+            <h1 class="anime-hero-title" style="font-size:1.9rem;">Tất cả công cụ</h1>
+            <p class="anime-section-sub">Duyệt qua toàn bộ tài liệu — lọc theo chủ đề, loại, hoặc ngôn ngữ.</p>
+        </section>
+
+        <hr class="anime-divider">
+
+        <!-- Tools + Sidebar -->
+        <section class="anime-section" style="padding-top:1rem;">
+            <div style="display:grid;grid-template-columns:1fr 280px;gap:1.5rem;align-items:start;">
+
+                <!-- Main -->
+                <div>
+                    <div class="anime-sidebar-box">
+                        <div class="anime-sidebar-title"><i class="fas fa-filter me-2"></i>Lọc theo chủ đề</div>
+                        <ul class="anime-tabs" id="tool-tabs" aria-label="Danh mục công cụ">
+                            <li><span class="nav-link active">Đang tải...</span></li>
+                        </ul>
+                    </div>
+                    <div id="filter-count" style="font-size:0.8rem;color:var(--anime-text-dim);margin-bottom:1rem;"></div>
+
+                    <div id="tools-content">
+                        <div class="anime-loading"><i class="fas fa-spinner fa-spin"></i>Đang tải danh sách công cụ...</div>
+                    </div>
+
+                    <div id="tools-container" class="anime-grid" aria-hidden="true"></div>
+                </div>
+
+                <!-- Sidebar -->
+                <aside>
+                    <div class="anime-sidebar-box">
+                        <div class="anime-sidebar-title"><i class="fas fa-fire me-2"></i>Trending</div>
+                        <div class="anime-sidebar-item">
+                            <span class="anime-sidebar-icon" style="background:rgba(255,107,157,0.12);color:var(--anime-pink);">📊</span>
+                            <span>Excel</span>
+                        </div>
+                        <div class="anime-sidebar-item">
+                            <span class="anime-sidebar-icon" style="background:rgba(110,198,255,0.12);color:var(--anime-blue);">🐍</span>
+                            <span>Python</span>
+                        </div>
+                        <div class="anime-sidebar-item">
+                            <span class="anime-sidebar-icon" style="background:rgba(180,122,255,0.12);color:var(--anime-purple);">🤖</span>
+                            <span>AI Templates</span>
+                        </div>
+                    </div>
+
+                    <div class="anime-sidebar-box">
+                        <div class="anime-sidebar-title"><i class="fas fa-tags me-2"></i>Tags</div>
+                        <div style="display:flex;flex-wrap:wrap;gap:0.4rem;">
+                            <span class="anime-card-tag anime-card-tag--pink">Kế toán</span>
+                            <span class="anime-card-tag anime-card-tag--blue">Thuế</span>
+                            <span class="anime-card-tag anime-card-tag--purple">NHÂN SỰ</span>
+                            <span class="anime-card-tag anime-card-tag--gold">VBA</span>
+                            <span class="anime-card-tag anime-card-tag--green">Power Query</span>
+                        </div>
+                    </div>
+
+                    <div class="anime-sidebar-box" style="border-color:rgba(180,122,255,0.25);">
+                        <div class="anime-sidebar-title" style="color:var(--anime-purple);border-bottom-color:rgba(180,122,255,0.2);">
+                            <i class="fas fa-info-circle me-2"></i>Lưu ý
+                        </div>
+                        <p style="font-size:0.85rem;color:var(--anime-text-dim);margin:0;">Tất cả chỉ mang tính tham khảo cá nhân. Không thay thế tư vấn chuyên môn.</p>
+                    </div>
+                </aside>
+
             </div>
-        </div></div></div>
-    </section>
+        </section>
 
-    <section id="tools-grid" class="benefits-section theme-bg-light-gradient py-5">
-        <div class="container py-5">
-            <h2 class="section-heading text-center mb-3">Công cụ làm việc</h2>
-            <div class="sidebar-box single-col-max mx-auto mb-5">
-                <div class="sidebar-box__title"><i class="fas fa-toolbox me-2"></i>Lọc theo chủ đề</div>
-                <ul class="nav nav-pills justify-content-center flex-wrap" id="tool-tabs" aria-label="Danh mục công cụ">
-                    <li class="nav-item"><span class="nav-link active">Đang tải...</span></li>
-                </ul>
-            </div>
-            <div id="tools-content" aria-live="polite">
-                <p class="tool-state text-center"><i class="fas fa-spinner fa-spin me-2"></i>Đang tải danh sách công cụ...</p>
-            </div>
-            <div id="tools-container" class="d-none" aria-hidden="true"></div>
-        </div>
-    </section>
+        <hr class="anime-divider">
 
-    <section class="audience-section py-5"><div class="container"><div class="section-intro single-col-max mx-auto text-center">Tất cả công cụ chỉ mang tính tham khảo cá nhân. Không thay thế tư vấn chuyên môn.</div></div></section>
-    <section id="form-section" class="form-section">
-	<div class="container">
-		<div class="lead-form-wrapper single-col-max mx-auto theme-bg-light rounded p-5">
-			<h2 class="form-heading text-center">Đóng góp & Liên hệ</h2>
-			<div class="form-intro text-center mb-3">Nếu bạn có tài liệu muốn chia sẻ, góp ý về nội dung, hoặc cần liên hệ, bạn có thể gửi email cho tôi. Trang này chỉ phục vụ mục đích cá nhân và lưu trữ thông tin, không cung cấp dịch vụ hay tư vấn.</div>
-			<div class="form-wrapper mx-auto">
-				<form id="contactForm" class="signup-form row g-2">
-					<div class="col-12">
-						<label class="sr-only" for="semail">Email</label>
-						<input type="email" id="semail" name="semail1" class="form-control me-md-1 semail" placeholder="Your email" required>
-					</div>
-					<div class="col-12">
-						<label class="sr-only" for="smessage">Nội dung</label>
-						<textarea id="smessage" name="smessage" class="form-control" rows="5" placeholder="Nội dung tin nhắn..." required></textarea>
-					</div>
-					<div class="col-12">
-						<button type="submit" class="btn btn-primary btn-submit w-100">Send</button>
-					</div>
-					<div id="formStatus" class="col-12 text-center small"></div>
-				</form>
-			</div>
-		</div>
-	</div>
-</section>
+        <!-- Footer -->
+        <footer class="anime-footer">
+            <p>NotDore — Phong cách anime, thiết kế original.</p>
+            <p style="margin-top:0.3rem;">Made with ❤️ by Xiaoying Riley — Customized for NotDore</p>
+        </footer>
 
-    <footer class="footer"><div class="footer-bottom text-center py-5"><small class="copyright">Designed with ❤️ by Xiaoying Riley — Customized for NotDore</small></div></footer>
+    </div>
 
     <script src="assets/plugins/popper.min.js"></script>
     <script src="assets/plugins/bootstrap/js/bootstrap.min.js"></script>
     <script src="assets/plugins/smoothscroll.min.js"></script>
     <script src="assets/js/main.js"></script>
     <script src="assets/js/utils.js"></script>
-    <script src="assets/js/index.js"></script>
+    <script src="assets/js/tools.js"></script>
     <script src="assets/js/mail.js"></script>
 </body>
 </html>
