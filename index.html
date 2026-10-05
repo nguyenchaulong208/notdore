@@ -10,7 +10,7 @@
     <script defer src="assets/fontawesome/js/all.min.js"></script>
     <link rel="stylesheet" href="assets/css/anime.css">
 </head>
-<body>
+<body class="anime-page-index">
 
     <!-- Floating sakura petals -->
     <div class="sakura-container" aria-hidden="true">
@@ -31,23 +31,23 @@
 
         <!-- Header -->
         <header class="anime-header">
+        <div class="container-fluid">
             <a class="anime-brand" href="index.html">
                 <svg class="anime-brand-logo" viewBox="0 0 38 38" fill="none">
                     <circle cx="19" cy="19" r="18" stroke="url(#logoGrad)" stroke-width="2" fill="none"/>
                     <path d="M19 8 L22.5 15 L30 15.5 L24.5 20.5 L26.5 28 L19 24 L11.5 28 L13.5 20.5 L8 15.5 L15.5 15 Z" fill="url(#logoGrad)"/>
-                    <defs>
-                        <linearGradient id="logoGrad" x1="0" y1="0" x2="38" y2="38">
-                            <stop offset="0%" stop-color="#ff6b9d"/>
-                            <stop offset="100%" stop-color="#b47aff"/>
-                        </linearGradient>
-                    </defs>
+                    <defs><linearGradient id="logoGrad" x1="0" y1="0" x2="38" y2="38">
+                        <stop offset="0%" stop-color="#ff6b9d"/>
+                        <stop offset="100%" stop-color="#b47aff"/>
+                    </linearGradient></defs>
                 </svg>
                 <span class="anime-brand-name">NotDore</span>
             </a>
             <nav class="anime-nav">
-                <a href="tools.html" class="anime-btn anime-btn--outline">Tất cả công cụ</a>
+                <a href="index.html" class="anime-btn anime-btn--outline" style="font-size:0.85rem;padding:0.5rem 1.25rem;">← Trang chủ</a>
             </nav>
-        </header>
+        </div>
+    </header>
 
         <!-- Hero -->
         <section class="anime-hero">
@@ -127,10 +127,10 @@
         </section>
 
         <!-- Footer -->
-        <footer class="anime-footer">
-            <p>NotDore — Phong cách anime, thiết kế original.</p>
-            <p style="margin-top:0.3rem;">Made with ❤️ by Xiaoying Riley — Customized for NotDore</p>
-        </footer>
+            <footer class="anime-footer">
+        <p>NotDore — Phong cách anime, thiết kế original.</p>
+        <p style="margin-top:0.3rem;">Made with ❤️ by Xiaoying Riley — Customized for NotDore</p>
+    </footer>
 
     </div>
 

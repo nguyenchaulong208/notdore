@@ -10,10 +10,10 @@
 <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css" rel="stylesheet">
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet">
 
-<link rel="stylesheet" href="assets/css/merge-excel.css">
+
     <link rel="stylesheet" href="assets/css/anime.css">
 </head>
-<body>
+<body class="anime-page-merge-excel">
     <!-- Floating sakura petals -->
     <div class="sakura-container" aria-hidden="true">
         <div class="sakura"></div><div class="sakura"></div><div class="sakura"></div>
@@ -31,17 +31,26 @@
 <div class="container py-4 py-md-5" id="merge-wizard-root">
 
   <!-- Header trang -->
-  <header class="mb-4">
-    <nav aria-label="breadcrumb">
-      <ol class="breadcrumb small">
-        <li class="breadcrumb-item"><a href="/">Trang chủ</a></li>
-        <li class="breadcrumb-item"><a href="/cong-cu">Công cụ</a></li>
-        <li class="breadcrumb-item active" aria-current="page">Ghép File Excel</li>
-      </ol>
-    </nav>
-    <h1 class="h3 fw-bold mb-1"><i class="fa-solid fa-file-excel text-success me-2"></i>Ghép File Excel</h1>
-    <p class="text-muted mb-0">Ghép nhiều file Excel vào 1 file template — xử lý ngay trên trình duyệt, dữ liệu không rời máy bạn.</p>
-  </header>
+  <header class="anime-header">
+        <div class="container-fluid">
+            <a class="anime-brand" href="index.html">
+                <svg class="anime-brand-logo" viewBox="0 0 38 38" fill="none">
+                    <circle cx="19" cy="19" r="18" stroke="url(#logoGrad)" stroke-width="2" fill="none"/>
+                    <path d="M19 8 L22.5 15 L30 15.5 L24.5 20.5 L26.5 28 L19 24 L11.5 28 L13.5 20.5 L8 15.5 L15.5 15 Z" fill="url(#logoGrad)"/>
+                    <defs><linearGradient id="logoGrad" x1="0" y1="0" x2="38" y2="38">
+                        <stop offset="0%" stop-color="#ff6b9d"/>
+                        <stop offset="100%" stop-color="#b47aff"/>
+                    </linearGradient></defs>
+                </svg>
+                <span class="anime-brand-name">NotDore</span>
+            </a>
+            <nav class="anime-nav">
+                <a href="index.html" class="anime-btn anime-btn--outline" style="font-size:0.85rem;padding:0.5rem 1.25rem;">← Trang chủ</a>
+            </nav>
+        </div>
+    </header>
+<div class="anime-container">
+
 
   <!-- Stepper ngang -->
   <ol class="mw-stepper mb-4" id="mw-stepper" aria-label="Các bước ghép file">
@@ -200,5 +209,11 @@
 <!-- merge-wizard-main.js chịu trách nhiệm: new Worker('/js/merge-wizard-worker.js'),
      chuyển step (is-active), bật/tắt nút Quay lại/Tiếp tục theo state.canProceed() -->
 
+    
+</div>
+<footer class="anime-footer">
+        <p>NotDore — Phong cách anime, thiết kế original.</p>
+        <p style="margin-top:0.3rem;">Made with ❤️ by Xiaoying Riley — Customized for NotDore</p>
+    </footer>
 </body>
 </html>
