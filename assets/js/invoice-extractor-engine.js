@@ -116,15 +116,15 @@ KHÔNG BAO GIỜ để thiếu bất kỳ file nào. Số phần tử của mả
     try {
       const userMessages = [
         { role: 'system', content: SYSTEM_PROMPT },
-        { role: 'user', content: group.map((it, idx) => {
+        { role: 'user', content: group.flatMap((it, idx) => {
           const header = `--- FILE ${idx + 1}: ${it.sf.file.name} ---\n`;
           if (it.imageDataUrl) {
             return [
-              { type: 'text', text: header + '[Đây là ảnh chụp hóa đơn/biên lai. Vui lòng đọc và trích xuất thông tin theo schema JSON yêu cầu.]\n' },
+              { type: 'text', text: header + '[Đây là ảnh chụp hóa đơn/biên lai. Vui lòng đọc và trích xuất thông tin theo schema JSON yêu cầu.]' },
               { type: 'image_url', image_url: { url: it.imageDataUrl } },
             ];
           }
-          return { type: 'text', text: header + (it.text || '') + '\n' };
+          return { type: 'text', text: header + (it.text || '') };
         }) },
       ];
       const base = document.getElementById('baseUrl').value.replace(/\/$/, '');
