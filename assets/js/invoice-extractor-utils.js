@@ -45,6 +45,7 @@
   }
 
   // Render 1 page PDF → data URL PNG base64 (dùng cho PDF scan không có text)
+  // FIX: thêm try/catch để tránh crash khi render lỗi
   async function renderPdfPageAsDataUrl(file, pageNum, scale) {
     if (scale === undefined) scale = 2;
     const buf = await file.arrayBuffer();
@@ -55,10 +56,16 @@
     canvas.width = viewport.width;
     canvas.height = viewport.height;
     const ctx = canvas.getContext('2d');
-    await page.render({ canvasContext: ctx, viewport }).promise;
+    try {
+      await page.render({ canvasContext: ctx, viewport }).promise;
+    } catch (err) {
+      canvas.width = 0; canvas.height = 0;
+      canvas.toBlob = () => null;
+      console.warn('renderPdfPageAsDataUrl: render error', err);
+    }
     return new Promise((resolve, reject) => {
       canvas.toBlob((blob) => {
-        if (!blob) { reject(new Error('Không render được page')); return; }
+        if (!blob) { reject(new Error('Không render được page (lỗi canvas)')); return; }
         const reader = new FileReader();
         reader.onload = () => resolve(reader.result);
         reader.onerror = () => reject(reader.error);
@@ -77,11 +84,8 @@
     });
   }
 
-  // ---- batching helpers ----
-
+  // FIX: tăng maxChars lên 8000, giữ nguyên maxCount=8 để không vượt token limit
   function buildDynamicBatches(items, maxCount, maxChars) {
-    // items: mảng {sf, text, imageDataUrl}
-    // len của image ≈ 2000 ký tự (xấp xỉ)
     const batches = [];
     let cur = [], curChars = 0;
     items.forEach(sf => {
@@ -113,15 +117,53 @@
   }
 
   // ---- JSON parsing ----
-  function parseModelJson(raw) {
-    let cleaned = raw.trim().replace(/^```json/i, '').replace(/^```/, '').replace(/```$/, '').trim();
+  // FIX: parseModelJson ưu tiên dùng schema để tránh parse sai
+  function parseModelJson(raw, schema) {
+    let cleaned = raw.trim()
+      .replace(/^```json/i, '')
+      .replace(/^```/i, '')
+      .replace(/```$/, '')
+      .trim();
+
+    // Nếu có schema, cố gắng extract từng phần tử JSON trong mảng
+    if (schema) {
+      try {
+        return parseModelJsonWithSchema(cleaned, schema);
+      } catch (e) {
+        console.warn('parseModelJson: schema parse fail, fallback.', e);
+      }
+    }
+
     try { return JSON.parse(cleaned); } catch (e) {}
+
+    // Thử tìm mảng JSON trong text
     const start = cleaned.indexOf('[');
     const end = cleaned.lastIndexOf(']');
     if (start !== -1 && end !== -1) {
       try { return JSON.parse(cleaned.slice(start, end + 1)); } catch (e) {}
     }
-    throw new Error('Không phân tích được JSON trả về từ model.');
+
+    // Fallback: extract JSON bằng regex
+    const jsonStr = cleaned.match(/\{[\s\S]*\}/g);
+    if (jsonStr) {
+      try { return JSON.parse(jsonStr[0]); } catch (e) {}
+    }
+
+    throw new Error('Không phân tích được JSON trả về từ model. Kiểm tra lại output của model.');
+  }
+
+  // Helper: parse mảng JSON theo schema
+  function parseModelJsonWithSchema(raw, schema) {
+    const start = raw.indexOf('[');
+    const end = raw.lastIndexOf(']');
+    if (start === -1 || end === -1) {
+      // Có thể là object không phải mảng
+      try { return [JSON.parse(raw)]; } catch (e) { throw e; }
+    }
+    const jsonStr = raw.slice(start, end + 1);
+    const arr = JSON.parse(jsonStr);
+    if (!Array.isArray(arr)) return [arr];
+    return arr;
   }
 
   // ---- progress ----

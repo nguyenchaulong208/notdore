@@ -187,7 +187,9 @@
       sf.status = 'busy';
       renderFileList();
       // Gửi từng ảnh/page riêng để tránh vượt token limit
-      for (let p = 0; p < sf.imageDataUrls.length; p++) {
+      // FIX: giới hạn 10 page thay vì 20 để tránh token overload
+      const numPages = Math.min(sf.imageDataUrls.length, 10);
+      for (let p = 0; p < numPages; p++) {
         const batch = [{ sf, text: sf.text, imageDataUrl: sf.imageDataUrls[p] }];
         await processFileGroup(batch, engine.callLMStudio);
       }

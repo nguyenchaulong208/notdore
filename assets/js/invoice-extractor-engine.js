@@ -23,29 +23,61 @@
   } = utils;
 
   // ---- SYSTEM PROMPT ----
-  const SYSTEM_PROMPT = `Bạn là trợ lý trích xuất dữ liệu từ hóa đơn/biên lai điện tử Việt Nam (VAT invoice, biên lai thu phí, phiếu thu...).
-Với mỗi tài liệu được cung cấp (đã được đánh số theo thứ tự file), hãy trả về MỘT đối tượng JSON trong một mảng JSON duy nhất, đúng thứ tự file đưa vào.
-Chỉ trả về JSON hợp lệ, KHÔNG có markdown, KHÔNG có giải thích, KHÔNG có \`\`\`.
-Nếu nhận được ảnh (thay vì text), vui lòng đọc ảnh và trích xuất tương tự.
-Schema mỗi đối tượng:
-{
- "file_index": number (số thứ tự file, bắt đầu từ 1),
- "loai_chung_tu": string (vd: "Hóa đơn GTGT", "Biên lai thu phí"),
- "ky_hieu": string|null,
- "so": string|null,
- "ngay": string|null (định dạng dd/mm/yyyy),
- "don_vi_ban": string|null,
- "mst_ban": string|null,
- "don_vi_mua": string|null,
- "mst_mua": string|null,
- "noi_dung": string|null (tóm tắt ngắn gọn hàng hóa/dịch vụ, nếu nhiều dòng thì nối bằng dấu ";"),
- "tien_truoc_thue": number|null (số nguyên, không dấu phân cách),
- "thue_suat": string|null (vd: "8%"),
- "tien_thue": number|null (số nguyên),
- "tong_tien": number|null (số nguyên),
- "hinh_thuc_tt": string|null
-}
-Nếu tài liệu không có trường nào thì để null. Không được bỏ sót file nào, số phần tử JSON phải bằng số file được cung cấp.`;
+  // Schema chuẩn hóa để trích xuất hóa đơn bán hàng & biên lai thu phí VN
+  const SYSTEM_PROMPT = `BẠN LÀ TRỢ LÍ TRÍCH XUẤT DỮ LIỆU HÓA ĐƠN - BIÊN LÃI ĐIỆN TỬ VIỆT NAM.
+Mỗi tài liệu (image/png/png/scan hóa đơn, text PDF, HTML...) hãy trích xuất RẤT ĐẶC ĐIỂM:
+loại chứ từ, số chứng từ, ngày lập, tên người mua, MST người mua, đơn vị bán, MST bán,
+đơn vị mua, MST mua, nội dung hàng hóa/dịch vụ, tiền trước thuế, thuế suất, tiền thuế,
+tổng tiền, hình thức thanh toán.
+
+QUY TẮC TRẢ LỜI:
+1. Đúng 1 mảng JSON (Array), bắt đầu bằng [ và kết thúc bằng ], KHÔNG markdown, KHÔNG giải thích.
+2. Mỗi phần tử = 1 tài liệu. Số phần tử phải bằng số tài liệu gửi.
+3. file_index: bắt đầu từ 1, theo thứ tự tài liệu.
+4. Dùng null (không để undefined, không rỗng) khi dữ liệu không có.
+5. Số tiền (tien_truoc_thue, tien_thue, tong_tien): chỉ số, loại số. Loại bỏ dấu , và chữ.
+6. ngay: dd/mm/yyyy. Nếu mạch không rõ, để null.
+7. Hình thức thanh toán: "Tiền mặt", "Chuyển khoản", "Visa/Mastercard", "COD", null.
+
+VÍ DỤ (không sao chép; dùng để hình dung định dạng mảng):
+[
+  {
+    "file_index": 1,
+    "loai_chung_tu": "Hóa đơn GTGT",
+    "ky_hieu": "1234567890",
+    "so": "240001234567",
+    "ngay": "01/01/2026",
+    "don_vi_ban": "Cổ phần",
+    "mst_ban": "0101010101",
+    "don_vi_mua": "Cổ phần",
+    "mst_mua": "0202020202",
+    "noi_dung": "Ván chữ s, khoảng 50 m×1.2m, chất liệu gỗ; Hàng rào thép, ~10m; khác",
+    "tien_truoc_thue": 5000000,
+    "thue_suat": "8%",
+    "tien_thue": 400000,
+    "tong_tien": 5400000,
+    "hinh_thuc_tt": "Chuyển khoản"
+  },
+  {
+    "file_index": 2,
+    "loai_chung_tu": "Biên lai thu phí",
+    "ky_hieu": null,
+    "so": "BL-2026-001",
+    "ngay": "05/01/2026",
+    "don_vi_ban": null,
+    "mst_ban": null,
+    "don_vi_mua": "Cá nhân",
+    "mst_mua": "1234567890",
+    "noi_dung": "Thu phí chào hẹn sự kiện",
+    "tien_truoc_thue": 0,
+    "thue_suat": null,
+    "tien_thue": 0,
+    "tong_tien": 150000,
+    "hinh_thuc_tt": "Tiền mặt"
+  }
+]
+
+KHÔNG BAO GIỜ để thiếu bất kỳ file nào. Số phần tử của mảng phải bằng số file gốc.`;
 
   // ---- API call ----
   async function callLMStudio(base, model, userMessages, batchLen, timeoutMs) {
@@ -99,16 +131,42 @@ Nếu tài liệu không có trường nào thì để null. Không được b�
       const model = document.getElementById('modelInput').value.trim() || document.getElementById('modelSelect').value;
       const timeoutSec = parseInt(document.getElementById('timeoutSec').value) || 180;
       const raw = await callApiFn(base, model, userMessages, group.length, timeoutSec * 1000);
-      const parsed = parseModelJson(raw);
+      const parsed = parseModelJson(raw, {
+        file_index: 'number',
+        loai_chung_tu: 'string',
+        ky_hieu: 'string|null',
+        so: 'string|null',
+        ngay: 'string|null',
+        don_vi_ban: 'string|null',
+        mst_ban: 'string|null',
+        don_vi_mua: 'string|null',
+        mst_mua: 'string|null',
+        noi_dung: 'string|null',
+        tien_truoc_thue: 'number|null',
+        thue_suat: 'string|null',
+        tien_thue: 'number|null',
+        tong_tien: 'number|null',
+        hinh_thuc_tt: 'string|null',
+      });
       const arr = Array.isArray(parsed) ? parsed : [parsed];
       if (arr.length !== group.length) {
-        throw new Error(`Model trả về ${arr.length} kết quả cho ${group.length} file đã gửi.`);
+        // Nếu số phần tử không khớp, thử map trực tiếp theo thứ tự
+        const arr2 = Array.isArray(parsed) ? parsed : [parsed];
+        if (arr2.length === group.length) {
+          group.forEach((sf, i) => {
+            setResult(sf.sf, arr2[i] || {}, `Số kết quả không khớp (bản sao ${i + 1})`);
+            sf.sf.status = 'ok'; sf.sf.note = '';
+          });
+        } else {
+          throw new Error(`Model trả về ${arr2.length} kết quả cho ${group.length} file đã gửi.`);
+        }
+      } else {
+        group.forEach((sf, i) => {
+          const rec = arr.find(r => r.file_index === i + 1) || arr[i] || {};
+          setResult(sf.sf, rec, '');
+          sf.sf.status = 'ok'; sf.sf.note = '';
+        });
       }
-      group.forEach((sf, i) => {
-        const rec = arr.find(r => r.file_index === i + 1) || arr[i] || {};
-        setResult(sf.sf, rec, '');
-        sf.sf.status = 'ok'; sf.sf.note = '';
-      });
     } catch (err) {
       if (group.length === 1) {
         const sf = group[0].sf;

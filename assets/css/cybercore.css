@@ -1,0 +1,659 @@
+/**
+ * cybercore.css — Cyberpunk theme for NotDore
+ * Kết hợp: Bootstrap 5 + Cyberpunk aesthetic (neon pink/cyan glow)
+ * Áp dụng cho tất cả các trang dự trừ: tools.html, tool-detail.html, category-old.html, index-old.html, xml-hoa-don.html, admin.html
+ */
+
+/* ============================================
+   CSS Variables – Theme
+   ============================================ */
+:root {
+  /* Dark cyberpunk background */
+  --bg-primary: #0a0e1a;
+  --bg-secondary: #0e1424;
+  --bg-tertiary: #111827;
+  --bg-elevated: #161e30;
+  --bg-card: #0b1020;
+  --bg-card-hover: #131d32;
+  --bg-input: #0a0e1a;
+
+  /* Neon colors */
+  --neon-pink: #ff2d95;
+  --neon-cyan: #00f0ff;
+  --neon-magenta: #b47aff;
+  --neon-gold: #ffd700;
+  --neon-green: #00ff88;
+
+  /* Text */
+  --text-primary: #d1d9e8;
+  --text-secondary: #8a9bab;
+  --text-muted: #4a5a72;
+  --text-inverse: #0a0e1a;
+
+  /* Border */
+  --border-color: #252d4a;
+  --border-w: 1px;
+
+  /* Border radius */
+  --radius-sm: 4px;
+  --radius: 8px;
+  --radius-lg: 12px;
+
+  /* Effects */
+  --glow-pink: 0 0 12px rgba(255, 45, 149, 0.4);
+  --glow-cyan: 0 0 12px rgba(0, 240, 255, 0.4);
+  --glow-magenta: 0 0 12px rgba(180, 122, 255, 0.4);
+
+  /* Spacing */
+  --spacing-xs: 0.25rem;
+  --spacing-sm: 0.5rem;
+  --spacing: 1rem;
+  --spacing-lg: 1.5rem;
+  --spacing-xl: 2rem;
+
+  /* Typography */
+  --font-body: 'Quicksand', system-ui, -apple-system, sans-serif;
+  --font-display: 'Quicksand', system-ui, -apple-system, sans-serif;
+}
+
+/* ============================================
+   Base Reset & Body
+   ============================================ */
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-body);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ============================================
+   Header & Navigation
+   ============================================ */
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  background: rgba(10, 14, 26, 0.85);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border-color);
+  padding: 0;
+}
+
+.header.sticky {
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.logo-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.site-logo {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.logo-icon {
+  width: 40px;
+  height: 40px;
+  border: 2px solid var(--neon-cyan);
+  border-radius: var(--radius-lg);
+  background: linear-gradient(135deg, var(--neon-pink), var(--neon-magenta));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.logo-text {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.navbar-brand {
+  text-decoration: none;
+  color: var(--text-primary);
+}
+
+/* ============================================
+   Hero Section
+   ============================================ */
+.hero-section {
+  background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-tertiary) 50%, var(--bg-secondary) 100%);
+  padding: 5rem 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-section::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 20% 50%, rgba(255, 45, 149, 0.05), transparent 50%),
+              radial-gradient(circle at 80% 50%, rgba(0, 240, 255, 0.05), transparent 50%);
+  pointer-events: none;
+}
+
+.promo {
+  position: relative;
+}
+
+.headline {
+  font-family: var(--font-display);
+  font-size: 3rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.2;
+  margin-bottom: 1.5rem;
+}
+
+.headline .neon {
+  background: linear-gradient(135deg, var(--neon-pink), var(--neon-cyan));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.subheadline {
+  font-size: 1.1rem;
+  color: var(--text-secondary);
+  line-height: 1.7;
+  margin-bottom: 2rem;
+}
+
+.cta-holder {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: center;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  border-radius: var(--radius);
+  font-family: var(--font-body);
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  border: 2px solid transparent;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--neon-pink), var(--neon-magenta));
+  color: #fff;
+  border-color: var(--neon-pink);
+  box-shadow: var(--glow-pink);
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--glow-pink), 0 4px 24px rgba(255, 45, 149, 0.3);
+}
+
+.btn-secondary {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-primary);
+  border: 2px solid var(--border-color);
+}
+
+.btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: var(--neon-cyan);
+  box-shadow: var(--glow-cyan);
+}
+
+/* ============================================
+   Cards & Grid
+   ============================================ */
+.anime-container,
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+.anime-section {
+  padding: 3rem 0;
+}
+
+.anime-section-heading {
+  font-family: var(--font-display);
+  font-size: 2.2rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 1rem;
+  position: relative;
+  padding-bottom: 1rem;
+}
+
+.anime-section-heading::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 60px;
+  height: 3px;
+  background: linear-gradient(90deg, var(--neon-pink), var(--neon-cyan));
+  border-radius: 2px;
+}
+
+.anime-section-sub {
+  color: var(--text-secondary);
+  font-size: 1rem;
+  margin-bottom: 2rem;
+}
+
+.anime-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+.anime-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.anime-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--neon-pink), var(--neon-cyan));
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.anime-card:hover {
+  border-color: var(--neon-pink);
+  box-shadow: var(--glow-pink), 0 8px 32px rgba(0, 0, 0, 0.3);
+  transform: translateY(-4px);
+}
+
+.anime-card:hover::before {
+  opacity: 1;
+}
+
+.card-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: var(--radius);
+  background: linear-gradient(135deg, var(--neon-pink), var(--neon-magenta));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.card-title {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+}
+
+.card-text {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+/* ============================================
+   Stats Section
+   ============================================ */
+.anime-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1.5rem;
+  padding: 3rem 0;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.anime-stat {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 2rem;
+  text-align: center;
+  transition: all 0.3s ease;
+}
+
+.anime-stat:hover {
+  border-color: var(--neon-cyan);
+  box-shadow: var(--glow-cyan);
+}
+
+.stat-number {
+  font-family: var(--font-display);
+  font-size: 2.5rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, var(--neon-pink), var(--neon-cyan));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 0.5rem;
+}
+
+.stat-label {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* ============================================
+   Tabs
+   ============================================ */
+.anime-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  list-style: none;
+  padding: 0;
+  margin: 2rem 0;
+}
+
+.anime-tabs .nav-link {
+  padding: 0.6rem 1.25rem;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  background: var(--bg-card);
+  border: 2px solid var(--border-color);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.anime-tabs .nav-link.active {
+  background: linear-gradient(135deg, var(--neon-pink), var(--neon-magenta));
+  color: #fff;
+  border-color: var(--neon-pink);
+  box-shadow: var(--glow-pink);
+}
+
+.anime-tabs .nav-link:hover {
+  border-color: var(--neon-cyan);
+  color: var(--neon-cyan);
+}
+
+/* ============================================
+   Tools Grid (Studio)
+   ============================================ */
+#tools-grid,
+.tools-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.5rem;
+}
+
+.tool-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  transition: all 0.3s ease;
+}
+
+.tool-card:hover {
+  border-color: var(--neon-cyan);
+  box-shadow: var(--glow-cyan);
+  transform: translateY(-4px);
+}
+
+.tool-card .card-body {
+  padding: 1.5rem;
+}
+
+.tool-card .card-title {
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+}
+
+.tool-card .card-text {
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  line-height: 1.6;
+}
+
+.tool-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 1rem;
+}
+
+.badge-cat {
+  border-radius: 3px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  background: rgba(255, 45, 149, 0.15);
+  color: var(--neon-pink);
+}
+
+.tool-state {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  padding: 1.5rem 0;
+}
+
+/* ============================================
+   Forms
+   ============================================ */
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-label {
+  display: block;
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  margin-bottom: 0.5rem;
+}
+
+.form-control {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background: var(--bg-input);
+  border: 2px solid var(--border-color);
+  border-radius: var(--radius);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  transition: all 0.3s ease;
+}
+
+.form-control:focus {
+  border-color: var(--neon-cyan);
+  box-shadow: var(--glow-cyan);
+  outline: none;
+}
+
+textarea.form-control {
+  resize: vertical;
+  min-height: 120px;
+}
+
+/* ============================================
+   Footer
+   ============================================ */
+.anime-footer {
+  background: var(--bg-secondary);
+  border-top: 1px solid var(--border-color);
+  padding: 2rem 0;
+  text-align: center;
+}
+
+.anime-footer p {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+/* ============================================
+   Scrollbar Styling
+   ============================================ */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-tertiary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--neon-pink);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--neon-cyan);
+}
+
+/* ============================================
+   Animations & Effects
+   ============================================ */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.anime-card,
+.anime-stat,
+.anime-btn {
+  animation: fadeInUp 0.6s ease forwards;
+}
+
+.anime-card:nth-child(1) { animation-delay: 0.05s; }
+.anime-card:nth-child(2) { animation-delay: 0.1s; }
+.anime-card:nth-child(3) { animation-delay: 0.15s; }
+.anime-card:nth-child(4) { animation-delay: 0.2s; }
+.anime-card:nth-child(5) { animation-delay: 0.25s; }
+.anime-card:nth-child(6) { animation-delay: 0.3s; }
+
+.anime-stat:nth-child(1) { animation-delay: 0.05s; }
+.anime-stat:nth-child(2) { animation-delay: 0.1s; }
+.anime-stat:nth-child(3) { animation-delay: 0.15s; }
+
+/* ========================================================
+   Responsive Design
+   ======================================================== */
+@media (max-width: 991.98px) {
+  .headline {
+    font-size: 2.2rem;
+  }
+
+  .anime-stats {
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  }
+
+  .anime-section {
+    padding: 2rem 0;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .headline {
+    font-size: 1.6rem;
+  }
+
+  .subheadline {
+    font-size: 0.95rem;
+  }
+
+  .cta-holder {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .cta-holder .btn {
+    width: 100%;
+  }
+
+  .anime-stats {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+
+  .anime-section {
+    padding: 1.5rem 0;
+  }
+}
+
+/* ── Anime Brand / Logo ── */
+.anime-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+}
+.anime-brand-logo {
+  width: 30px;
+  height: 30px;
+  border-radius: var(--radius-sm);
+  background: linear-gradient(135deg, var(--neon-pink), var(--neon-magenta));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #0a0e1a;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+.anime-brand-logo svg {
+  width: 100%;
+  height: 100%;
+}
+.anime-brand-name {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: var(--text-primary);
+  letter-spacing: 0.05em;
+  line-height: 1.2;
+}
