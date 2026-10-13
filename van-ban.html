@@ -207,6 +207,7 @@
 			overflow-y: hidden;
 			-webkit-overflow-scrolling: touch;
 		}
+		.doc-table-scroll { max-height: 60vh; overflow-y: auto; }
 		.doc-table { font-size: 0.875rem; margin-bottom: 0; min-width: 760px; }
 		.doc-table thead th {
 			background: #f8f7fc;
@@ -267,18 +268,44 @@
 		/* ── Load more ──────────────────────────────────────────── */
 		#load-more-wrap { margin-top: 1.5rem; }
 	</style>
+    <link rel="stylesheet" href="assets/css/anime.css">
 </head>
 
 <body>
-	<header class="header">
-		<div class="branding">
-			<div class="container-fluid position-relative py-3">
-				<div class="logo-wrapper">
-					<div class="site-logo"><a class="navbar-brand" href="index.html"><img class="logo-icon me-2" src="assets/images/site-logo.svg" alt="logo"><span class="logo-text">NotDore</span></a></div>
-				</div>
-			</div>
-		</div>
-	</header>
+    <!-- Floating sakura petals -->
+    <div class="sakura-container" aria-hidden="true">
+        <div class="sakura"></div><div class="sakura"></div><div class="sakura"></div>
+        <div class="sakura"></div><div class="sakura"></div><div class="sakura"></div>
+        <div class="sakura"></div><div class="sakura"></div><div class="sakura"></div>
+        <div class="sakura"></div><div class="sakura"></div><div class="sakura"></div>
+    </div>
+    <div class="sparkle" style="top:15%;left:10%;animation-delay:0s;"></div>
+    <div class="sparkle" style="top:30%;left:80%;animation-delay:1s;"></div>
+    <div class="sparkle" style="top:60%;left:40%;animation-delay:2s;"></div>
+    <div class="sparkle" style="top:80%;left:70%;animation-delay:0.5s;"></div>
+    <div class="sparkle" style="top:45%;left:90%;animation-delay:3s;"></div>
+
+	<header class="anime-header">
+        <div class="container-fluid">
+            <a class="anime-brand" href="index.html">
+                <svg class="anime-brand-logo" viewBox="0 0 38 38" fill="none">
+                    <circle cx="19" cy="19" r="18" stroke="url(#logoGrad)" stroke-width="2" fill="none"/>
+                    <path d="M19 8 L22.5 15 L30 15.5 L24.5 20.5 L26.5 28 L19 24 L11.5 28 L13.5 20.5 L8 15.5 L15.5 15 Z" fill="url(#logoGrad)"/>
+                    <defs><linearGradient id="logoGrad" x1="0" y1="0" x2="38" y2="38">
+                        <stop offset="0%" stop-color="#ff6b9d"/>
+                        <stop offset="100%" stop-color="#b47aff"/>
+                    </linearGradient></defs>
+                </svg>
+                <span class="anime-brand-name">NotDore</span>
+            </a>
+            <nav class="anime-nav">
+                <a href="index.html" class="anime-btn anime-btn--outline" style="font-size:0.85rem;padding:0.5rem 1.25rem;">← Trang chủ</a>
+            </nav>
+        </div>
+    </header>
+
+<div class="anime-container">
+
 
 	<section class="hero-section" id="hero-section">
 		<div class="container">
@@ -380,8 +407,8 @@
 				</div>
 			</div>
 
-			<!-- Danh sách văn bản (dạng bảng) -->
-			<div class="table-responsive doc-table-wrap">
+			<!-- Danh sách văn bản (dạng bảng - cuộn) -->
+			<div class="table-responsive doc-table-wrap doc-table-scroll">
 				<table class="table doc-table align-middle mb-0">
 					<thead>
 						<tr>
@@ -393,22 +420,15 @@
 							<th class="text-center">Tệp</th>
 						</tr>
 					</thead>
-					<tbody id="documents-grid">
-						<tr id="docs-loading">
-							<td colspan="6" class="text-center py-5">
-								<i class="fas fa-spinner fa-spin fa-2x" style="color:#ed6524"></i>
-								<p class="mt-3 text-muted mb-0">Đang tải danh sách văn bản...</p>
-							</td>
-						</tr>
-					</tbody>
-				</table>
-			</div>
-
-			<!-- Load more -->
-			<div id="load-more-wrap" class="text-center" style="display:none">
-				<button class="btn btn-outline-secondary px-4" id="load-more-btn" type="button">
-					<i class="fas fa-chevron-down me-2"></i>Xem thêm
-				</button>
+				<tbody id="documents-grid">
+					<tr id="docs-loading">
+						<td colspan="6" class="text-center py-5">
+							<i class="fas fa-spinner fa-spin fa-2x" style="color:#ed6524"></i>
+							<p class="mt-3 text-muted mb-0">Đang tải danh sách văn bản...</p>
+						</td>
+					</tr>
+				</tbody>
+			</table>
 			</div>
 		</div>
 	</section>
@@ -501,11 +521,12 @@
 </section>
 
 
-	<footer class="footer">
-		<div class="footer-bottom text-center py-5">
-			<small class="copyright">Designed with <span class="sr-only">love</span><i class="fas fa-heart" style="color: #fb866a;"></i> by <a class="theme-link" href="http://themes.3rdwavemedia.com" target="_blank">Xiaoying Riley</a> for developers — Customized for NotDore</small>
-		</div>
-	</footer>
+	    
+</div>
+<footer class="anime-footer">
+        <p>NotDore — Phong cách anime, thiết kế original.</p>
+        <p style="margin-top:0.3rem;">Made with ❤️ by Xiaoying Riley — Customized for NotDore</p>
+    </footer>
 
 	<script src="assets/plugins/popper.min.js"></script>
 	<script src="assets/plugins/bootstrap/js/bootstrap.min.js"></script>
