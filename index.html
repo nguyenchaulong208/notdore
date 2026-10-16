@@ -26,11 +26,11 @@
     </div>
 
     <!-- Sparkles -->
-    <div class="sparkle" style="top:15%;left:10%;animation-delay:0s;"></div>
-    <div class="sparkle" style="top:30%;left:80%;animation-delay:1s;"></div>
-    <div class="sparkle" style="top:60%;left:40%;animation-delay:2s;"></div>
-    <div class="sparkle" style="top:80%;left:70%;animation-delay:0.5s;"></div>
-    <div class="sparkle" style="top:45%;left:90%;animation-delay:3s;"></div>
+        <div class="sparkle anime-sparkle anime-sparkle-1"></div>
+        <div class="sparkle anime-sparkle anime-sparkle-2"></div>
+        <div class="sparkle anime-sparkle anime-sparkle-3"></div>
+        <div class="sparkle anime-sparkle anime-sparkle-4"></div>
+        <div class="sparkle anime-sparkle anime-sparkle-5"></div>
 
     <div class="anime-container">
 
@@ -50,7 +50,7 @@
         </div>
     </header>
 
-        <!-- Hero -->
+<!-- Hero -->
         <section class="anime-hero">
             <span class="anime-hero-kicker">✦ Bộ sưu tập cá nhân</span>
             <h1 class="anime-hero-title">Công cụ làm việc<br>cho người Việt</h1>
@@ -61,78 +61,27 @@
             </div>
         </section>
 
-                  
+        <!-- Stats: 2 mục giữ lại, 3rd là dự báo thời tiết theo vị trí (real-time) -->
+                <div class="anime-stats d-flex flex-wrap align-items-center justify-content-around gap-4">
+                    <div class="anime-stat">
+                        <div class="anime-stat__number" id="stat-tools">--</div>
+                        <div class="anime-stat__label">Công cụ</div>
+                    </div>
+                    <div class="anime-stat">
+                        <div class="anime-stat__number">+50</div>
+                        <div class="anime-stat__label">Tài liệu</div>
+                    </div>
+                    <div class="anime-stat anime-stat-weather">
+                        <div class="anime-weather-inner">
+                            <div id="weather-icon">🌤</div>
+                            <div class="anime-stat__number" id="weather-temp">--°C</div>
+                            <div class="anime-stat__label">Thời tiết hiện tại</div>
+                        </div>
+                    </div>
+                </div>
 
-<!-- Stats: 2 mục giữ lại, 3rd là dự báo thời tiết theo vị trí (real-time) -->
-        <div class="anime-stats d-flex flex-wrap align-items-center justify-content-around gap-4">
-          const weatherIcon = document.getElementById('weather-icon');
-          const weatherTemp = document.getElementById('weather-temp');
-
-          function getLocation() {
-            return new Promise((resolve) => {
-              if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(
-                  (pos) => resolve({ lat: pos.coords.latitude, lon: pos.coords.longitude, source: 'geolocation' }),
-                  () => {
-                    fetch('https://ipapi.co/json/')
-                      .then(res => res.json())
-                      .then(data => resolve({ lat: parseFloat(data.latitude), lon: parseFloat(data.longitude), source: 'ip' }))
-                      .catch(err => resolve({ lat: 21.0285, lon: 105.8542, source: 'default' }));
-                  }
-                );
-              } else {
-                fetch('https://ipapi.co/json/')
-                  .then(res => res.json())
-                  .then(data => resolve({ lat: parseFloat(data.latitude), lon: parseFloat(data.longitude), source: 'ip' }))
-                  .catch(err => resolve({ lat: 21.0285, lon: 105.8542, source: 'default' }));
-              }
-            });
-          }
-
-          function getWeather(lat, lon) {
-            fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code&timezone=auto&forecast_days=1`)
-              .then(res => res.json())
-              .then(data => {
-                const code = data.current.weather_code;
-                const temp = Math.round(data.current.temperature_2m);
-                let icon = '🌤', desc = 'Nhẵn';
-                if (code >= 1 && code <= 3) { icon = '☀️'; desc = 'Nhẵn'; }
-                else if (code >= 45 && code <= 48) { icon = '🌫'; desc = 'Âm thảm'; }
-                else if (code >= 51 && code <= 55) { icon = '🌦'; desc = 'Mưa nhỏ'; }
-                else if (code >= 56 && code <= 57) { icon = '🌧'; desc = 'Mưa đầm đìp'; }
-                else if (code >= 61 && code <= 65) { icon = '🌧'; desc = 'Mưa'; }
-                else if (code >= 66 && code <= 67) { icon = '🌧'; desc = 'Mưa đầm'; }
-                else if (code >= 71 && code <= 77) { icon = '❄️'; desc = 'Tuyết'; }
-                else if (code >= 80 && code <= 82) { icon = '🌧'; desc = 'Mưa rào'; }
-                else if (code >= 85 && code <= 86) { icon = '🌨'; desc = 'Tuyết rào'; }
-                else if (code >= 95 && code <= 99) { icon = '⛈'; desc = 'Lũ'; }
-                weatherIcon.textContent = icon;
-                weatherTemp.textContent = temp + '°C';
-              })
-              .catch(err => {
-                weatherIcon.textContent = '🌤';
-                weatherTemp.textContent = '--°C';
-              });
-          }
-
-          function initWeather() {
-            getLocation().then(loc => {
-              if (loc.country === 'Việt Nam' || loc.source === 'default') {
-                getWeather(loc.lat, loc.lon);
-              }
-            });
-          }
-
-          if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', initWeather);
-          } else {
-            initWeather();
-          }
-        })();
-        </script>
-
-
-        <!-- Tools Grid -->
+                <!-- Tools Grid -->
+            <!-- Tools Grid -->
 <section id="tools" class="anime-section">
     <h2 class="anime-section-heading">Công cụ làm việc</h2>
     <p class="anime-section-sub">Lọc theo chủ đề để tìm tài liệu phù hợp.</p>
@@ -146,11 +95,11 @@
     </ul>
 
     <div id="tools-content">
-        <div class="anime-loading" style="display:none;"><i class="fas fa-spinner fa-spin"></i>Đang tải danh sách công cụ...</div>
-        <div id="tools-error" style="display:none;color:#f87171;background:#7f1d1d;padding:1rem;border-radius:0.5rem;border:1px solid #dc2626;">
-            <i class="fas fa-exclamation-circle me-2"></i>Không thể tải danh sách công cụ. Vui lòng thử lại.
-            <button id="btn-retry" class="btn btn-outline-secondary btn-sm ms-2">Thử lại</button>
-        </div>
+            <div class="anime-loading"><i class="fas fa-spinner fa-spin"></i>Đang tải danh sách công cụ...</div>
+            <div id="tools-error" class="anime-error">
+                <i class="fas fa-exclamation-circle me-2"></i>Không thể tải danh sách công cụ. Vui lòng thử lại.
+                <button id="btn-retry" class="btn btn-outline-secondary btn-sm ms-2">Thử lại</button>
+            </div>
     </div>
 
     <div id="tools-container" class="anime-grid" aria-hidden="true"></div>
@@ -159,42 +108,42 @@
         <hr class="anime-divider">
 
         <!-- Disclaimer -->
-        <section class="anime-section" style="padding-top:1rem;">
+        <section class="anime-section">
             <div class="anime-notice anime-text-center">
                 ⚠️ Tất cả công cụ chỉ mang tính tham khảo cá nhân. Không thay thế tư vấn chuyên môn.
             </div>
         </section>
 
         <!-- Contact -->
-        <section class="anime-section" style="padding-bottom:4rem;">
+        <section class="anime-section">
             <h2 class="anime-section-heading">Đóng góp & Liên hệ</h2>
-            <p class="anime-section-sub anime-text-center" style="max-width:500px;margin:0.5rem auto 2rem;">Có tài liệu muốn chia sẻ? Góp ý hay cần liên hệ? Gửi email cho tôi.</p>
+            <p class="anime-section-sub anime-text-center">Có tài liệu muốn chia sẻ? Góp ý hay cần liên hệ? Gửi email cho tôi.</p>
 
-            <div style="max-width:500px;margin:0 auto;">
-                <form id="contactForm" class="signup-form row g-3" style="background:var(--bg-card);border:2px solid var(--border);border-radius:20px;box-shadow:0 4px 16px rgba(0,0,0,0.08);">
+            <div class="anime-contact-wrap">
+                <form id="contactForm" class="signup-form row g-3 anime-contact-form">
                     <div class="col-12">
-                        <label for="semail" style="font-size:0.8rem;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-muted);display:block;margin-bottom:0.3rem;">Email</label>
-                        <input type="email" id="semail" name="semail1" class="form-control" placeholder="your@email.com" required style="background:var(--bg-input);border:2px solid var(--border);border-radius:10px;padding:0.75rem 1rem;color:var(--text-primary);font-family:var(--font-family);font-size:0.92rem;transition:all 0.2s;">
+                        <label for="semail" class="anime-form-label">Email</label>
+                        <input type="email" id="semail" name="semail1" class="form-control anime-form-input" placeholder="your@email.com" required>
                     </div>
                     <div class="col-12">
-                        <label for="smessage" style="font-size:0.8rem;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-muted);display:block;margin-bottom:0.3rem;">Nội dung</label>
-                        <textarea id="smessage" name="smessage" class="form-control" rows="4" placeholder="Nội dung tin nhắn..." required style="background:var(--bg-input);border:2px solid var(--border);border-radius:10px;padding:0.75rem 1rem;color:var(--text-primary);font-family:var(--font-family);font-size:0.92rem;resize:vertical;transition:all 0.2s;"></textarea>
+                        <label for="smessage" class="anime-form-label">Nội dung</label>
+                        <textarea id="smessage" name="smessage" class="form-control anime-form-input" rows="4" placeholder="Nội dung tin nhắn..." required></textarea>
                     </div>
                     <div class="col-12">
-                        <button type="submit" class="anime-btn anime-btn--primary w-100" style="justify-content:center;">
-                            <i class="fas fa-paper-plane me-2"></i>Gửi
+                        <button type="submit" class="anime-btn anime-btn--primary anime-btn--full">
+                                                    <i class="fas fa-paper-plane me-2"></i>Gửi
                         </button>
                     </div>
-                    <div id="formStatus" class="col-12 text-center small" style="color:var(--text-muted);"></div>
+                    <div id="formStatus" class="col-12 text-center small anime-form-status"></div>
                 </form>
             </div>
         </section>
 
         <!-- Footer -->
             <footer class="anime-footer">
-        <p>NotDore — Phong cách anime, thiết kế original.</p>
-        <p style="margin-top:0.3rem;">Made with ❤️ by Xiaoying Riley — Customized for NotDore</p>
-    </footer>
+                    <p>NotDore — Phong cách anime, thiết kế original.</p>
+                    <p class="anime-footer-copy">Made with ❤️ by Xiaoying Riley — Customized for NotDore</p>
+                </footer>
 
     </div>
 
@@ -210,141 +159,55 @@
       (function() {
         const weatherIcon = document.getElementById('weather-icon');
         const weatherTemp = document.getElementById('weather-temp');
-        const currentDate = document.getElementById('current-date');
-        const currentDateDisplay = document.getElementById('current-date-display');
-
-        function formatDate() {
-          const now = new Date();
-          const days = ['CN', 'Th 2', 'Th 3', 'Th 4', 'Th 5', 'Th 6', 'Th 7'];
-          const month = now.getMonth() + 1;
-          const day = now.getDate();
-          const dayOfWeek = days[now.getDay()];
-          currentDate.textContent = day + '/' + month + '/' + now.getFullYear();
-          currentDateDisplay.textContent = day + '/' + month + ' (' + dayOfWeek + ')';
-        }
 
         function getLocation() {
-          return new Promise((resolve, reject) => {
-            // 1. Try HTML5 geolocation
-            if (navigator.geolocation) {
-              navigator.geolocation.getCurrentPosition(
-                (pos) => {
-                  resolve({ lat: pos.coords.latitude, lon: pos.coords.longitude, source: 'geolocation' });
-                },
-                () => {
-                  // 2. Fallback: get location from IP
-                  fetch('https://ipapi.co/json/')
-                    .then(res => res.json())
-                    .then(data => {
-                      resolve({
-                        lat: parseFloat(data.latitude),
-                        lon: parseFloat(data.longitude),
-                        city: data.city || 'Hà Nội',
-                        country: data.country_name || 'Việt Nam',
-                        source: 'ip'
-                      });
-                    })
-                    .catch(err => {
-                      resolve({ lat: 21.0285, lon: 105.8542, city: 'Hà Nội', country: 'Việt Nam', source: 'default' });
-                    });
-                }
-              );
-            } else {
-              // Fallback: get location from IP
-              fetch('https://ipapi.co/json/')
-                .then(res => res.json())
-                .then(data => {
-                  resolve({
-                    lat: parseFloat(data.latitude),
-                    lon: parseFloat(data.longitude),
-                    city: data.city || 'Hà Nội',
-                    country: data.country_name || 'Việt Nam',
-                    source: 'ip'
-                  });
-                })
-                .catch(err => {
-                  resolve({ lat: 21.0285, lon: 105.8542, city: 'Hà Nội', country: 'Việt Nam', source: 'default' });
-                });
-            }
+          return new Promise((resolve) => {
+            // Chỉ dùng IP (không cần quyền vị trí)
+            fetch('https://ipapi.co/json/')
+              .then(res => res.json())
+              .then(data => resolve({ lat: parseFloat(data.latitude), lon: parseFloat(data.longitude), source: 'ip' }))
+              .catch(err => resolve({ lat: 21.0285, lon: 105.8542, source: 'default' }));
           });
         }
 
         function getWeather(lat, lon) {
-          // Dùng Open-Meteo (miễn phí, không cần API key)
-          fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code&hourly=temperature_2m&weather_code=yes&timezone=auto&forecast_days=1`)
+          fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code&timezone=auto&forecast_days=1`)
             .then(res => res.json())
             .then(data => {
               const code = data.current.weather_code;
-              const temp = data.current.temperature_2m;
-              let icon = '🌤';
-              let desc = 'Nhẵn';
-              if (code >= 1 && code <= 3) {
-                icon = '🌤';
-                desc = 'Nhẵn';
-              } else if (code >= 45 && code <= 48) {
-                icon = '🌫';
-                desc = 'Âm thảm';
-              } else if (code >= 51 && code <= 55) {
-                icon = '🌦';
-                desc = 'Mưa nhỏ';
-              } else if (code >= 56 && code <= 57) {
-                icon = '🌧';
-                desc = 'Mưa đầm đìp';
-              } else if (code >= 61 && code <= 65) {
-                icon = '🌧';
-                desc = 'Mưa';
-              } else if (code >= 66 && code <= 67) {
-                icon = '🌧';
-                desc = 'Mưa đầm';
-              } else if (code >= 71 && code <= 77) {
-                icon = '❄️';
-                desc = 'Tuyết';
-              } else if (code >= 80 && code <= 82) {
-                icon = '🌧';
-                desc = 'Mưa rào';
-              } else if (code >= 85 && code <= 86) {
-                icon = '🌨';
-                desc = 'Tuyết rào';
-              } else if (code >= 95 && code <= 99) {
-                icon = '⛈';
-                desc = 'Lũ';
-              } else {
-                icon = '🌤';
-                desc = 'Nhẵn';
-              }
+              const temp = Math.round(data.current.temperature_2m);
+              let icon = '🌤', desc = 'Nhẵn';
+              if (code >= 1 && code <= 3) { icon = '☀️'; desc = 'Nhẵn'; }
+              else if (code >= 45 && code <= 48) { icon = '🌫'; desc = 'Âm thảm'; }
+              else if (code >= 51 && code <= 55) { icon = '🌦'; desc = 'Mưa nhỏ'; }
+              else if (code >= 56 && code <= 57) { icon = '🌧'; desc = 'Mưa đầm đìp'; }
+              else if (code >= 61 && code <= 65) { icon = '🌧'; desc = 'Mưa'; }
+              else if (code >= 66 && code <= 67) { icon = '🌧'; desc = 'Mưa đầm'; }
+              else if (code >= 71 && code <= 77) { icon = '❄️'; desc = 'Tuyết'; }
+              else if (code >= 80 && code <= 82) { icon = '🌧'; desc = 'Mưa rào'; }
+              else if (code >= 85 && code <= 86) { icon = '🌨'; desc = 'Tuyết rào'; }
+              else if (code >= 95 && code <= 99) { icon = '⛈'; desc = 'Lũ'; }
               weatherIcon.textContent = icon;
-              weatherTemp.textContent = Math.round(temp);
-              document.querySelector('.anime-widget-title').innerHTML = '🌤 Thời tiết · ' + desc;
+              weatherTemp.textContent = temp + '°C';
             })
             .catch(err => {
               weatherIcon.textContent = '🌤';
-              weatherTemp.textContent = '--';
-              document.querySelector('.anime-widget-title').innerHTML = '🌤 Thời tiết hiện tại';
+              weatherTemp.textContent = '--°C';
             });
         }
 
         function initWeather() {
-          formatDate();
-          getLocation().then(loc => {
-            const isVietnam = loc.country === 'Việt Nam' || loc.country === 'Vietnam';
-            if (isVietnam || loc.source === 'default') {
-              getWeather(loc.lat, loc.lon);
-            } else {
-              // Nếu nằm ngoài Việt Nam, dùng mặc định
-              weatherIcon.textContent = '🌤';
-              weatherTemp.textContent = '--';
-            }
-          });
-        }
+                  getLocation().then(loc => {
+                    getWeather(loc.lat, loc.lon);
+                  });
+                }
 
-        // Chạy khi DOM ready
-        if (document.readyState === 'loading') {
-          document.addEventListener('DOMContentLoaded', initWeather);
-        } else {
-          initWeather();
-        }
-      })();
-    </script>
-    <script src="assets/js/mail.js"></script>
+                if (document.readyState === 'loading') {
+                  document.addEventListener('DOMContentLoaded', initWeather);
+                } else {
+                  initWeather();
+                }
+              })();
+            </script>
 </body>
 </html>

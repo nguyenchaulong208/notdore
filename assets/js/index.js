@@ -253,4 +253,61 @@ document.addEventListener('DOMContentLoaded', async () => {
         '<div class="alert alert-danger single-col-max mx-auto mb-0" role="alert"><i class="fas fa-exclamation-triangle me-2"></i>Không thể tải danh sách công cụ. Vui lòng thử lại sau.</div>';
     }
   }
+
+    }
+
+  // ── Trang công cụ / văn bản ────────────────────────────────────────────────────
+  if (isDocumentsPage()) {
+    // ── Trang van-ban.html: sidebar + bảng văn bản ───────────────────────────
+    try {
+      const res  = await fetch(API_URL);
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Lỗi không xác định từ máy chủ.');
+      const docs = (data.docs || []).sort(compareByIssuedDateDesc);
+      document.getElementById('docs-loading')?.remove();
+
+      renderSidebar(docs);
+
+      docState.allDocs  = docs;
+      docState.filtered = docs;
+      populateYearFilter(docs);
+      document.getElementById('filter-bar').style.display = 'block';
+      renderDocGrid();
+      updateDocFilterCount();
+
+      ['filter-type', 'filter-year', 'filter-status'].forEach(id =>
+        document.getElementById(id)?.addEventListener('change', applyDocFilters));
+      document.getElementById('filter-search')?.addEventListener('input', applyDocFilters);
+      document.getElementById('filter-reset')?.addEventListener('click', () => {
+        ['filter-type', 'filter-year', 'filter-status', 'filter-search'].forEach(id =>
+          (document.getElementById(id).value = ''));
+        applyDocFilters();
+      });
+    } catch (err) {
+      console.error('[NotDore] Fetch error:', err);
+      renderDocError(err.message);
+    }
+  } else if (isToolsPage()) {
+    // ── Trang tools.html / index.html: grid công cụ ──────────────────────────
+    try {
+      const res  = await fetch('/api/tools');
+      const data = await res.json();
+      toolsState.categories = data.categories || [];
+      toolsState.tools      = data.tools      || [];
+      renderToolsTabs();
+      renderToolsContent();
+
+      document.getElementById('tool-tabs').addEventListener('click', (e) => {
+        const btn = e.target.closest('[data-category-id]');
+        if (!btn) return;
+        toolsState.activeCategoryId = btn.dataset.categoryId === '' ? null : Number(btn.dataset.categoryId);
+        renderToolsTabs();
+        renderToolsContent();
+      });
+    } catch (err) {
+      console.error('[tools] Fetch error:', err);
+      document.getElementById('tools-content').innerHTML =
+        '<div class="alert alert-danger single-col-max mx-auto mb-0" role="alert"><i class="fas fa-exclamation-triangle me-2"></i>Không thể tải danh sách công cụ. Vui lòng thử lại sau.</div>';
+    }
+  }
 });
