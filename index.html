@@ -12,9 +12,10 @@
     <link rel="shortcut icon" href="favicon.ico">
     <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;700&display=swap" rel="stylesheet">
     <script defer src="assets/fontawesome/js/all.min.js"></script>
-    <link rel="stylesheet" href="assets/css/anime.css">
+    <link rel="stylesheet" href="assets/css/cybercore.css">
+    <link rel="stylesheet" href="assets/css/index.css">
 </head>
-<body>
+<body class="anime-page">
 
     <!-- Floating sakura petals -->
     <div class="sakura-container" aria-hidden="true">
@@ -35,23 +36,23 @@
 
         <!-- Header -->
         <header class="anime-header">
+        <div class="container-fluid">
             <a class="anime-brand" href="index.html">
                 <svg class="anime-brand-logo" viewBox="0 0 38 38" fill="none">
                     <circle cx="19" cy="19" r="18" stroke="url(#logoGrad)" stroke-width="2" fill="none"/>
                     <path d="M19 8 L22.5 15 L30 15.5 L24.5 20.5 L26.5 28 L19 24 L11.5 28 L13.5 20.5 L8 15.5 L15.5 15 Z" fill="url(#logoGrad)"/>
-                    <defs>
-                        <linearGradient id="logoGrad" x1="0" y1="0" x2="38" y2="38">
-                            <stop offset="0%" stop-color="#ff6b9d"/>
-                            <stop offset="100%" stop-color="#b47aff"/>
-                        </linearGradient>
-                    </defs>
+                    <defs><linearGradient id="logoGrad" x1="0" y1="0" x2="38" y2="38">
+                        <stop offset="0%" stop-color="#ff6b9d"/>
+                        <stop offset="100%" stop-color="#b47aff"/>
+                    </linearGradient></defs>
                 </svg>
                 <span class="anime-brand-name">NotDore</span>
             </a>
             <nav class="anime-nav">
-                <a href="tools.html" class="anime-btn anime-btn--outline">Tất cả công cụ</a>
+                <a href="index.html" class="anime-btn anime-btn--outline" style="font-size:0.85rem;padding:0.5rem 1.25rem;">← Trang chủ</a>
             </nav>
-        </header>
+        </div>
+    </header>
 
         <!-- Hero -->
         <section class="anime-hero">
@@ -65,8 +66,7 @@
         </section>
 
         <!-- Stats -->
-        <div class="anime-stats">
-            <div class="anime-stat">
+        <div class="anime-stats d-flex flex-wrap align-items-center justify-content-around gap-4">            <div class="anime-stat">
                 <div class="anime-stat__number" id="stat-tools">0</div>
                 <div class="anime-stat__label">Công cụ</div>
             </div>
@@ -80,23 +80,29 @@
             </div>
         </div>
 
-        <hr class="anime-divider">
-
         <!-- Tools Grid -->
-        <section id="tools" class="anime-section">
-            <h2 class="anime-section-heading">Công cụ làm việc</h2>
-            <p class="anime-section-sub">Lọc theo chủ đề để tìm tài liệu phù hợp.</p>
+<section id="tools" class="anime-section">
+    <h2 class="anime-section-heading">Công cụ làm việc</h2>
+    <p class="anime-section-sub">Lọc theo chủ đề để tìm tài liệu phù hợp.</p>
 
-            <ul class="anime-tabs" id="tool-tabs" aria-label="Danh mục công cụ">
-                <li><span class="nav-link active">Đang tải...</span></li>
-            </ul>
+    <ul class="anime-tabs" id="tool-tabs" aria-label="Danh mục công cụ">
+        <li><span class="nav-link active">Tất cả</span></li>
+        <li><span class="nav-link">Excel</span></li>
+        <li><span class="nav-link">VBA</span></li>
+        <li><span class="nav-link">Python</span></li>
+        <li><span class="nav-link">AI Templates</span></li>
+    </ul>
 
-            <div id="tools-content">
-                <div class="anime-loading"><i class="fas fa-spinner fa-spin"></i>Đang tải danh sách công cụ...</div>
-            </div>
+    <div id="tools-content">
+        <div class="anime-loading" style="display:none;"><i class="fas fa-spinner fa-spin"></i>Đang tải danh sách công cụ...</div>
+        <div id="tools-error" style="display:none;color:#f87171;background:#7f1d1d;padding:1rem;border-radius:0.5rem;border:1px solid #dc2626;">
+            <i class="fas fa-exclamation-circle me-2"></i>Không thể tải danh sách công cụ. Vui lòng thử lại.
+            <button id="btn-retry" class="btn btn-outline-secondary btn-sm ms-2">Thử lại</button>
+        </div>
+    </div>
 
-            <div id="tools-container" class="anime-grid" aria-hidden="true"></div>
-        </section>
+    <div id="tools-container" class="anime-grid" aria-hidden="true"></div>
+</section>
 
         <hr class="anime-divider">
 
@@ -113,28 +119,29 @@
             <p class="anime-section-sub anime-text-center" style="max-width:500px;margin:0.5rem auto 2rem;">Có tài liệu muốn chia sẻ? Góp ý hay cần liên hệ? Gửi email cho tôi.</p>
 
             <div style="max-width:500px;margin:0 auto;">
-                <form id="contactForm" class="signup-form row g-3">
-                    <div class="col-12">
-                        <label for="semail" style="font-size:0.8rem;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:var(--anime-text-dim);display:block;margin-bottom:0.3rem;">Email</label>
-                        <input type="email" id="semail" name="semail1" class="form-control" placeholder="your@email.com" required style="background:rgba(18,22,48,0.7);border:1px solid var(--anime-border);border-radius:var(--anime-radius-sm);padding:0.7rem 1rem;color:var(--anime-text);font-family:var(--anime-font);font-size:0.92rem;">
-                    </div>
-                    <div class="col-12">
-                        <label for="smessage" style="font-size:0.8rem;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:var(--anime-text-dim);display:block;margin-bottom:0.3rem;">Nội dung</label>
-                        <textarea id="smessage" name="smessage" class="form-control" rows="4" placeholder="Nội dung tin nhắn..." required style="background:rgba(18,22,48,0.7);border:1px solid var(--anime-border);border-radius:var(--anime-radius-sm);padding:0.7rem 1rem;color:var(--anime-text);font-family:var(--anime-font);font-size:0.92rem;resize:vertical;"></textarea>
-                    </div>
-                    <div class="col-12">
-                        <button type="submit" class="anime-btn anime-btn--primary w-100" style="justify-content:center;">Gửi</button>
-                    </div>
-                    <div id="formStatus" class="col-12 text-center small" style="color:var(--anime-text-dim);"></div>
-                </form>
+                <form id="contactForm" class="signup-form row g-3">    <div class="col-12">
+        <label for="semail" style="font-size:0.8rem;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:var(--anime-text-dim);display:block;margin-bottom:0.3rem;">Email</label>
+        <input type="email" id="semail" name="semail1" class="form-control" placeholder="your@email.com" required style="background:rgba(18,22,48,0.7);border:1px solid var(--anime-border);border-radius:var(--anime-radius-sm);padding:0.7rem 1rem;color:var(--anime-text);font-family:var(--anime-font);font-size:0.92rem;">
+    </div>
+    <div class="col-12">
+        <label for="smessage" style="font-size:0.8rem;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:var(--anime-text-dim);display:block;margin-bottom:0.3rem;">Nội dung</label>
+        <textarea id="smessage" name="smessage" class="form-control" rows="4" placeholder="Nội dung tin nhắn..." required style="background:rgba(18,22,48,0.7);border:1px solid var(--anime-border);border-radius:var(--anime-radius-sm);padding:0.7rem 1rem;color:var(--anime-text);font-family:var(--anime-font);font-size:0.92rem;resize:vertical;"></textarea>
+    </div>
+    <div class="col-12">
+        <button type="submit" class="anime-btn anime-btn--primary w-100" style="justify-content:center;">
+            <i class="fas fa-paper-plane me-2"></i>Gửi
+        </button>
+    </div>
+    <div id="formStatus" class="col-12 text-center small" style="color:var(--anime-text-dim);"></div>
+</form>
             </div>
         </section>
 
         <!-- Footer -->
-        <footer class="anime-footer">
-            <p>NotDore — Phong cách anime, thiết kế original.</p>
-            <p style="margin-top:0.3rem;">Made with ❤️ by Xiaoying Riley — Customized for NotDore</p>
-        </footer>
+            <footer class="anime-footer">
+        <p>NotDore — Phong cách anime, thiết kế original.</p>
+        <p style="margin-top:0.3rem;">Made with ❤️ by Xiaoying Riley — Customized for NotDore</p>
+    </footer>
 
     </div>
 
