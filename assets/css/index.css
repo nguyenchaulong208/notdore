@@ -320,8 +320,103 @@ body {
   margin-top: 0.3rem;
 }
 
-/* ===== Sections ===== */
-.anime-section { max-width: 1200px; margin: 0 auto; padding: 2.5rem 1rem; }
+/* Weather stat (3rd block - dynamic based on location) */
+.anime-stat-weather {
+  background: linear-gradient(135deg, rgba(139, 74, 240, 0.1), rgba(0, 212, 255, 0.08)) !important;
+  border: 2px solid rgba(139, 74, 240, 0.35);
+  color: var(--accent-purple-light);
+}
+
+.anime-stat-weather .anime-weather-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.anime-stat-weather .anime-stat__number {
+  font-size: 1.6rem;
+  color: var(--accent-purple-light);
+}
+
+.anime-stat-weather .anime-stat__label {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  font-weight: 400;
+}
+
+/* ===== Contact Section ===== */
+.anime-contact-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2rem;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+.anime-contact-form {
+  flex: 1;
+  min-width: 320px;
+  max-width: 500px;
+  background: var(--bg-card);
+  border: 2px solid var(--border);
+  border-radius: 20px;
+  box-shadow: var(--shadow-card);
+}
+
+.anime-form-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  display: block;
+  margin-bottom: 0.3rem;
+}
+
+.anime-form-input {
+  width: 100%;
+  background: var(--bg-secondary);
+  border: 2px solid var(--border);
+  border-radius: 10px;
+  padding: 0.75rem 1rem;
+  color: var(--text-primary);
+  font-family: var(--font-family);
+  font-size: 0.92rem;
+  transition: all 0.2s;
+}
+
+.anime-form-input:focus {
+  border-color: var(--accent-purple);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(139, 74, 240, 0.15);
+}
+
+.anime-form-status {
+  color: var(--text-muted);
+}
+
+.anime-footer-copy {
+  margin-top: 0.3rem;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  text-align: center;
+}
+
+.anime-sparkle {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  background: var(--accent-cyan);
+  border-radius: 50%;
+  opacity: 0.7;
+}
+
+.anime-sparkle-1 { top: 15%; left: 10%; }
+.anime-sparkle-2 { top: 30%; left: 80%; }
+.anime-sparkle-3 { top: 60%; left: 40%; }
+.anime-sparkle-4 { top: 80%; left: 70%; }
+.anime-sparkle-5 { top: 45%; left: 90%; }
 
 .anime-section-heading {
   font-size: 2rem;
@@ -584,7 +679,22 @@ body {
   flex-shrink: 0;
 }
 
-/* ===== Tags ===== */
+
+/* Tools section: display count from database */
+#tools-count {
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--accent-purple-light);
+  line-height: 1.2;
+}
+
+#tools-count-label {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+/* ============ */
 .anime-card-tag {
   padding: 0.3rem 0.8rem;
   border-radius: 10px;
