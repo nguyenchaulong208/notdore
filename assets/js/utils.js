@@ -18,6 +18,21 @@ const detectYear = (doc) => {
 /** Kiểm tra URL có dùng http/https */
 const isHttp = (u) => { try { return ['http:', 'https:'].includes(new URL(u).protocol); } catch { return false; } };
 
+/** Lấy file id của Google Drive từ các dạng link phổ biến */
+const getDriveFileId = (url) => {
+  if (!url) return null;
+  const m = String(url).match(/\/file\/d\/([^/?#]+)/)
+         || String(url).match(/[?&]id=([^&#]+)/)
+         || String(url).match(/\/d\/([^/?#]+)/);
+  return m ? m[1] : null;
+};
+
+/** Chuyển link Google Drive sang dạng nhúng /preview (hiển thị trong iframe, không chuyển hướng) */
+const toDrivePreviewUrl = (url) => {
+  const id = getDriveFileId(url);
+  return id ? `https://drive.google.com/file/d/${id}/preview` : (url || '');
+};
+
 /** Kiểm tra link có phải YouTube embed */
 const isYouTube = (l) => {
   if (l.source?.source_type !== 'video' || !isHttp(l.url)) return false;

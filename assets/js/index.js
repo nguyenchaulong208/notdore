@@ -215,13 +215,14 @@ function applyDocFilters() {
 function docCodeCell(d) {
   const code = esc(d.code || '—');
   return d.file?.drive_view_url
-    ? `<a class="doc-table__code doc-table__code--link" href="${esc(d.file.drive_view_url)}" target="_blank" rel="noopener" title="Xem văn bản ${code}">${code}</a>`
+    ? `<a class="doc-table__code doc-table__code--link" href="xem-van-ban.html?id=${encodeURIComponent(d.id)}" target="_blank" rel="noopener" title="Xem văn bản ${code}">${code}</a>`
     : `<span class="doc-table__code">${code}</span>`;
 }
 
-function docFileButtons(file) {
+function docFileButtons(d) {
+  const file = d?.file;
   if (!file?.drive_view_url) return '<span class="text-muted">—</span>';
-  const view = `<a href="${esc(file.drive_view_url)}" target="_blank" rel="noopener"><i class="fas fa-eye me-1"></i>Xem online</a>`;
+  const view = `<a href="xem-van-ban.html?id=${encodeURIComponent(d.id)}" target="_blank" rel="noopener"><i class="fas fa-eye me-1"></i>Xem online</a>`;
   const dl   = file.drive_download_url
     ? `<a href="${esc(file.drive_download_url)}" class="text-secondary" target="_blank" rel="noopener"><i class="fas fa-download me-1"></i>Tải xuống</a>`
     : '';
@@ -244,7 +245,7 @@ function renderDocGrid() {
       <td><span class="doc-table__type">${esc(d.loai_van_ban || 'Khác')}</span></td>
       <td><span class="doc-table__date">${esc(formatDate(d.issued_date) || '—')}</span></td>
       <td>${renderStatusBadge(d.status) || '—'}</td>
-      <td>${docFileButtons(d.file)}</td>
+      <td>${docFileButtons(d)}</td>
     </tr>`).join('');
 }
 
