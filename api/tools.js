@@ -1,4 +1,4 @@
-import { supabase } from '../../lib/supabase.js';
+import { supabase } from '../lib/supabase.js';
 /**
  * GET /api/tools
  * Trả về catalog công cụ, danh mục và các liên kết đang hoạt động.
