@@ -1,2 +1,3 @@
 - [DB Schema v2](db-schema-v2.md) — documents table has issued_date, expiry_date, status; use migration_v1_to_v2.sql to preserve old data
 - [Admin Tool](admin-tool.md) — /admin (local-only) generates SQL scripts; never writes to DB directly; future-ready for crawler output
+- [GitHub push authentication](github-push-auth.md) — confirm Git-pane access after shell pushes fail; never request or expose a token.
