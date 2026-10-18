@@ -800,10 +800,6 @@ a { color: var(--accent-purple); }
 
 .anime-footer-copy { color: var(--text-secondary); }
 
-.anime-footer-credit { font-size: 0.75rem; color: var(--text-muted); }
-
-.anime-footer-credit a { color: var(--text-secondary); text-decoration: underline; }
-
 /* ============================================================
    12. Animation xuất hiện
    ============================================================ */
@@ -824,92 +820,7 @@ a { color: var(--accent-purple); }
 .anime-hero-actions { animation-delay: 0.18s; }
 
 /* ============================================================
-   13. Thú cưng chạy quanh màn hình (pets.js)
-   ============================================================ */
-#pets-layer {
-  position: fixed;
-  inset: 0;
-  z-index: 1030;
-  pointer-events: none;
-  overflow: hidden;
-}
-
-#pets-layer.is-hidden { display: none; }
-
-.pet {
-  position: absolute;
-  top: 0;
-  left: 0;
-  line-height: 1;
-  cursor: pointer;
-  pointer-events: auto;
-  user-select: none;
-  will-change: transform;
-  filter: drop-shadow(0 3px 3px rgba(24, 28, 60, 0.2));
-}
-
-.pet__emoji {
-  display: inline-block;
-  transform-origin: 50% 100%;
-}
-
-.pet.is-walking .pet__emoji {
-  animation: pet-bob 0.5s ease-in-out infinite;
-}
-
-.pet.is-poked .pet__emoji {
-  animation: pet-pop 0.45s ease;
-}
-
-.pet__reaction {
-  position: absolute;
-  font-size: 18px;
-  pointer-events: none;
-  animation: pet-reaction 0.9s ease-out forwards;
-}
-
-@keyframes pet-bob {
-  0%, 100% { transform: translateY(0); }
-  50%      { transform: translateY(-18%); }
-}
-
-@keyframes pet-pop {
-  0%   { transform: scale(1); }
-  40%  { transform: scale(1.35) rotate(-8deg); }
-  100% { transform: scale(1); }
-}
-
-@keyframes pet-reaction {
-  0%   { opacity: 0; transform: translate(-50%, 0) scale(0.6); }
-  30%  { opacity: 1; transform: translate(-50%, -14px) scale(1); }
-  100% { opacity: 0; transform: translate(-50%, -34px) scale(1); }
-}
-
-#pets-toggle {
-  position: fixed;
-  right: 14px;
-  bottom: 14px;
-  width: 40px;
-  height: 40px;
-  padding: 0;
-  border-radius: 50%;
-  border: 1px solid var(--border);
-  background: var(--bg-card);
-  box-shadow: var(--shadow-card);
-  font-size: 1.1rem;
-  line-height: 1;
-  cursor: pointer;
-  z-index: 1045;
-  opacity: 0.5;
-  transition: opacity 0.2s ease, transform 0.2s ease;
-}
-
-#pets-toggle:hover { opacity: 1; transform: scale(1.08); }
-
-#pets-toggle.is-active { opacity: 0.9; }
-
-/* ============================================================
-   14. Responsive
+   13. Responsive
    ============================================================ */
 @media (max-width: 991.98px) {
   .tool-slider__grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }

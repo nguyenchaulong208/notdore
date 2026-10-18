@@ -3,18 +3,12 @@
 NotDore sử dụng một số thành phần mã nguồn / hình ảnh miễn phí sau. Vui lòng
 giữ nguyên phần ghi nguồn này khi dùng lại.
 
-## Live2D widget (nhân vật chạy ở góc màn hình)
+## Mèo pixel (chạy theo con trỏ chuột)
 
-- **Mã widget:** [live2d-widget](https://github.com/stevenjoezhang/live2d-widget)
-  (`live2d-widgets@1.0.1`) — giấy phép **GPL-3.0**.
-- **Live2D Cubism 2.1 Core** (`live2d.min.js`): © Live2D Inc., phân phối lại
-  theo *Live2D Proprietary Software License Agreement*
-  (<https://www.live2d.com/en/sdk/download/web/>).
-- **Kho model:** [fghrsh/live2d_api](https://github.com/fghrsh/live2d_api).
-  Bản quyền từng nhân vật thuộc về tác giả gốc; chỉ dùng cho mục đích
-  **học tập / phi thương mại**. Muốn dùng thương mại phải tự xin phép.
-- **CDN:** [jsDelivr](https://www.jsdelivr.com/).
-- Ý tưởng ban đầu: <https://www.fghrsh.net/post/123.html>
+- **oneko.js** — <https://github.com/adryd325/oneko.js> — giấy phép **MIT**.
+- **Sprite mèo** (`assets/images/oneko.gif`) lấy từ cùng repo, giấy phép MIT.
+  Nhân vật "Neko" là pixel-art kinh điển —
+  <https://en.wikipedia.org/wiki/Neko_(software)>.
 
 ## Footer theme
 
