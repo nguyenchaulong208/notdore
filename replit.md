@@ -33,14 +33,15 @@ api/
 assets/
   js/
     utils.js        Tiện ích dùng chung (esc, formatDate, isHttp, ...)
-    index.js        Logic trang chủ
-    tools.js        Logic trang công cụ
+    index.js        Logic trang chủ + trang văn bản
     tool-detail.js  Logic trang chi tiết công cụ
     main.js         Smooth scroll
-    admin-*.js      Logic trang admin (local-only)
+    mail.js         Form liên hệ
+    admin-sql-utils.js  Tiện ích trang admin (local-only)
   css/
-    theme.css       Theme chính (DevBook)
-    tools.css       Style trang công cụ
+    index.css       Theme trang chủ (tông sáng)
+    cybercore.css   Theme các trang công cụ / văn bản
+    anime.css       Theme anime (tool-detail, admin)
 db/                 Migration SQL scripts
 ```
 
