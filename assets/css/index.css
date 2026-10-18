@@ -604,6 +604,95 @@ a { color: var(--accent-purple); }
 .resource-list .list-group-item strong a { font-size: 1rem; }
 
 /* ============================================================
+   8b. Category slider (4 cột × 2 hàng mỗi slide)
+   ============================================================ */
+.tool-slider { position: relative; }
+
+.tool-slider__track {
+  display: flex;
+  gap: 1.2rem;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  scroll-padding-left: 0.25rem;
+  padding: 0.5rem 0.25rem 1.25rem;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.tool-slider__track::-webkit-scrollbar { display: none; }
+
+.tool-slider__page {
+  flex: 0 0 100%;
+  min-width: 0;
+  scroll-snap-align: start;
+}
+
+.tool-slider__grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1.2rem;
+}
+
+.tool-slider__btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 3;
+  width: 42px;
+  height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.96);
+  color: var(--text-secondary);
+  box-shadow: var(--shadow-card);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.tool-slider__btn:hover {
+  color: #fff;
+  background: var(--gradient-primary);
+  border-color: transparent;
+  box-shadow: 0 8px 20px rgba(139, 74, 240, 0.3);
+}
+
+.tool-slider__btn:disabled {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.tool-slider__btn--prev { left: -16px; }
+.tool-slider__btn--next { right: -16px; }
+
+.tool-slider__dots {
+  display: flex;
+  justify-content: center;
+  gap: 0.4rem;
+  margin-top: 0.9rem;
+}
+
+.tool-slider__dot {
+  width: 8px;
+  height: 8px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: #d3d7e6;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.tool-slider__dot.is-active {
+  width: 24px;
+  border-radius: 5px;
+  background: var(--gradient-primary);
+}
+
+/* ============================================================
    9. Loading & trạng thái
    ============================================================ */
 .anime-loading {
@@ -731,6 +820,10 @@ a { color: var(--accent-purple); }
 /* ============================================================
    13. Responsive
    ============================================================ */
+@media (max-width: 991.98px) {
+  .tool-slider__grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
 @media (max-width: 767.98px) {
   .anime-header {
     margin-left: -1rem;
@@ -743,6 +836,12 @@ a { color: var(--accent-purple); }
   .anime-section { padding: 2rem 0; }
   .anime-container { padding: 0 1rem; }
   .signup-form { padding: 1.4rem; }
+  .tool-slider__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .tool-slider__btn { display: none; }
+}
+
+@media (max-width: 575.98px) {
+  .tool-slider__grid { grid-template-columns: 1fr; }
 }
 
 @media (prefers-reduced-motion: reduce) {

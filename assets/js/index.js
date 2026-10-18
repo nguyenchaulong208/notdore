@@ -53,6 +53,8 @@ function renderSidebar(allDocs) {
 
 const toolsState = { categories: [], tools: [], activeCategoryId: null };
 
+const TOOLS_PER_SLIDE = 8; // 4 cột × 2 hàng mỗi slide
+
 const toolsAPICategoryId = (c) => c.category_name.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().includes('tai lieu tham khao');
 
 function renderToolsTabs() {
@@ -74,20 +76,86 @@ function renderToolCard(tool, category) {
   const video = tool.links.find(l => l.url && l.url.includes('youtube.com/embed'));
   const links = tool.links.filter(l => l !== video).map(toolsLinkBtn).join('');
   return `
-    <div class="col-12 col-md-6 col-lg-4">
-      <article class="card tool-card h-100">
-        <div class="card-body d-flex flex-column">
-          <span class="badge bg-primary badge-cat align-self-start mb-3">${esc(category.category_name)}</span>
-          <h3 class="card-title h5"><a href="tool-detail.html?id=${encodeURIComponent(tool.id)}" class="tool-title-link">${esc(tool.name)}</a></h3>
-          ${tool.description ? `<p class="card-text">${esc(tool.description)}</p>` : ''}
-          ${video ? `<div class="youtube-embed mb-3"><iframe src="${esc(video.url)}" title="${esc(tool.name)}" loading="lazy" allowfullscreen></iframe></div>` : ''}
-          <div class="tool-actions mt-auto">
-            <a href="tool-detail.html?id=${encodeURIComponent(tool.id)}" class="btn btn-primary btn-sm"><i class="fas fa-circle-info me-1"></i>Xem chi tiết</a>
-            ${links}
-          </div>
+    <article class="card tool-card h-100">
+      <div class="card-body d-flex flex-column">
+        <span class="badge bg-primary badge-cat align-self-start mb-3">${esc(category.category_name)}</span>
+        <h3 class="card-title h5"><a href="tool-detail.html?id=${encodeURIComponent(tool.id)}" class="tool-title-link">${esc(tool.name)}</a></h3>
+        ${tool.description ? `<p class="card-text">${esc(tool.description)}</p>` : ''}
+        ${video ? `<div class="youtube-embed mb-3"><iframe src="${esc(video.url)}" title="${esc(tool.name)}" loading="lazy" allowfullscreen></iframe></div>` : ''}
+        <div class="tool-actions mt-auto">
+          <a href="tool-detail.html?id=${encodeURIComponent(tool.id)}" class="btn btn-primary btn-sm"><i class="fas fa-circle-info me-1"></i>Xem chi tiết</a>
+          ${links}
         </div>
-      </article>
+      </div>
+    </article>`;
+}
+
+// Chia tools thành các slide (tối đa TOOLS_PER_SLIDE mỗi slide) và dựng carousel
+function renderToolSlider(tools, category) {
+  const pages = [];
+  for (let i = 0; i < tools.length; i += TOOLS_PER_SLIDE) {
+    const chunk = tools.slice(i, i + TOOLS_PER_SLIDE);
+    pages.push(
+      `<div class="tool-slider__page"><div class="tool-slider__grid">${chunk.map(t => renderToolCard(t, category)).join('')}</div></div>`
+    );
+  }
+
+  const multi = pages.length > 1;
+  return `
+    <div class="tool-slider${multi ? '' : ' tool-slider--single'}">
+      <div class="tool-slider__track">${pages.join('')}</div>
+      ${multi ? `
+      <button type="button" class="tool-slider__btn tool-slider__btn--prev" aria-label="Slide trước"><i class="fas fa-chevron-left"></i></button>
+      <button type="button" class="tool-slider__btn tool-slider__btn--next" aria-label="Slide sau"><i class="fas fa-chevron-right"></i></button>
+      <div class="tool-slider__dots"></div>` : ''}
     </div>`;
+}
+
+// Gắn sự kiện lướt + chấm điều hướng cho mọi carousel vừa render
+function initToolSliders() {
+  document.querySelectorAll('.tool-slider').forEach(slider => {
+    const track = slider.querySelector('.tool-slider__track');
+    if (!track || slider.dataset.init) return;
+
+    const pages = track.querySelectorAll('.tool-slider__page');
+    if (pages.length <= 1) { slider.dataset.init = '1'; return; }
+
+    const prev = slider.querySelector('.tool-slider__btn--prev');
+    const next = slider.querySelector('.tool-slider__btn--next');
+    const dotsWrap = slider.querySelector('.tool-slider__dots');
+    const gap = parseFloat(getComputedStyle(track).columnGap) || 0;
+    const step = () => (pages[0].offsetWidth || track.clientWidth) + gap;
+
+    const dots = [...pages].map((_, i) => {
+      const dot = document.createElement('button');
+      dot.type = 'button';
+      dot.className = 'tool-slider__dot' + (i === 0 ? ' is-active' : '');
+      dot.setAttribute('aria-label', `Chuyển đến nhóm ${i + 1}`);
+      dot.addEventListener('click', () => track.scrollTo({ left: i * step(), behavior: 'smooth' }));
+      dotsWrap?.appendChild(dot);
+      return dot;
+    });
+
+    const currentIndex = () => Math.min(pages.length - 1, Math.max(0, Math.round(track.scrollLeft / step())));
+
+    const update = () => {
+      const idx = currentIndex();
+      const max = track.scrollWidth - track.clientWidth;
+      prev.disabled = track.scrollLeft <= 2;
+      next.disabled = track.scrollLeft >= max - 2;
+      dots.forEach((d, i) => d.classList.toggle('is-active', i === idx));
+    };
+
+    prev.addEventListener('click', () => track.scrollTo({ left: (currentIndex() - 1) * step(), behavior: 'smooth' }));
+    next.addEventListener('click', () => track.scrollTo({ left: (currentIndex() + 1) * step(), behavior: 'smooth' }));
+
+    let raf;
+    track.addEventListener('scroll', () => { cancelAnimationFrame(raf); raf = requestAnimationFrame(update); });
+    window.addEventListener('resize', update);
+
+    slider.dataset.init = '1';
+    update();
+  });
 }
 
 function renderReferenceItem(tool) {
@@ -112,11 +180,12 @@ function renderToolsContent() {
     if (!tools.length) return '';
     const body = toolsAPICategoryId(category)
       ? `<div class="resource-list"><ul class="list-group list-group-flush mb-0">${tools.map(renderReferenceItem).join('')}</ul></div>`
-      : `<div class="row g-4 justify-content-center">${tools.map(t => renderToolCard(t, category)).join('')}</div>`;
+      : renderToolSlider(tools, category);
     return `<section id="category-${category.category_id}" class="tool-category mb-5"><h2 class="section-heading text-center mb-4">${esc(category.category_name)}</h2>${body}</section>`;
   }).filter(Boolean).join('');
 
   document.getElementById('tools-content').innerHTML = sections || '<p class="tool-state text-center">Chưa có công cụ phù hợp trong danh mục này.</p>';
+  initToolSliders();
 }
 
 // ── Văn bản: renderGrid cuộn không phân trang (chỉ trang van-ban.html) ─────────
