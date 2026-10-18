@@ -7,24 +7,17 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Trích xuất Hóa đơn/Biên lai qua LM Studio — NotDore</title>
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.1/css/all.min.css">
+<link rel="stylesheet" href="assets/plugins/bootstrap/css/bootstrap.min.css">
+<script defer src="assets/fontawesome/js/all.min.js"></script>
 <style>
-  body{background:#f4f6f9;padding-bottom:60px}
-  .card{border:none;border-radius:12px;box-shadow:0 2px 10px rgba(0,0,0,.06);margin-bottom:18px}
   #fileList{max-height:260px;overflow-y:auto}
-  .file-row{display:flex;align-items:center;justify-content:space-between;padding:6px 10px;border-bottom:1px solid #eee;font-size:.9rem}
-  .file-row.ok{color:#198754}
-  .file-row.err{color:#dc3545}
-  .file-row.pending{color:#6c757d}
-  .file-row.busy{color:#fd7e14}
   #resultsWrap{overflow-x:auto;overflow-y:hidden}
   #resultsTable{min-width:1400px;font-size:.85rem}
   #resultsTable td,#resultsTable th{white-space:nowrap}
   .progress{height:22px}
-  .badge-src{cursor:pointer}
 </style>
-    <link rel="stylesheet" href="assets/css/cybercore.css">
+    <link rel="stylesheet" href="assets/css/notdore.css">
+    <link rel="stylesheet" href="assets/css/pages.css">
 </head>
 <body class="anime-page">
     <!-- Floating sakura petals -->
@@ -35,25 +28,25 @@
         <div class="sakura"></div><div class="sakura"></div><div class="sakura"></div>
     </div>
     <div class="sparkle" style="top:15%;left:10%;animation-delay:0s;"></div>
-<header class="anime-header">
-        <div class="container-fluid">
-            <a class="anime-brand" href="index.html">
-                <svg class="anime-brand-logo" viewBox="0 0 38 38" fill="none">
-                    <circle cx="19" cy="19" r="18" stroke="url(#logoGrad)" stroke-width="2" fill="none"/>
-                    <path d="M19 8 L22.5 15 L30 15.5 L24.5 20.5 L26.5 28 L19 24 L11.5 28 L13.5 20.5 L8 15.5 L15.5 15 Z" fill="url(#logoGrad)"/>
-                    <defs><linearGradient id="logoGrad" x1="0" y1="0" x2="38" y2="38">
-                        <stop offset="0%" stop-color="#ff6b9d"/>
-                        <stop offset="100%" stop-color="#b47aff"/>
-                    </linearGradient></defs>
-                </svg>
-                <span class="anime-brand-name">NotDore</span>
-            </a>
-            <nav class="anime-nav">
-                <a href="index.html" class="anime-btn anime-btn--outline" style="font-size:0.85rem;padding:0.5rem 1.25rem;">← Trang chủ</a>
-            </nav>
-        </div>
-    </header>
 <div class="anime-container">
+
+<header class="anime-header">
+        <a class="anime-brand" href="index.html" aria-label="NotDore">
+            <div class="anime-brand-text">
+                <span class="brand-fragment">Not</span>
+                <span class="brand-fragment brand-fragment--main">Dore</span>
+            </div>
+            <div class="anime-brand-deco" aria-hidden="true">
+                <span class="brand-dot"></span>
+                <span class="brand-dot"></span>
+            </div>
+        </a>
+        <nav class="anime-nav" aria-label="Điều hướng chính">
+            <a href="index.html" class="anime-nav-link">Công cụ</a>
+            <a href="van-ban.html" class="anime-nav-link">Văn bản</a>
+            <a href="index.html#contact" class="anime-btn anime-btn--primary anime-btn--sm">Liên hệ</a>
+        </nav>
+    </header>
 
 
     <div class="sparkle" style="top:30%;left:80%;animation-delay:1s;"></div>
@@ -155,10 +148,11 @@
 <script src="assets/js/invoice-extractor-engine.js"></script>
 <script src="assets/js/invoice-extractor-app.js"></script>
     
+        <footer class="anime-footer">
+            <p>NotDore — Phong cách anime, thiết kế original.</p>
+            <p class="anime-footer-copy">Made with ❤️ by Xiaoying Riley — Customized for NotDore</p>
+        </footer>
+
 </div>
-<footer class="anime-footer">
-        <p>NotDore — Phong cách anime, thiết kế original.</p>
-        <p style="margin-top:0.3rem;">Made with ❤️ by Xiaoying Riley — Customized for NotDore</p>
-    </footer>
 </body>
 </html>
