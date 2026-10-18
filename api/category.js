@@ -10,7 +10,7 @@
  * Mỗi Doc: { id, code, title, description, created_at, file }
  * file:    { drive_view_url, drive_download_url, mime_type } | null
  */
-import { supabase } from '../lib/supabase.js';
+import { supabase } from '../../lib/supabase.js';
 
 // Ánh xạ mã danh mục → tên tag trong bảng document_tags
 const TAG_MAP = {
