@@ -16,9 +16,13 @@ function parseGithubRawUrl(url) {
   return { owner, repo, branch, path, base: `https://raw.githubusercontent.com/${owner}/${repo}/${branch}` };
 }
 
+// Chủ GitHub của chính site — bài lấy từ đây thì không cần ghi nguồn.
+const SELF_GITHUB_OWNER = 'nguyenchaulong208';
+
 function githubSourceFromRawUrl(url) {
   const p = parseGithubRawUrl(url);
-  return p ? { label: `${p.owner}/${p.repo}`, href: `https://github.com/${p.owner}/${p.repo}/blob/${p.branch}/${p.path}` } : null;
+  if (!p || p.owner.toLowerCase() === SELF_GITHUB_OWNER) return null;
+  return { label: `${p.owner}/${p.repo}`, href: `https://github.com/${p.owner}/${p.repo}/blob/${p.branch}/${p.path}` };
 }
 
 function resolveRelativeAsset(value, articleUrl) {
