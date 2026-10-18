@@ -1,7 +1,8 @@
 /**
- * index.css — Giao diện trang chủ NotDore (tông sáng, hiện đại)
+ * notdore.css — Giao diện chung NotDore (tông sáng, hiện đại)
  * Phụ thuộc: Bootstrap 5 (assets/plugins/bootstrap/css/bootstrap.min.css)
  * Phong cách: sáng, thoáng, có chiều sâu; điểm nhấn tím–hồng.
+ * Dùng cho: index.html và tất cả trang con (kèm assets/css/pages.css).
  */
 
 /* ============================================================
@@ -126,6 +127,7 @@ a { color: var(--accent-purple); }
 }
 
 /* Sparkles */
+.sparkle,
 .anime-sparkle {
   position: fixed;
   width: 6px;
@@ -846,6 +848,7 @@ a { color: var(--accent-purple); }
 
 @media (prefers-reduced-motion: reduce) {
   .sakura,
+  .sparkle,
   .anime-sparkle,
   .brand-fragment--main,
   .brand-dot,

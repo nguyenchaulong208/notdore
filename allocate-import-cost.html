@@ -9,18 +9,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Phân bổ giá hàng nhập khẩu - NotDore</title>
     <link rel="shortcut icon" href="favicon.ico">
-    <link href="https://fonts.googleapis.com/css?family=Quicksand:700|Roboto:400,400i,700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet">
     <script defer src="assets/fontawesome/js/all.min.js"></script>
-    
-    <style>
-        /* Small page-specific tweaks */
-        .tool-page { padding: 2.5rem 0 4rem; }
-        .section-card { padding: 1rem; margin-bottom: 1rem; }
-        table.table-editable td input { width: 100%; box-sizing: border-box; border: none; background: transparent; }
-        .results-wrap { margin-top: 1rem; }
-        .error-box { color: #b00020; background: #fff0f1; padding: .6rem; border-radius: .4rem; display: none; }
-    </style>
-    <link rel="stylesheet" href="assets/css/cybercore.css">
+    <link rel="stylesheet" href="assets/plugins/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="assets/css/notdore.css">
+    <link rel="stylesheet" href="assets/css/pages.css">
 </head>
 <body class="anime-page">
     <!-- Floating sakura petals -->
@@ -36,26 +29,25 @@
     <div class="sparkle" style="top:80%;left:70%;animation-delay:0.5s;"></div>
     <div class="sparkle" style="top:45%;left:90%;animation-delay:3s;"></div>
 
-<header class="anime-header">
-        <div class="container-fluid">
-            <a class="anime-brand" href="index.html">
-                <svg class="anime-brand-logo" viewBox="0 0 38 38" fill="none">
-                    <circle cx="19" cy="19" r="18" stroke="url(#logoGrad)" stroke-width="2" fill="none"/>
-                    <path d="M19 8 L22.5 15 L30 15.5 L24.5 20.5 L26.5 28 L19 24 L11.5 28 L13.5 20.5 L8 15.5 L15.5 15 Z" fill="url(#logoGrad)"/>
-                    <defs><linearGradient id="logoGrad" x1="0" y1="0" x2="38" y2="38">
-                        <stop offset="0%" stop-color="#ff6b9d"/>
-                        <stop offset="100%" stop-color="#b47aff"/>
-                    </linearGradient></defs>
-                </svg>
-                <span class="anime-brand-name">NotDore</span>
-            </a>
-            <nav class="anime-nav">
-                <a href="index.html" class="anime-btn anime-btn--outline" style="font-size:0.85rem;padding:0.5rem 1.25rem;">← Trang chủ</a>
-            </nav>
-        </div>
-    </header>
-
 <div class="anime-container">
+
+<header class="anime-header">
+        <a class="anime-brand" href="index.html" aria-label="NotDore">
+            <div class="anime-brand-text">
+                <span class="brand-fragment">Not</span>
+                <span class="brand-fragment brand-fragment--main">Dore</span>
+            </div>
+            <div class="anime-brand-deco" aria-hidden="true">
+                <span class="brand-dot"></span>
+                <span class="brand-dot"></span>
+            </div>
+        </a>
+        <nav class="anime-nav" aria-label="Điều hướng chính">
+            <a href="index.html" class="anime-nav-link">Công cụ</a>
+            <a href="van-ban.html" class="anime-nav-link">Văn bản</a>
+            <a href="#form-section" class="anime-btn anime-btn--primary anime-btn--sm">Liên hệ</a>
+        </nav>
+    </header>
 
 
 <section class="tool-page">
@@ -212,11 +204,12 @@
 </section>
 
     
+        <footer class="anime-footer">
+            <p>NotDore — Phong cách anime, thiết kế original.</p>
+            <p class="anime-footer-copy">Made with ❤️ by Xiaoying Riley — Customized for NotDore</p>
+        </footer>
+
 </div>
-    <footer class="anime-footer">
-        <p>NotDore — Phong cách anime, thiết kế original.</p>
-        <p style="margin-top:0.3rem;">Made with ❤️ by Xiaoying Riley — Customized for NotDore</p>
-    </footer>
 
 <!-- Include allocation module and UI script -->
 <script src="assets/plugins/popper.min.js"></script>
