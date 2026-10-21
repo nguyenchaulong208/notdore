@@ -195,3 +195,8 @@ node scripts/check-links.mjs
 - Người dùng muốn tra cứu địa chỉ theo cả hai chiều trước ↔ sau sáp nhập, nhưng giữ nguyên giao diện chung của trang; các bảng dài cần nằm trong vùng cuộn giới hạn.
 **Why:** Cách tra cứu hiện tại bị rời rạc và bảng dài làm trang quá dài.
 **How to apply:** Giới hạn thay đổi giao diện ở công cụ địa giới; không chỉnh sửa các công cụ khác hoặc cấu hình kết nối Supabase khi không được yêu cầu.
+
+## Supabase và các file SQL địa giới
+- Người dùng xác nhận các file SQL hiện có trong `db/` đã được nạp vào Supabase; không chạy lại seed/reset hoặc tạo kết nối Supabase mới.
+**Why:** Supabase hiện tại đã hoạt động và người dùng yêu cầu giữ nguyên kết nối.
+**How to apply:** Dùng seed SQL hiện có để xác định dữ liệu; chỉ truy vấn qua cấu hình kết nối sẵn có khi môi trường cung cấp quyền truy cập.
