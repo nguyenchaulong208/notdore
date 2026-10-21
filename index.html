@@ -2,14 +2,14 @@
 <html lang="vi">
 <head>
     <meta charset="utf-8">
-    <title>NotDore — Tra cứu địa giới hành chính Việt Nam</title>
+    <title>Bộ công cụ — NotDore</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Tra cứu đơn vị hành chính cấp tỉnh trước và sau sáp nhập 2025: đối chiếu 63 tỉnh thành cũ sang 34 đơn vị hiện tại, kèm thư viện công cụ hữu ích.">
+    <meta name="description" content="Bộ công cụ nhỏ chạy trên trình duyệt: tra cứu địa giới hành chính, bảng tính, PDF, chuyển đổi, ảnh, AI và lập trình. Không cần cài đặt.">
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="NotDore">
     <meta property="og:locale" content="vi_VN">
-    <meta property="og:title" content="NotDore — Tra cứu địa giới hành chính Việt Nam">
-    <meta property="og:description" content="Đối chiếu 63 tỉnh thành cũ sang 34 đơn vị sau sáp nhập 2025. Tìm theo tên cũ, tên mới, vùng hoặc mã đơn vị.">
+    <meta property="og:title" content="Bộ công cụ — NotDore">
+    <meta property="og:description" content="11 công cụ chạy trên trình duyệt: địa giới hành chính, bảng tính, PDF, chuyển đổi, ảnh, AI và lập trình.">
     <meta property="og:url" content="https://www.notdore.io.vn/">
     <meta name="twitter:card" content="summary">
     <meta name="google-adsense-account" content="ca-pub-9767208027997083">
@@ -40,55 +40,88 @@
                 </div>
             </a>
             <nav class="anime-nav" aria-label="Điều hướng chính">
-                <a href="#tools" class="anime-nav-link">Công cụ</a>
-                <a href="#library" class="anime-nav-link">Thư viện</a>
+                <a href="#cong-cu" class="anime-nav-link" aria-current="page">Công cụ</a>
+                <a href="thu-vien.html" class="anime-nav-link">Thư viện</a>
                 <a href="#contact" class="anime-nav-link">Liên hệ</a>
             </nav>
         </header>
 
         <main>
-            <section id="tools" class="anime-section nd-section-first">
-                <h1 class="anime-section-heading">Công cụ</h1>
+            <section id="cong-cu" class="nd-tools">
+                <div class="nd-tools-layout">
+                    <div class="nd-tools-main">
+                        <header class="nd-tools-head">
+                            <div class="nd-tools-intro">
+                                <h1 class="nd-tools-title">Bộ công cụ</h1>
+                                <p class="nd-tools-sub" id="tools-sub" aria-live="polite">Đang tải công cụ…</p>
+                            </div>
+                            <div class="nd-tools-search">
+                                <i class="fas fa-magnifying-glass" aria-hidden="true"></i>
+                                <input id="tool-search" type="search" placeholder="Tìm công cụ…" aria-label="Tìm công cụ" autocomplete="off">
+                            </div>
+                        </header>
 
-                <div class="nd-hero-search nd-search-section">
-                    <span class="nd-hero-search-icon" aria-hidden="true"><i class="fas fa-magnifying-glass"></i></span>
-                    <input id="tool-search" class="nd-input" type="search"
-                           placeholder="Tìm công cụ: địa giới, tỉnh thành, mã đơn vị…"
-                           aria-label="Tìm công cụ">
-                </div>
+                        <div class="nd-tools-grid" id="tools-grid">
+                            <p class="nd-empty"><i class="fas fa-spinner fa-spin me-2" aria-hidden="true"></i>Đang tải công cụ…</p>
+                        </div>
+                        <p class="nd-tools-note" id="tools-note" hidden></p>
+                    </div>
 
-                <div id="tools-content">
-                    <div class="anime-loading"><i class="fas fa-spinner fa-spin"></i>Đang tải danh sách công cụ...</div>
+                    <aside class="nd-tools-side" aria-label="Danh mục">
+                        <section class="nd-side-panel">
+                            <header class="nd-side-head">
+                                <h2 class="nd-side-title">Công cụ</h2>
+                                <a class="nd-side-link" id="side-internal-link" href="tools/dia-gioi-hanh-chinh.html">
+                                    Mở công cụ <i class="fas fa-chevron-right" aria-hidden="true"></i>
+                                </a>
+                            </header>
+                            <p class="nd-side-sub">Công cụ chạy trực tiếp trên NotDore.</p>
+                            <div class="nd-side-chips" id="side-internal">
+                                <span class="nd-chip nd-chip--muted">Đang tải…</span>
+                            </div>
+                        </section>
+
+                        <section class="nd-side-panel">
+                            <header class="nd-side-head">
+                                <h2 class="nd-side-title">Thư viện</h2>
+                                <a class="nd-side-link" href="thu-vien.html">
+                                    Tất cả <i class="fas fa-chevron-right" aria-hidden="true"></i>
+                                </a>
+                            </header>
+                            <p class="nd-side-sub">Link ngoài, xếp theo nhóm.</p>
+                            <div class="nd-side-chips" id="side-external">
+                                <span class="nd-chip nd-chip--muted">Đang tải…</span>
+                            </div>
+                        </section>
+
+                        <section class="nd-side-panel nd-quote-panel" aria-labelledby="quote-title">
+                            <header class="nd-side-head">
+                                <h2 class="nd-side-title" id="quote-title">Câu nói hay</h2>
+                                <button class="nd-quote-refresh" type="button" id="quote-refresh"
+                                        aria-label="Đổi câu nói khác" title="Đổi câu nói khác">
+                                    <i class="fas fa-arrows-rotate" aria-hidden="true"></i>
+                                </button>
+                            </header>
+                            <blockquote class="nd-quote" id="quote-box" aria-live="polite">
+                                <span class="nd-quote-mark" aria-hidden="true">“</span>
+                                <p class="nd-quote-text" id="quote-text">Có công mài sắt, có ngày nên kim.</p>
+                                <footer class="nd-quote-author" id="quote-author">— Tục ngữ Việt Nam</footer>
+                            </blockquote>
+                            <p class="nd-quote-hint">Mỗi ngày một câu</p>
+                        </section>
+                    </aside>
                 </div>
             </section>
 
-            <hr class="anime-divider">
-
-            <section id="library" class="anime-section">
-                <h2 class="anime-section-heading">Thư viện công cụ hay</h2>
-                <p class="anime-section-sub">Những công cụ bên ngoài mình dùng thường xuyên và thấy đáng để bookmark.</p>
-                <div id="library-grid">
-                    <div class="anime-loading"><i class="fas fa-spinner fa-spin"></i>Đang tải thư viện...</div>
-                </div>
-            </section>
-
-            <section class="anime-section">
-                <div class="anime-notice anime-text-center">
-                    ⚠️ Kết quả chỉ mang tính tham khảo. Với quyết định pháp lý hoặc hồ sơ quan trọng, hãy đối chiếu văn bản gốc.
-                </div>
-            </section>
-
-            <section id="contact" class="anime-section">
-                <h2 class="anime-section-heading">Góp ý &amp; Liên hệ</h2>
-                <p class="anime-section-sub anime-text-center">Thiếu công cụ bạn cần? Có dữ liệu muốn bổ sung? Gửi email cho mình.</p>
-
-                <div class="anime-contact-wrap">
-                    <a class="nd-contact-card" href="mailto:nguyenchaulong.data208@gmail.com">
+            <section id="contact" class="nd-contact-section">
+                <div class="nd-contact">
+                    <div class="nd-contact-copy">
+                        <h2 class="nd-contact-title">Góp ý &amp; liên hệ</h2>
+                        <p>Thiếu công cụ bạn cần? Có dữ liệu muốn bổ sung? Gửi email cho mình.</p>
+                    </div>
+                    <a class="nd-contact-link" href="mailto:nguyenchaulong.data208@gmail.com">
                         <i class="fas fa-envelope" aria-hidden="true"></i>
-                        <span>
-                            <strong>nguyenchaulong.data208@gmail.com</strong>
-                            <small>Phản hồi thường trong 1–2 ngày làm việc</small>
-                        </span>
+                        <span>nguyenchaulong.data208@gmail.com</span>
                     </a>
                 </div>
             </section>
@@ -96,7 +129,10 @@
 
         <footer class="anime-footer">
             <p>NotDore — công cụ nhỏ, giải quyết việc thật.</p>
-            <p class="anime-footer-copy">Made with ❤️ by Theodore · <span id="data-source"></span></p>
+            <p class="anime-footer-copy">Made with ❤️ by Theodore</p>
+            <p class="anime-footer-credit">
+                Theme by <a href="https://3rdwavemedia.com/" target="_blank" rel="noopener noreferrer">Xiaoying Riley</a>
+            </p>
         </footer>
 
     </div>

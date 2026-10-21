@@ -26,8 +26,9 @@
   const nekoEl = document.createElement("div");
   let persistPosition = true;
 
-  let nekoPosX = 32;
-  let nekoPosY = 32;
+  // Mặc định đứng ở góc dưới phải để không che logo ở màn hình hẹp.
+  let nekoPosX = Math.max(64, window.innerWidth - 96);
+  let nekoPosY = Math.max(64, window.innerHeight - 96);
 
   let mousePosX = 0;
   let mousePosY = 0;
@@ -130,6 +131,10 @@
       }
     }
 
+    // Chưa có chuột thì mèo đứng yên, tránh chạy về góc (0,0) khi mới tải trang.
+    mousePosX = nekoPosX;
+    mousePosY = nekoPosY;
+
     nekoEl.id = "oneko";
     nekoEl.ariaHidden = true;
     nekoEl.style.width = "32px";
@@ -140,6 +145,8 @@
     nekoEl.style.left = `${nekoPosX - 16}px`;
     nekoEl.style.top = `${nekoPosY - 16}px`;
     nekoEl.style.zIndex = 2147483647;
+    nekoEl.style.opacity = "0";
+    nekoEl.style.transition = "opacity .25s ease";
 
     nekoEl.style.backgroundImage = `url(${nekoFile})`;
 
@@ -149,6 +156,11 @@
       mousePosX = event.clientX;
       mousePosY = event.clientY;
     });
+
+    // Chỉ hiện mèo sau lần di chuột đầu tiên.
+    document.addEventListener("mousemove", function () {
+      nekoEl.style.opacity = "1";
+    }, { once: true });
 
     if (persistPosition) {
       window.addEventListener("beforeunload", function (event) {

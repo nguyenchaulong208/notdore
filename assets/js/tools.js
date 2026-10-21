@@ -1,6 +1,10 @@
 /**
- * tools.js — trang chủ: render danh mục công cụ + thư viện link ngoài.
- * Phụ thuộc: assets/js/db.js (NotDoreDB), assets/js/config.js
+ * tools.js — trang chủ: lưới công cụ + danh mục bên phải + câu nói hay.
+ *
+ * Dữ liệu: NotDoreDB.getCatalog() — Supabase hoặc assets/data/tools.json.
+ * Giới hạn hiển thị: 4 cột, tối đa 20 block (4x5) — MAX_TILES.
+ * Danh mục bên phải: nhóm công cụ nội bộ + nhóm link ngoài (trỏ về thư viện).
+ * Câu nói hay: mảng tĩnh, đổi theo ngày hoặc bằng nút ↻; không phụ thuộc catalog.
  */
 (function () {
   'use strict';
@@ -8,168 +12,255 @@
   const DB = window.NotDoreDB;
   const { escapeHtml: esc, matches } = DB.util;
 
-  const STATUS_LABEL = { ready: '', beta: 'Beta', soon: 'Sắp có' };
+  const $ = (id) => document.getElementById(id);
 
-  const state = { catalog: null, categoryId: 'all', q: '' };
+  const MAX_TILES = 20;
 
-  /* ── Render ──────────────────────────────────────────────────────── */
+  /* Câu nói hay: dữ liệu tĩnh, không phụ thuộc catalog. */
+  const QUOTES = [
+    { text: 'Có công mài sắt, có ngày nên kim.', author: 'Tục ngữ Việt Nam' },
+    { text: 'Đi một ngày đàng, học một sàng khôn.', author: 'Tục ngữ Việt Nam' },
+    { text: 'Cái khó ló cái khôn.', author: 'Tục ngữ Việt Nam' },
+    { text: 'Lửa thử vàng, gian nan thử sức.', author: 'Tục ngữ Việt Nam' },
+    { text: 'Thì giờ là vàng bạc.', author: 'Tục ngữ Việt Nam' },
+    { text: 'Muốn đi nhanh thì đi một mình, muốn đi xa thì đi cùng nhau.', author: 'Tục ngữ châu Phi' },
+    { text: 'Học, học nữa, học mãi.', author: 'V. I. Lê-nin' },
+    { text: 'Không có việc gì khó, chỉ sợ lòng không bền.', author: 'Hồ Chí Minh' },
+    { text: 'Mỗi ngày một chút, rồi sẽ đến đích.', author: 'Khuyết danh' },
+    { text: 'Công cụ tốt không làm thay bạn, nhưng giúp bạn làm tốt hơn.', author: 'NotDore' },
+    { text: 'Việc nhỏ làm gọn, ngày dài nhẹ tênh.', author: 'NotDore' },
+    { text: 'Một công cụ nhỏ, một ngày nhẹ hơn.', author: 'NotDore' },
+  ];
 
-  const matchesQuery = (tool, q) =>
-    matches([tool.name, tool.description, ...(tool.tags || [])].join(' '), q);
+  let quoteIndex = 0;
 
-  const resolveUrl = (url) => new URL(url, DB.ROOT).href;
+  const state = {
+    all: [],
+    q: '',
+  };
 
-  const renderCard = (tool) => {
-    const soon = tool.status === 'soon';
-    const href = tool.externalUrl || (tool.url ? resolveUrl(tool.url) : null);
-    const tag = soon ? 'div' : 'a';
-    const attrs = soon || !href
-      ? 'aria-disabled="true"'
-      : `href="${esc(href)}"${tool.externalUrl ? ' target="_blank" rel="noopener noreferrer"' : ''}`;
+  const hostOf = (url) => {
+    try {
+      return new URL(url).hostname.replace(/^www\./, '');
+    } catch {
+      return '';
+    }
+  };
 
-    const badge = STATUS_LABEL[tool.status]
-      ? `<span class="nd-badge ${soon ? 'nd-badge--soon' : 'nd-badge--beta'}">${STATUS_LABEL[tool.status]}</span>`
-      : '';
+  const chipHtml = (chip) => `
+    <a class="nd-chip" href="${esc(chip.href)}">
+      ${esc(chip.name)}<span class="nd-chip-count">${esc(String(chip.count))}</span>
+    </a>`;
+
+  const cardHtml = (item) => {
+    const ext = item.external;
+    const tags = (item.tags || []).slice(0, 2);
+    const meta = ext
+      ? `<span class="nd-tool-domain">${esc(hostOf(item.url))}</span>`
+      : tags.map((t) => `<span class="nd-tool-tag">${esc(t)}</span>`).join(' ');
 
     return `
-      <${tag} class="nd-tool-card${soon ? ' is-soon' : ''}" ${attrs}>
-        <span class="nd-tool-icon"><i class="fas ${esc(tool.icon || 'fa-cube')}" aria-hidden="true"></i></span>
-        <span class="nd-tool-body">
-          <span class="nd-tool-head">
-            <span class="nd-tool-name">${esc(tool.name)}</span>${badge}
-          </span>
-          <span class="nd-tool-desc">${esc(tool.description || '')}</span>
-          ${(tool.tags || []).length
-            ? `<span class="nd-tool-tags">${tool.tags.map((t) => `<span>#${esc(t)}</span>`).join('')}</span>`
-            : ''}
+      <a class="nd-tool-card ${ext ? 'nd-tool-card--ext' : 'nd-tool-card--int'}"
+         href="${esc(item.url)}"
+         ${ext ? 'target="_blank" rel="noopener noreferrer"' : ''}>
+        <span class="nd-tool-top">
+          <span class="nd-tool-icon"><i class="fas ${esc(item.icon)}" aria-hidden="true"></i></span>
+          <span class="nd-tool-badge ${ext ? 'nd-tool-badge--ext' : ''}">${ext ? 'Bên ngoài' : 'Nội bộ'}</span>
         </span>
-        ${soon ? '' : '<span class="nd-tool-go" aria-hidden="true"><i class="fas fa-arrow-right"></i></span>'}
-      </${tag}>`;
+        <h2 class="nd-tool-name">${esc(item.name)}</h2>
+        <p class="nd-tool-desc">${esc(item.description || '')}</p>
+        <span class="nd-tool-foot">
+          <span class="nd-tool-meta">${meta}</span>
+          <span class="nd-tool-go" aria-hidden="true">
+            <i class="fas ${ext ? 'fa-arrow-up-right-from-square' : 'fa-arrow-right'}"></i>
+          </span>
+        </span>
+      </a>`;
   };
 
-  const renderCategoryTabs = () => {
-    const host = document.getElementById('tool-tabs');
-    if (!host) return;
+  const render = () => {
+    const grid = $('tools-grid');
+    const sub = $('tools-sub');
+    const note = $('tools-note');
+    if (!grid) return;
 
-    const cats = state.catalog.categories || [];
-    host.innerHTML = [
-      { id: 'all', name: 'Tất cả', icon: 'fa-border-all' },
-      ...cats,
-    ].map((c) => `
-      <li class="nav-item">
-        <button type="button" class="nav-link${state.categoryId === c.id ? ' active' : ''}"
-          data-cat="${esc(c.id)}" aria-pressed="${state.categoryId === c.id}">
-          ${c.icon ? `<i class="fas ${esc(c.icon)} me-1" aria-hidden="true"></i>` : ''}${esc(c.name)}
-        </button>
-      </li>`).join('');
+    const q = state.q.trim();
+    const filtered = q
+      ? state.all.filter((x) => matches(
+          [x.name, x.description, ...(x.tags || []), x.group || ''].join(' '),
+          q,
+        ))
+      : state.all;
+
+    const shown = filtered.slice(0, MAX_TILES);
+
+    grid.innerHTML = shown.length
+      ? shown.map(cardHtml).join('')
+      : `<p class="nd-empty">
+           <i class="fas fa-magnifying-glass me-2" aria-hidden="true"></i>
+           Không tìm thấy công cụ phù hợp.
+         </p>`;
+
+    if (sub) {
+      const internal = state.all.filter((x) => !x.external).length;
+      const external = state.all.filter((x) => x.external).length;
+      sub.textContent = q
+        ? `${filtered.length} kết quả cho “${q}”`
+        : `${state.all.length} công cụ · ${internal} nội bộ · ${external} bên ngoài`;
+    }
+
+    if (note) {
+      const hiddenCount = Math.max(0, filtered.length - MAX_TILES);
+      note.hidden = hiddenCount === 0;
+      note.textContent = hiddenCount
+        ? `Đang hiển thị ${MAX_TILES} / ${filtered.length} công cụ. Dùng ô tìm kiếm để thu hẹp.`
+        : '';
+    }
   };
 
-  const renderTools = () => {
-    const host = document.getElementById('tools-content');
-    if (!host) return;
+  const renderSidebar = (catalog) => {
+    const tools = catalog.tools || [];
+    const categories = catalog.categories || [];
+    const external = catalog.external || [];
 
-    const list = (state.catalog.tools || [])
-      .filter((t) => state.categoryId === 'all' || t.categoryId === state.categoryId)
-      .filter((t) => matchesQuery(t, state.q))
-      .sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0) || a.name.localeCompare(b.name, 'vi'));
+    const intHost = $('side-internal');
+    if (intHost) {
+      const chips = categories
+        .map((c) => {
+          const list = tools.filter((t) => t.categoryId === c.id);
+          return {
+            name: c.name,
+            count: list.length,
+            href: list[0] ? list[0].url : '#cong-cu',
+          };
+        })
+        .filter((c) => c.count > 0);
 
-    const counter = document.getElementById('tool-count');
-    if (counter) counter.textContent = `${list.length} công cụ`;
+      intHost.innerHTML = chips.length
+        ? chips.map(chipHtml).join('')
+        : '<span class="nd-chip nd-chip--muted">Chưa có danh mục</span>';
+    }
 
-    host.innerHTML = list.length
-      ? `<div class="nd-grid">${list.map(renderCard).join('')}</div>`
-      : `<p class="nd-empty"><i class="fas fa-magnifying-glass me-2"></i>Không tìm thấy công cụ phù hợp${state.q ? ` với “${esc(state.q)}”` : ''}.</p>`;
+    const internalLink = $('side-internal-link');
+    if (internalLink) {
+      internalLink.href = tools[0] ? tools[0].url : '#cong-cu';
+    }
+
+    const extHost = $('side-external');
+    if (extHost) {
+      const groups = [...new Set(external.map((e) => e.group))];
+      const chips = groups.map((group, i) => ({
+        name: group,
+        count: external.filter((e) => e.group === group).length,
+        href: `thu-vien.html#lib-cat-${i}`,
+      }));
+
+      extHost.innerHTML = chips.length
+        ? chips.map(chipHtml).join('')
+        : '<span class="nd-chip nd-chip--muted">Thư viện đang trống</span>';
+    }
   };
 
-  const renderLibrary = () => {
-    const host = document.getElementById('library-grid');
-    if (!host) return;
+  /* Hiển thị câu nói hiện tại và chạy lại hiệu ứng mờ dần. */
+  const renderQuote = () => {
+    const box = $('quote-box');
+    const text = $('quote-text');
+    const author = $('quote-author');
+    if (!box || !text || !author) return;
 
-    const items = state.catalog.external || [];
-    const groups = [...new Set(items.map((i) => i.group))];
+    const quote = QUOTES[quoteIndex];
+    if (!quote) return;
 
-    host.innerHTML = groups.map((g) => `
-      <div class="nd-lib-group">
-        <h3 class="nd-lib-title">${esc(g)}</h3>
-        <ul class="nd-lib-list">
-          ${items.filter((i) => i.group === g).map((i) => `
-            <li>
-              <a href="${esc(i.url)}" target="_blank" rel="noopener noreferrer">
-                <i class="fas ${esc(i.icon || 'fa-link')}" aria-hidden="true"></i>
-                <span>
-                  <strong>${esc(i.name)}</strong>
-                  <small>${esc(i.note || '')}</small>
-                </span>
-              </a>
-            </li>`).join('')}
-        </ul>
-      </div>`).join('');
+    text.textContent = quote.text;
+    author.textContent = `— ${quote.author}`;
+
+    box.classList.remove('nd-quote--in');
+    void box.offsetWidth;
+    box.classList.add('nd-quote--in');
   };
 
-  /* ── Sự kiện ─────────────────────────────────────────────────────── */
+  const initQuote = () => {
+    if (!QUOTES.length || !$('quote-box')) return;
+
+    /* Mỗi ngày mở trang sẽ thấy cùng một câu; nút ↻ đổi ngẫu nhiên. */
+    const day = Math.floor(Date.now() / 86400000);
+    quoteIndex = day % QUOTES.length;
+    renderQuote();
+
+    const btn = $('quote-refresh');
+    if (!btn) return;
+
+    btn.addEventListener('click', () => {
+      if (QUOTES.length < 2) return;
+
+      let next = quoteIndex;
+      while (next === quoteIndex) {
+        next = Math.floor(Math.random() * QUOTES.length);
+      }
+      quoteIndex = next;
+      renderQuote();
+    });
+  };
 
   const bind = () => {
-    const tabs = document.getElementById('tool-tabs');
-    if (tabs) {
-      tabs.addEventListener('click', (e) => {
-        const btn = e.target.closest('button[data-cat]');
-        if (!btn) return;
-        state.categoryId = btn.dataset.cat;
-        renderCategoryTabs();
-        renderTools();
-      });
-    }
+    const input = $('tool-search');
+    if (!input) return;
 
-    const input = document.getElementById('tool-search');
-    if (input) {
-      let timer;
-      input.addEventListener('input', () => {
-        clearTimeout(timer);
-        timer = setTimeout(() => {
-          state.q = input.value;
-          renderTools();
-        }, 120);
-      });
-    }
-  };
-
-  /* ── Khởi động ───────────────────────────────────────────────────── */
-
-  const fail = (err) => {
-    console.error(err);
-    const host = document.getElementById('tools-content');
-    if (host) {
-      host.innerHTML = `<p class="nd-empty nd-empty--error">
-        <i class="fas fa-triangle-exclamation me-2"></i>Không tải được danh sách công cụ. Vui lòng thử lại sau.
-      </p>`;
-    }
+    let timer;
+    input.addEventListener('input', () => {
+      clearTimeout(timer);
+      timer = setTimeout(() => {
+        state.q = input.value;
+        render();
+      }, 90);
+    });
   };
 
   const init = async () => {
+    initQuote();
+
     try {
-      state.catalog = await DB.getCatalog();
+      const catalog = await DB.getCatalog();
 
-      // Cho phép chia sẻ link tìm kiếm: /?q=dia%20gioi
-      const q = new URLSearchParams(location.search).get('q');
-      if (q) {
-        state.q = q;
-        const input = document.getElementById('tool-search');
-        if (input) input.value = q;
-      }
+      const internal = (catalog.tools || []).map((t) => ({
+        name: t.name,
+        description: t.description,
+        icon: t.icon || 'fa-toolbox',
+        url: t.url,
+        tags: t.tags || [],
+        external: false,
+      }));
 
-      renderCategoryTabs();
-      renderTools();
-      renderLibrary();
+      const external = (catalog.external || []).map((e) => ({
+        name: e.name,
+        description: e.note || '',
+        icon: e.icon || 'fa-arrow-up-right-from-square',
+        url: e.url,
+        tags: [],
+        group: e.group,
+        external: true,
+      }));
+
+      state.all = [...internal, ...external];
+      render();
+      renderSidebar(catalog);
       bind();
-
-      const note = document.getElementById('data-source');
-      if (note) {
-        note.textContent = state.catalog.source === 'supabase'
-          ? 'Dữ liệu: Supabase'
-          : 'Dữ liệu: JSON tĩnh';
-      }
     } catch (err) {
-      fail(err);
+      console.error(err);
+      const grid = $('tools-grid');
+      if (grid) {
+        grid.innerHTML = `<p class="nd-empty">
+          <i class="fas fa-triangle-exclamation me-2" aria-hidden="true"></i>
+          Không tải được danh sách công cụ. Vui lòng thử lại sau.
+        </p>`;
+      }
+      const sub = $('tools-sub');
+      if (sub) sub.textContent = 'Lỗi dữ liệu';
+
+      const intHost = $('side-internal');
+      if (intHost) intHost.innerHTML = '<span class="nd-chip nd-chip--muted">Không tải được</span>';
+      const extHost = $('side-external');
+      if (extHost) extHost.innerHTML = '<span class="nd-chip nd-chip--muted">Không tải được</span>';
     }
   };
 
