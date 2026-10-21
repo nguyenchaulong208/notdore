@@ -35,11 +35,16 @@ db/schema.sql                  # bảng + RLS (catalog, admin_units legacy)
 db/schema-geo.sql              # schema geo_*: dataset, cây đơn vị, sự kiện, view
 db/seed-tools.sql              # seed catalog
 db/seed-admin.sql              # seed địa giới legacy (tự sinh)
-db/seed-geo.sql                # seed geo_* (tự sinh, gồm cấp xã)
+db/seed-geo.sql                # seed geo_* gộp (psql/CLI; quá lớn cho SQL Editor)
+db/seed-geo-1-core.sql         # seed phần 1: dataset, cấp/loại, văn bản, 34 tỉnh
+db/seed-geo-2-communes/        # seed phần 2: 34 file xã/phường theo tỉnh (≤34KB/file)
+db/seed-geo-2-communes-all.sql # seed phần 2 gộp (psql/CLI; quá lớn cho SQL Editor)
+db/seed-geo-3-relations.sql    # seed phần 3: chỉ số, sự kiện, liên kết, nguồn
 db/source/database_vietnam_merger.json  # JSON nguồn cấp tỉnh của geo_*
 db/source/communes-open-api.json        # JSON nguồn cấp xã đã đối chiếu
 scripts/build-admin-data.mjs   # chuẩn hoá dữ liệu crawl -> JSON + SQL legacy
-scripts/build-geo-sql.mjs      # sinh db/seed-geo.sql từ JSON nguồn
+scripts/build-geo-sql.mjs      # sinh db/seed-geo.sql + file theo tỉnh
+scripts/split-geo-seed.mjs     # cắt seed-geo.sql thành 3 phần
 scripts/fetch-communes.mjs     # tải cấp xã từ provinces.open-api.vn
 scripts/check-links.mjs        # kiểm tra link/asset nội bộ
 scripts/dev-server.mjs         # server tĩnh local (npm run dev)
@@ -111,6 +116,9 @@ trả **cùng shape** dù dữ liệu từ Supabase hay JSON, nên render không
   sáp nhập**, chưa cộng 127 đơn vị không áp dụng. Số hiện hành: 2.621 xã, 687 phường, 13 đặc khu.
 - Cấp huyện không còn từ 01/07/2025; không nạp dữ liệu huyện.
 - `db/seed-geo.sql` đã bao gồm cả 3.321 dòng cấp xã (chạy `npm run build:geo`).
+  File gộp ~580KB, **quá lớn cho Supabase SQL Editor**; đã cắt thành
+  `db/seed-geo-1-core.sql` + `db/seed-geo-2-communes/` (34 file theo tỉnh, ≤34KB) +
+  `db/seed-geo-3-relations.sql`.
 - Frontend: tab "Xã / phường" + nút "Xem xã/phường" trong modal tỉnh; `getCommunes()` phân
   trang Supabase (mặc định 1.000 dòng/request) rồi fallback JSON tĩnh.
 - Trạng thái production (2026-10-21): `geo_units` hiện chỉ có 34 cấp tỉnh, chưa có `commune`;

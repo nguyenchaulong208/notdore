@@ -217,15 +217,11 @@ if (Array.isArray(communesRaw?.communes) && communesRaw.communes.length) {
       slug,
       sortOrder: Number(commune.sortOrder) || index + 1,
       effectiveFrom: commune.effectiveFrom ?? EFFECTIVE_FROM,
+      // Metadata tối giản để giữ db/seed-geo.sql đủ nhỏ cho SQL Editor.
+      // Tên tỉnh để lại trong metadata; frontend cũng có thể tra theo province_code.
       metadata: {
-        source: communesRaw.meta?.source ?? "provinces.open-api.vn",
-        source_url: communesRaw.meta?.sourceUrl ?? null,
         province_code: commune.provinceCode ?? null,
         province_name: commune.provinceName ?? null,
-        geo_province_code: commune.geoProvinceCode ?? null,
-        api_province_code: commune.apiProvinceCode ?? null,
-        short_codename: commune.shortCodename ?? null,
-        type_label: commune.typeLabel ?? null,
       },
     });
   }
@@ -236,6 +232,50 @@ if (Array.isArray(communesRaw?.communes) && communesRaw.communes.length) {
 } else {
   warnings.push("Không có dữ liệu cấp xã; seed chỉ sinh 34 tỉnh.");
 }
+
+/* Sinh các file xã theo từng tỉnh để SQL Editor không phải tải 525KB cùng lúc. */
+const communeValuesSql = (units) => units.map((commune) => {
+  return `  (${sqlText(commune.parentSlug)}, ${sqlText(commune.typeCode)}, ${sqlText(commune.code)}, ${sqlText(commune.name)}, ${sqlText(commune.slug)}, ${sqlNumber(commune.sortOrder)}, ${sqlText(commune.effectiveFrom)}, ${sqlJson(commune.metadata)})`;
+}).join(",\n");
+
+const writeCommuneChunkFiles = async () => {
+  const dir = resolve(ROOT, "db/seed-geo-2-communes");
+  await mkdir(dir, { recursive: true });
+
+  const provinceBySlug = new Map(provinces.map((province) => [province.slug, province]));
+  let written = 0;
+
+  for (const [index, province] of provinces.entries()) {
+    const units = communeUnits.filter((commune) => commune.parentSlug === province.slug);
+    if (!units.length) continue;
+
+    const slug = slugify(province.ten) || `tinh-${index + 1}`;
+    const file = resolve(dir, `seed-geo-2-communes-${String(index + 1).padStart(2, "0")}-${slug}.sql`);
+    const sql = `-- =============================================================================
+-- NotDore - seed geo_* cấp xã: ${province.ten} (${units.length} đơn vị).
+-- Chạy SAU db/seed-geo-1-core.sql. Có thể chạy song song với các tỉnh khác.
+-- =============================================================================
+begin;
+
+insert into public.geo_units
+  (dataset_id, parent_id, level_code, type_code, code, name, slug, sort_order, effective_from, metadata)
+select d.id, parent.id, 'commune', v.type_code, v.code, v.name, v.slug,
+       v.sort_order, v.effective_from::date, v.metadata
+from (values
+${communeValuesSql(units)}
+) as v(parent_slug, type_code, code, name, slug, sort_order, effective_from, metadata)
+join public.geo_datasets d on d.code = ${sqlText(DATASET_CODE)}
+join public.geo_units parent on parent.dataset_id = d.id
+  and parent.level_code = 'province' and parent.slug = v.parent_slug;
+
+commit;
+`;
+    await writeFile(file, sql, "utf8");
+    written += 1;
+  }
+
+  return written;
+};
 
 /* Kiểm tra tổng số liệu so với meta. */
 const sum = (list, key) =>
@@ -587,10 +627,7 @@ if (communeUnits.length) {
   push("select d.id, parent.id, 'commune', v.type_code, v.code, v.name, v.slug,");
   push("       v.sort_order, v.effective_from::date, v.metadata");
   push("from (values");
-  const communeValues = communeUnits.map((commune) => {
-    return `  (${sqlText(commune.parentSlug)}, ${sqlText(commune.typeCode)}, ${sqlText(commune.code)}, ${sqlText(commune.name)}, ${sqlText(commune.slug)}, ${sqlNumber(commune.sortOrder)}, ${sqlText(commune.effectiveFrom)}, ${sqlJson(commune.metadata)})`;
-  });
-  push(communeValues.join(",\n"));
+  push(communeValuesSql(communeUnits));
   push(") as v(parent_slug, type_code, code, name, slug, sort_order, effective_from, metadata)");
   push(`join public.geo_datasets d on d.code = ${sqlText(DATASET_CODE)}`);
   push("join public.geo_units parent on parent.dataset_id = d.id");
@@ -692,12 +729,15 @@ push();
 await mkdir(dirname(OUT), { recursive: true });
 await writeFile(OUT, `${lines.join("\n")}\n`, "utf8");
 
+const communeChunkFiles = await writeCommuneChunkFiles();
+
 console.log(`Đã ghi ${OUT}`);
 console.log(
   `Tỉnh/thành: ${provinces.length}, xã/phường: ${communeUnits.length}, ` +
   `chỉ số: ${metrics.length}, sự kiện: ${events.length}, văn bản: ${documents.size}, ` +
   `nguồn: ${(meta.source ?? []).length + (communeUnits.length ? 1 : 0)}`,
 );
+console.log(`Đã ghi ${communeChunkFiles} file cấp xã theo tỉnh vào db/seed-geo-2-communes/`);
 if (warnings.length) {
   console.log(`\nCảnh báo (${warnings.length}):`);
   for (const warning of warnings) console.log(`- ${warning}`);
