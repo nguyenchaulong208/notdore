@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": 2,
   "categories": [
     {
       "id": "dia-gioi",
@@ -7,27 +7,6 @@
       "description": "Tra cứu đơn vị hành chính, sáp nhập tỉnh thành, mã đơn vị.",
       "icon": "fa-map-location-dot",
       "sortOrder": 1
-    },
-    {
-      "id": "tai-chinh",
-      "name": "Tài chính & Kế toán",
-      "description": "Tính lương, thuế, lãi vay, chiết khấu, quy đổi.",
-      "icon": "fa-calculator",
-      "sortOrder": 2
-    },
-    {
-      "id": "tien-ich",
-      "name": "Tiện ích văn bản",
-      "description": "Đọc số thành chữ, chuẩn hoá tiếng Việt, đếm ký tự, tạo QR.",
-      "icon": "fa-wand-magic-sparkles",
-      "sortOrder": 3
-    },
-    {
-      "id": "nhan-su",
-      "name": "Nhân sự",
-      "description": "Chấm công, giờ làm thêm, ngày phép.",
-      "icon": "fa-users",
-      "sortOrder": 4
     }
   ],
   "tools": [
@@ -42,39 +21,6 @@
       "status": "ready",
       "featured": true,
       "sortOrder": 1
-    },
-    {
-      "id": "tinh-luong-gross-net",
-      "categoryId": "tai-chinh",
-      "name": "Tính lương Gross ↔ Net",
-      "description": "Quy đổi lương gross sang net và ngược lại, gồm BHXH, BHYT, BHTN và thuế TNCN.",
-      "icon": "fa-money-bill-wave",
-      "tags": ["lương", "TNCN", "BHXH"],
-      "status": "soon",
-      "featured": false,
-      "sortOrder": 2
-    },
-    {
-      "id": "doc-so-tien",
-      "categoryId": "tien-ich",
-      "name": "Đọc số tiền thành chữ",
-      "description": "Chuyển số tiền sang chữ tiếng Việt chuẩn, dùng cho hoá đơn, hợp đồng, phiếu thu.",
-      "icon": "fa-font",
-      "tags": ["hoá đơn", "hợp đồng", "số thành chữ"],
-      "status": "soon",
-      "featured": false,
-      "sortOrder": 3
-    },
-    {
-      "id": "lich-tra-no-vay",
-      "categoryId": "tai-chinh",
-      "name": "Lịch trả nợ vay",
-      "description": "Lập bảng trả gốc và lãi theo dư nợ giảm dần hoặc niên kim cố định, xuất Excel.",
-      "icon": "fa-table-list",
-      "tags": ["vay", "lãi suất", "amortization"],
-      "status": "soon",
-      "featured": false,
-      "sortOrder": 4
     }
   ],
   "external": [

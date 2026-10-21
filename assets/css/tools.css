@@ -7,9 +7,13 @@
 /* ── Lưới & thẻ công cụ ─────────────────────────────────────────────── */
 .nd-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 1rem;
 }
+
+/* Khi chỉ có một công cụ: thẻ trải rộng và luôn hiện mũi tên */
+.nd-grid:has(> .nd-tool-card:only-child) .nd-tool-card { padding: 1.75rem; }
+.nd-grid:has(> .nd-tool-card:only-child) .nd-tool-go { opacity: 1; transform: none; }
 
 .nd-tool-card {
   position: relative;
@@ -409,12 +413,22 @@
 .nd-source-list { margin: 0 0 .5rem; padding-left: 1.2rem; color: var(--text-secondary); font-size: .9rem; }
 .nd-source-list li { margin-bottom: .3rem; }
 
+.nd-meta-text { color: var(--text-secondary); font-size: .92rem; line-height: 1.7; max-width: 75ch; }
+.nd-meta-actions { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: 1rem; }
+.nd-modal-actions { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: 1.25rem; }
+
 /* ── Ô tìm kiếm ở hero ──────────────────────────────────────────────── */
 .nd-hero-search {
   position: relative;
   max-width: 520px;
   margin: 1.5rem auto 1.25rem;
 }
+
+/* Khi ô tìm kiếm nằm trong section (trang chủ không còn hero) */
+.nd-search-section { margin: 1rem auto 1.75rem; }
+
+/* Section đầu tiên sát header hơn */
+.nd-section-first { padding-top: 1.5rem; }
 
 .nd-hero-search-icon {
   position: absolute;

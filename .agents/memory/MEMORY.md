@@ -1,1 +1,1 @@
-- [Project overview](project-overview.md) — kiến trúc v2 (rebuild 2026-10): static + vanilla JS, Supabase có fallback JSON, công cụ địa giới 63→34, quy ước `nd-*`, dữ liệu cần kiểm chứng.
+- [Project overview](project-overview.md) — định hướng mới: chỉ tập trung công cụ địa giới hành chính (không còn định vị kế toán/thuế/nhân sự); static + vanilla JS, Supabase có fallback JSON, 63→34, quy ước `nd-*`.
