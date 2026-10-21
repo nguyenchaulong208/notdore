@@ -302,11 +302,29 @@
   const filterCommunes = () => {
     const all = state.communes?.communes || [];
     const query = state.q;
+    const normalizedQuery = normalize(query);
+    const queryWords = ` ${normalizedQuery.replace(/[^a-z0-9]+/g, ' ')} `;
+    const containsDistrict = / (quan|huyen|thi xa|thi tran) /.test(queryWords);
+    const oldProvinceCodes = new Set(query
+      ? state.data.history
+        .filter((h) => addressContains(query, h.oldName))
+        .map((h) => h.newCode)
+      : []);
     const matchedCommuneCodes = new Set(query
-      ? all.filter((c) => [
-        c.name,
-        c.shortCodename?.replace(/_/g, ' '),
-      ].some((name) => addressContains(query, name))).map((c) => c.code)
+      ? all.filter((c) => {
+        const fullName = normalize(c.name);
+        const exactCurrentName = fullName.length > 3 && normalizedQuery.includes(fullName);
+        if (exactCurrentName) {
+          return !containsDistrict || state.direction === 'current-to-before';
+        }
+
+        const shortNameMatch = [
+          c.name,
+          c.shortCodename?.replace(/_/g, ' '),
+        ].some((name) => addressContains(query, name));
+        return shortNameMatch &&
+          (state.direction === 'current-to-before' || oldProvinceCodes.size === 0);
+      }).map((c) => c.code)
       : []);
     const matchedProvinceCodes = new Set(query ? [
       ...state.data.provinces
@@ -582,7 +600,7 @@
     const search = $('dg-search');
     if (!search) return;
     if (state.tab === 'communes') {
-      search.placeholder = 'Tên xã/phường hoặc địa chỉ hiện hành…';
+      search.placeholder = 'Tỉnh cũ để lọc xã/phường hiện hành, hoặc tìm địa chỉ mới…';
     } else {
       search.placeholder = 'Địa chỉ cũ hoặc mới; thêm cũ: / mới: nếu cần…';
     }
