@@ -1,0 +1,152 @@
+{
+  "version": 1,
+  "categories": [
+    {
+      "id": "dia-gioi",
+      "name": "Địa giới & Hành chính",
+      "description": "Tra cứu đơn vị hành chính, sáp nhập tỉnh thành, mã đơn vị.",
+      "icon": "fa-map-location-dot",
+      "sortOrder": 1
+    },
+    {
+      "id": "tai-chinh",
+      "name": "Tài chính & Kế toán",
+      "description": "Tính lương, thuế, lãi vay, chiết khấu, quy đổi.",
+      "icon": "fa-calculator",
+      "sortOrder": 2
+    },
+    {
+      "id": "tien-ich",
+      "name": "Tiện ích văn bản",
+      "description": "Đọc số thành chữ, chuẩn hoá tiếng Việt, đếm ký tự, tạo QR.",
+      "icon": "fa-wand-magic-sparkles",
+      "sortOrder": 3
+    },
+    {
+      "id": "nhan-su",
+      "name": "Nhân sự",
+      "description": "Chấm công, giờ làm thêm, ngày phép.",
+      "icon": "fa-users",
+      "sortOrder": 4
+    }
+  ],
+  "tools": [
+    {
+      "id": "dia-gioi-hanh-chinh",
+      "categoryId": "dia-gioi",
+      "name": "Tra cứu địa giới hành chính",
+      "description": "Đối chiếu 63 tỉnh thành cũ sang 34 đơn vị sau sáp nhập 2025. Tìm theo tên cũ, tên mới, vùng hoặc mã đơn vị.",
+      "icon": "fa-map-location-dot",
+      "url": "tools/dia-gioi-hanh-chinh.html",
+      "tags": ["sáp nhập 2025", "tỉnh thành", "tra cứu"],
+      "status": "ready",
+      "featured": true,
+      "sortOrder": 1
+    },
+    {
+      "id": "tinh-luong-gross-net",
+      "categoryId": "tai-chinh",
+      "name": "Tính lương Gross ↔ Net",
+      "description": "Quy đổi lương gross sang net và ngược lại, gồm BHXH, BHYT, BHTN và thuế TNCN.",
+      "icon": "fa-money-bill-wave",
+      "tags": ["lương", "TNCN", "BHXH"],
+      "status": "soon",
+      "featured": false,
+      "sortOrder": 2
+    },
+    {
+      "id": "doc-so-tien",
+      "categoryId": "tien-ich",
+      "name": "Đọc số tiền thành chữ",
+      "description": "Chuyển số tiền sang chữ tiếng Việt chuẩn, dùng cho hoá đơn, hợp đồng, phiếu thu.",
+      "icon": "fa-font",
+      "tags": ["hoá đơn", "hợp đồng", "số thành chữ"],
+      "status": "soon",
+      "featured": false,
+      "sortOrder": 3
+    },
+    {
+      "id": "lich-tra-no-vay",
+      "categoryId": "tai-chinh",
+      "name": "Lịch trả nợ vay",
+      "description": "Lập bảng trả gốc và lãi theo dư nợ giảm dần hoặc niên kim cố định, xuất Excel.",
+      "icon": "fa-table-list",
+      "tags": ["vay", "lãi suất", "amortization"],
+      "status": "soon",
+      "featured": false,
+      "sortOrder": 4
+    }
+  ],
+  "external": [
+    {
+      "name": "Google Sheets",
+      "url": "https://sheets.google.com",
+      "group": "Bảng tính",
+      "note": "Bảng tính cộng tác, có QUERY/IMPORTDATA mạnh.",
+      "icon": "fa-table"
+    },
+    {
+      "name": "Excel Online",
+      "url": "https://www.office.com/launch/excel",
+      "group": "Bảng tính",
+      "note": "Bản web của Excel, mở file lớn nhanh.",
+      "icon": "fa-file-excel"
+    },
+    {
+      "name": "PDF24 Tools",
+      "url": "https://tools.pdf24.org/vi/",
+      "group": "PDF",
+      "note": "Ghép, tách, nén, OCR PDF — miễn phí, không giới hạn.",
+      "icon": "fa-file-pdf"
+    },
+    {
+      "name": "iLovePDF",
+      "url": "https://www.ilovepdf.com/vi",
+      "group": "PDF",
+      "note": "Bộ công cụ PDF quen thuộc, giao diện tiếng Việt.",
+      "icon": "fa-file-pdf"
+    },
+    {
+      "name": "CloudConvert",
+      "url": "https://cloudconvert.com",
+      "group": "Chuyển đổi",
+      "note": "Chuyển đổi hơn 200 định dạng, kể cả DOCX ↔ PDF.",
+      "icon": "fa-arrows-rotate"
+    },
+    {
+      "name": "TinyPNG",
+      "url": "https://tinypng.com",
+      "group": "Ảnh",
+      "note": "Nén PNG/JPEG/WebP mà gần như không giảm chất lượng.",
+      "icon": "fa-image"
+    },
+    {
+      "name": "ChatGPT",
+      "url": "https://chat.openai.com",
+      "group": "AI",
+      "note": "Soạn thảo, tóm tắt văn bản, giải thích công thức.",
+      "icon": "fa-robot"
+    },
+    {
+      "name": "Claude",
+      "url": "https://claude.ai",
+      "group": "AI",
+      "note": "Xử lý tài liệu dài, viết lại văn bản hành chính.",
+      "icon": "fa-comment-dots"
+    },
+    {
+      "name": "NotebookLM",
+      "url": "https://notebooklm.google.com",
+      "group": "AI",
+      "note": "Hỏi đáp trên tài liệu của bạn, có trích nguồn.",
+      "icon": "fa-book-open"
+    },
+    {
+      "name": "Regex101",
+      "url": "https://regex101.com",
+      "group": "Lập trình",
+      "note": "Kiểm thử regex trực quan, giải thích từng nhóm.",
+      "icon": "fa-code"
+    }
+  ]
+}
