@@ -29,21 +29,24 @@ assets/js/library.js           # render thư viện theo nhóm; cuộn tới #li
 assets/js/dia-gioi.js          # logic tra cứu
 assets/css/tools.css           # component .nd-*
 assets/data/tools.json         # catalog fallback
-assets/data/admin-merger.json  # dữ liệu địa giới đã chuẩn hoá (tự sinh)
+assets/data/admin-merger.json  # dữ liệu cấp tỉnh đã chuẩn hoá (tự sinh)
+assets/data/admin-communes.json # dữ liệu 3.321 xã/phường/đặc khu (fallback)
 db/schema.sql                  # bảng + RLS (catalog, admin_units legacy)
 db/schema-geo.sql              # schema geo_*: dataset, cây đơn vị, sự kiện, view
 db/seed-tools.sql              # seed catalog
 db/seed-admin.sql              # seed địa giới legacy (tự sinh)
-db/seed-geo.sql                # seed geo_* (tự sinh)
-db/source/database_vietnam_merger.json  # JSON nguồn của geo_*
+db/seed-geo.sql                # seed geo_* (tự sinh, gồm cấp xã)
+db/source/database_vietnam_merger.json  # JSON nguồn cấp tỉnh của geo_*
+db/source/communes-open-api.json        # JSON nguồn cấp xã đã đối chiếu
 scripts/build-admin-data.mjs   # chuẩn hoá dữ liệu crawl -> JSON + SQL legacy
 scripts/build-geo-sql.mjs      # sinh db/seed-geo.sql từ JSON nguồn
+scripts/fetch-communes.mjs     # tải cấp xã từ provinces.open-api.vn
 scripts/check-links.mjs        # kiểm tra link/asset nội bộ
 scripts/dev-server.mjs         # server tĩnh local (npm run dev)
 ```
 
-Quy ước quan trọng: `NotDoreDB.getCatalog()` / `getAdminDivisions()` trả **cùng shape**
-dù dữ liệu từ Supabase hay JSON, nên render không cần rẽ nhánh theo nguồn.
+Quy ước quan trọng: `NotDoreDB.getCatalog()` / `getAdminDivisions()` / `getCommunes()`
+trả **cùng shape** dù dữ liệu từ Supabase hay JSON, nên render không cần rẽ nhánh theo nguồn.
 
 ## Dữ liệu địa giới
 - Nguồn gốc: `vietnam-admin-merger.json` (file crawl, chỉ có 34 đơn vị cấp tỉnh).
@@ -53,7 +56,7 @@ dù dữ liệu từ Supabase hay JSON, nên render không cần rẽ nhánh the
 - `Thừa Thiên Huế` xử lý riêng: không sáp nhập, chỉ đổi tên thành `Thành phố Huế`
   (`changed = false`, `renamedFrom = "Thừa Thiên Huế"`).
 - Cấp huyện không còn trong bộ máy từ 01/07/2025 (chính quyền 2 cấp tỉnh – xã).
-  Công cụ hiện chỉ tra **cấp tỉnh**, chưa có cấp xã/phường.
+  Công cụ tra cả **cấp tỉnh** và **cấp xã/phường/đặc khu**; không có cấp huyện.
 
 ## Lớp dữ liệu `geo_*` (thêm 2026-10-21)
 - Quyết định: **không thay** `admin_units` / `admin_unit_history` để công cụ tra cứu
@@ -75,14 +78,15 @@ dù dữ liệu từ Supabase hay JSON, nên render không cần rẽ nhánh the
   xoá dataset/unit không làm dòng target vi phạm check `unit_id` hoặc `source_name`.
 - `geo_units` có FK ghép `(type_code, level_code) -> geo_unit_types(code, level_code)`
   để không thể gắn type `xa` vào level `province`.
-- Dữ liệu hiện chỉ có **cấp tỉnh**; `parent_id` và type `xa`/`phuong`/`dac_ku`/
-  `thi_tran` đã sẵn sàng cho lần nhập cấp xã sau. Chưa nối vào `assets/js/db.js`.
+- Dữ liệu hiện có **34 cấp tỉnh + 3.321 cấp xã** (2.621 xã, 687 phường, 13 đặc khu);
+  `parent_id` gắn xã vào tỉnh. Đã nối vào `assets/js/db.js` qua `getCommunes()`.
 
 ## Kết nối frontend với Supabase (2026-10-21)
 - Các trang `index.html`, `thu-vien.html`, `tools/dia-gioi-hanh-chinh.html` đã nạp
   `@supabase/supabase-js@2` từ jsDelivr trước `config.js`/`db.js`.
 - `NotDoreDB.getAdminDivisions()` ưu tiên Supabase; chỉ fallback JSON khi chưa cấu hình
-  hoặc truy vấn lỗi. `meta` tĩnh được đọc từ JSON nếu có, không bắt buộc.
+  hoặc truy vấn lỗi. `getCommunes()` cũng vậy: đọc `geo_units` level `commune` (phân trang)
+  rồi fallback `assets/data/admin-communes.json`. `meta` tĩnh được đọc từ JSON nếu có.
 - Công cụ tra cứu vẫn dùng legacy `admin_units` + `admin_unit_history` (cần 63 → 34,
   region/capital/population/area). Không chuyển sang `geo_*` vì lớp mới chưa có
   lịch sử 63 → 34 và các trường đó.
@@ -92,6 +96,26 @@ dù dữ liệu từ Supabase hay JSON, nên render không cần rẽ nhánh the
 - Dev server local cũng giả lập `/api/config` từ biến môi trường. Nếu không có config,
   trang vẫn dùng JSON tĩnh và badge hiển thị "JSON tĩnh".
 - Không đưa `service_role` vào frontend; API chỉ trả anon/publishable key.
+- Lỗi thực tế trên production (2026-10-21): `/api/config` OK, SDK OK, nhưng REST trả
+  401 `permission denied for table admin_units`. Nguyên nhân: thiếu GRANT select cấp bảng;
+  RLS policy không thay thế được GRANT. Đã thêm GRANT vào `db/schema.sql` và tạo
+  `db/fix-grants.sql` để chạy trên project hiện hữu.
+
+## Dữ liệu cấp xã/phường/đặc khu (2026-10-21)
+- Nguồn tên/mã: `provinces.open-api.vn` (v2, depth=2), sinh bằng
+  `scripts/fetch-communes.mjs` vào `db/source/communes-open-api.json` và
+  `assets/data/admin-communes.json`.
+- Đối chiếu: 34 tỉnh, tổng 3.321 đơn vị khớp 34 Nghị quyết UBTVQH15; số lượng từng tỉnh
+  khớp `so_don_vi_moi` trong `database_vietnam_merger.json`.
+- Chênh 2.499 xã / 682 phường của nguồn cũ là do nguồn đó chỉ đếm đơn vị **hình thành sau
+  sáp nhập**, chưa cộng 127 đơn vị không áp dụng. Số hiện hành: 2.621 xã, 687 phường, 13 đặc khu.
+- Cấp huyện không còn từ 01/07/2025; không nạp dữ liệu huyện.
+- `db/seed-geo.sql` đã bao gồm cả 3.321 dòng cấp xã (chạy `npm run build:geo`).
+- Frontend: tab "Xã / phường" + nút "Xem xã/phường" trong modal tỉnh; `getCommunes()` phân
+  trang Supabase (mặc định 1.000 dòng/request) rồi fallback JSON tĩnh.
+- Trạng thái production (2026-10-21): `geo_units` hiện chỉ có 34 cấp tỉnh, chưa có `commune`;
+  tab cấp xã vẫn hiển thị qua `assets/data/admin-communes.json`. Cần chạy `db/seed-geo.sql`
+  để đổi sang Supabase.
 
 ## Điểm cần kiểm chứng (đừng tự tin tuyệt đối)
 - File crawl ghi Đồng Nai lên thành phố 29/04/2026, Quảng Ninh 01/09/2026, Bắc Ninh 20/09/2026.

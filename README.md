@@ -39,11 +39,15 @@ db/schema.sql                  Bảng + RLS (catalog, admin_units legacy)
 db/schema-geo.sql              Schema geo_* mở rộng: dataset, cây đơn vị, sự kiện
 db/seed-tools.sql              Seed danh mục công cụ
 db/reset-tools.sql             Sao lưu + xoá tools cũ nếu khác schema v3
+db/fix-grants.sql              Cấp SELECT cho anon khi gặp lỗi 401 permission denied
 db/seed-admin.sql              Seed địa giới legacy (tự sinh)
-db/seed-geo.sql                Seed lớp geo_* (tự sinh)
-db/source/database_vietnam_merger.json  Nguồn JSON của lớp geo_*
+db/seed-geo.sql                Seed lớp geo_* (tự sinh, gồm cấp xã)
+db/source/database_vietnam_merger.json  Nguồn JSON cấp tỉnh của lớp geo_*
+db/source/communes-open-api.json        Nguồn chuẩn hoá 3.321 xã/phường/đặc khu
+assets/data/admin-communes.json        Fallback tĩnh cho cấp xã/phường/đặc khu
 scripts/build-admin-data.mjs   Chuẩn hoá dữ liệu crawl → JSON + SQL legacy
 scripts/build-geo-sql.mjs      Chuẩn hoá JSON → db/seed-geo.sql
+scripts/fetch-communes.mjs     Tải cấp xã từ provinces.open-api.vn + đối chiếu số liệu
 scripts/dev-server.mjs         Server tĩnh local
 scripts/check-links.mjs        Kiểm tra link/asset nội bộ
 ```
@@ -57,7 +61,7 @@ scripts/check-links.mjs        Kiểm tra link/asset nội bộ
 Trình duyệt → assets/js/config.js
                  ├─ URL/key điền trực tiếp trong file
                  └─ hoặc GET /api/config (Vercel Environment Variables)
-             → NotDoreDB.getCatalog() / getAdminDivisions()
+             → NotDoreDB.getCatalog() / getAdminDivisions() / getCommunes()
                  ├─ có config Supabase  → supabase-js (anon key, RLS chỉ đọc)
                  └─ không có / lỗi      → fetch assets/data/*.json
 ```
@@ -89,6 +93,11 @@ Không cần `npm install` — dự án không có dependency runtime.
    - `db/seed-tools.sql`
    - `db/seed-admin.sql`
    - `db/seed-geo.sql`
+
+> `db/schema-geo.sql` + `db/seed-geo.sql` là lớp cấp xã/phường/đặc khu. Nếu project đã có
+> `geo_*` từ trước, chỉ cần chạy lại `db/seed-geo.sql` để nạp thêm 3.321 đơn vị cấp xã;
+> frontend vẫn hiển thị ngay qua `assets/data/admin-communes.json` nếu chưa seed.
+
 3. Cấu hình frontend — chọn **một** trong hai cách:
 
    **Cách A — Vercel Environment Variables (khuyến nghị khi deploy):**
@@ -138,10 +147,36 @@ npm run dev
 2. Nếu `configured:false`, kiểm tra tên biến trong Vercel (mục `missing`) và **redeploy**
    sau khi thêm/sửa Environment Variables.
 3. Nếu `configured:true` nhưng trang vẫn fallback, mở DevTools → Console để xem lỗi
-   Supabase (thường do RLS chặn `select`, sai URL, hoặc bảng chưa có dữ liệu).
+   Supabase (thường do thiếu GRANT, RLS chặn `select`, sai URL, hoặc bảng chưa có dữ liệu).
 4. Kiểm tra nhanh trong SQL Editor:
-   `select count(*) from public.admin_units;` (kỳ vọng 34) và
-   `select count(*) from public.admin_unit_history;` (kỳ vọng 63).
+   `select count(*) from public.admin_units;` (kỳ vọng 34),
+   `select count(*) from public.admin_unit_history;` (kỳ vọng 63),
+   `select level_code, count(*) from public.geo_units group by level_code;`
+   (kỳ vọng `province` = 34 và `commune` = 3321).
+
+### Lỗi 401 `permission denied for table admin_units`
+
+Đây là lỗi **thiếu quyền SELECT ở cấp bảng**, không phải sai anon key. Policy RLS chỉ
+lọc dòng sau khi role đã có quyền truy cập bảng. Chạy `db/fix-grants.sql` trong SQL Editor;
+file này cấp `select` cho `anon` / `authenticated` trên các bảng catalog + địa giới
+legacy; nếu bảng `geo_*` tồn tại thì cũng cấp quyền đọc cho lớp cấp xã.
+Sau đó tải lại trang, badge phải chuyển thành **Supabase**.
+
+`db/schema.sql` đã được bổ sung phần GRANT tương tự, nên project tạo mới không gặp lỗi này.
+
+### Tab "Xã / phường" trống hoặc báo "JSON tĩnh (Supabase lỗi)"
+
+Frontend ưu tiên đọc `geo_units` (`level_code = 'commune'`). Nếu bảng `geo_*` chưa tồn tại
+hoặc chưa có dữ liệu, `db.js` tự fallback sang `assets/data/admin-communes.json`; badge sẽ
+ghi "JSON tĩnh (Supabase lỗi)" hoặc "JSON tĩnh". Để có dữ liệu Supabase:
+
+```text
+1. Chạy db/schema-geo.sql
+2. Chạy db/seed-geo.sql
+3. Tải lại trang; kiểm tra: select level_code, count(*) from public.geo_units group by level_code;
+```
+
+Nếu `assets/data/admin-communes.json` bị thiếu, chạy `npm run fetch:communes` để tạo lại.
 
 ### Lỗi `column "id" of relation "tools" does not exist`
 
@@ -173,12 +208,12 @@ Có hai lớp dữ liệu, phục vụ hai mục đích khác nhau:
 
 | Lớp | Nguồn | Bảng | Dùng bởi |
 |---|---|---|---|
-| Legacy | `vietnam-admin-merger.json` | `admin_units`, `admin_unit_history` | Công cụ tra cứu 63 → 34 hiện tại (Supabase hoặc JSON) |
-| `geo_*` | `db/source/database_vietnam_merger.json` | `geo_*` | Dữ liệu nền cho tính năng mới |
+| Legacy | `vietnam-admin-merger.json` | `admin_units`, `admin_unit_history` | Tra cứu 63 → 34 cấp tỉnh (Supabase hoặc JSON) |
+| `geo_*` | `db/source/database_vietnam_merger.json` + `communes-open-api.json` | `geo_*` | Cây đơn vị + 3.321 xã/phường/đặc khu; `db.js` đọc `geo_units` |
 
-Công cụ tra cứu hiện tại vẫn dùng **legacy** vì cần bảng đối chiếu 63 → 34 và các trường
-`region`, `capital`, `population`, `area_km2`. Lớp `geo_*` chỉ có 34 đơn vị hiện tại và
-các chỉ số cấp xã, chưa có lịch sử 63 → 34 đầy đủ.
+Công cụ tra cứu cấp tỉnh vẫn dùng **legacy** vì cần bảng đối chiếu 63 → 34 và các trường
+`region`, `capital`, `population`, `area_km2`. Cấp xã/phường/đặc khu đã được nạp vào
+`geo_units` (34 tỉnh + 3.321 đơn vị cấp xã) và frontend đọc qua `getCommunes()`.
 
 ### Lớp legacy
 
@@ -195,25 +230,30 @@ rồi ghi ra:
 Nếu hai nguồn lệch nhau, script in cảnh báo — sửa trước khi deploy.
 Chạy lại `db/seed-admin.sql` trong Supabase sau mỗi lần build.
 
-Phạm vi: **cấp tỉnh/thành phố trực thuộc Trung ương**. Chưa có cấp xã/phường.
+Phạm vi: **cấp tỉnh/thành phố trực thuộc Trung ương**. Cấp xã/phường nằm ở lớp `geo_*`.
 
 ### Lớp `geo_*` mở rộng
 
-Nguồn: `db/source/database_vietnam_merger.json` — 34 tỉnh/thành, 34 nghị quyết
+Nguồn cấp tỉnh: `db/source/database_vietnam_merger.json` — 34 tỉnh/thành, 34 nghị quyết
 sắp xếp cấp xã, số liệu xã/phường/đặc khu và văn bản pháp lý.
 
+Nguồn cấp xã: `db/source/communes-open-api.json` — sinh bằng
+`node scripts/fetch-communes.mjs` từ `provinces.open-api.vn` (v2, depth=2). Script đối chiếu
+tổng **3.321 đơn vị** và số lượng từng tỉnh với 34 Nghị quyết UBTVQH15 trước khi ghi
+`assets/data/admin-communes.json` (fallback tĩnh) và nguồn cho seed.
+
 ```bash
-npm run build:geo
-# hoặc chỉ định file khác:
-node scripts/build-geo-sql.mjs "C:\duong\dan\database_vietnam_merger.json"
+npm run fetch:communes   # tải cấp xã từ API (có kiểm tra số liệu)
+npm run build:geo        # sinh lại db/seed-geo.sql (34 tỉnh + 3.321 xã/phường)
 ```
 
 Script ghi `db/seed-geo.sql` và in cảnh báo dữ liệu. Seed hiện tại:
 
 - dataset `vn-admin-2025-07-01`, hiệu lực `2025-07-01`
 - 34 đơn vị cấp tỉnh
+- 3.321 đơn vị cấp xã: 2.621 xã, 687 phường, 13 đặc khu
 - 204 chỉ số (tổng đơn vị, xã trước/sau, phường, đặc khu, chưa áp dụng)
-- 34 sự kiện, 36 văn bản, 4 nguồn tham chiếu
+- 34 sự kiện, 36 văn bản, 5 nguồn tham chiếu
 
 Mô hình chính:
 
@@ -249,9 +289,10 @@ where e.dataset_id = (select id from public.geo_datasets where is_current)
 order by e.title, eu.role;
 ```
 
-Lớp `geo_*` **chưa được nối vào frontend**; `assets/js/db.js` vẫn đọc legacy.
-Khi thêm tính năng cấp xã/phường, có thể đọc `geo_current_units` /
-`geo_unit_summary` trực tiếp qua Supabase.
+Lớp `geo_*` đã được nối vào frontend qua `NotDoreDB.getCommunes()`: ưu tiên đọc
+`geo_units` (phân trang để lấy đủ 3.321 dòng), fallback sang
+`assets/data/admin-communes.json` khi chưa seed hoặc truy vấn lỗi. Bảng cấp tỉnh vẫn
+đọc legacy; cấp xã có thể tra cũng qua `geo_current_units` / `geo_unit_summary`.
 
 ---
 

@@ -5,6 +5,8 @@
  *   1. Supabase (nếu config.js có supabaseUrl + supabaseAnonKey và đã nạp supabase-js)
  *   2. File JSON tĩnh trong assets/data/ (fallback, cũng là nguồn seed)
  *
+ * Cấp tỉnh: admin_units / admin_unit_history. Cấp xã: geo_units (level_code='commune').
+ *
  * Mọi hàm trả về CÙNG một cấu trúc dù dữ liệu đến từ đâu, nên phần render
  * không cần biết nguồn. Kết quả được cache trong bộ nhớ cho mỗi lần tải trang.
  */
@@ -70,6 +72,36 @@
     status: row.status || 'ready',
     featured: Boolean(row.featured),
     sortOrder: row.sort_order ?? 0,
+  });
+
+  const COMMUNE_TYPE_LABELS = {
+    xa: 'Xã',
+    phuong: 'Phường',
+    dac_ku: 'Đặc khu',
+  };
+
+  const mapCommune = (row) => {
+    let metadata = row.metadata || {};
+    if (typeof metadata === 'string') {
+      try { metadata = JSON.parse(metadata); } catch { metadata = {}; }
+    }
+    return {
+      code: row.code,
+      name: row.name,
+      type: row.type_code,
+      typeLabel: COMMUNE_TYPE_LABELS[row.type_code] || row.type_code,
+      provinceCode: metadata.province_code || null,
+      provinceName: metadata.province_name || null,
+      parentId: row.parent_id,
+      shortCodename: metadata.short_codename || null,
+    };
+  };
+
+  const computeCommuneStats = (rows) => ({
+    total: rows.length,
+    xa: rows.filter((row) => row.type_code === 'xa').length,
+    phuong: rows.filter((row) => row.type_code === 'phuong').length,
+    dac_ku: rows.filter((row) => row.type_code === 'dac_ku').length,
   });
 
   const mapProvince = (row, changedCodes) => ({
@@ -177,6 +209,70 @@
     return { ...local, source: 'local', degraded: isSupabaseReady() };
   });
 
+  /* ── Cấp xã / phường / đặc khu ──────────────────────────────────────────── */
+  const getCommunes = () => memo('communes', async () => {
+    await ensureConfig();
+
+    if (isSupabaseReady()) {
+      try {
+        const sb = getClient();
+        const pageSize = 1000;
+        const rows = [];
+
+        // PostgREST giới hạn số dòng mỗi request (mặc định 1.000), nên phải
+        // phân trang để lấy đủ 3.321 đơn vị cấp xã.
+        for (let from = 0; ; from += pageSize) {
+          const { data, error } = await sb
+            .from('geo_units')
+            .select('code,name,type_code,parent_id,metadata')
+            .eq('level_code', 'commune')
+            .order('name')
+            .order('code')
+            .range(from, from + pageSize - 1);
+          if (error) throw error;
+          if (!data?.length) break;
+          rows.push(...data);
+          if (data.length < pageSize) break;
+        }
+
+        if (!rows.length) throw new Error('Bảng geo_units chưa có dữ liệu cấp xã');
+
+        const local = await fetchJSON('assets/data/admin-communes.json').catch(() => null);
+        return {
+          meta: local?.meta ?? {
+            title: 'Danh sách xã, phường, đặc khu',
+            effectiveFrom: '2025-07-01',
+            stats: computeCommuneStats(rows),
+          },
+          provinces: local?.provinces ?? [],
+          communes: rows.map(mapCommune),
+          source: 'supabase',
+        };
+      } catch (err) {
+        console.warn('[db] Supabase lỗi khi tải cấp xã, dùng JSON tĩnh:', err.message || err);
+      }
+    }
+
+    try {
+      const local = await fetchJSON('assets/data/admin-communes.json');
+      return { ...local, source: 'local', degraded: isSupabaseReady() };
+    } catch (err) {
+      console.warn('[db] Không tải được dữ liệu cấp xã:', err.message || err);
+      return {
+        meta: {
+          title: 'Chưa có dữ liệu cấp xã',
+          effectiveFrom: '2025-07-01',
+          stats: { total: 0, xa: 0, phuong: 0, dac_ku: 0 },
+        },
+        provinces: [],
+        communes: [],
+        source: 'none',
+        degraded: isSupabaseReady(),
+        error: err.message || String(err),
+      };
+    }
+  });
+
   const computeStats = (provinces, history) => ({
     before: history.length,
     after: provinces.length,
@@ -190,6 +286,7 @@
     isSupabaseReady,
     getCatalog,
     getAdminDivisions,
+    getCommunes,
     /** Tiện ích dùng chung cho các trang */
     util: {
       escapeHtml: (v) => String(v ?? '').replace(/[&<>"']/g, (c) =>

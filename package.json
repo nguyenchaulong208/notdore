@@ -9,6 +9,7 @@
   "scripts": {
     "dev": "node scripts/dev-server.mjs",
     "build:data": "node scripts/build-admin-data.mjs",
-    "build:geo": "node scripts/build-geo-sql.mjs"
+    "build:geo": "node scripts/build-geo-sql.mjs",
+    "fetch:communes": "node scripts/fetch-communes.mjs"
   }
 }
