@@ -1,7 +1,13 @@
 # Nguồn & giấy phép (Credits)
 
-NotDore sử dụng một số thành phần mã nguồn / hình ảnh miễn phí sau. Vui lòng
-giữ nguyên phần ghi nguồn này khi dùng lại.
+NotDore dùng một số thành phần miễn phí sau. Giữ nguyên phần ghi nguồn này khi dùng lại.
+
+## Thư viện
+
+- **Bootstrap 5** — giấy phép **MIT** — <https://getbootstrap.com>
+  (`assets/plugins/bootstrap/`)
+- **Font Awesome Free 6** — icon **CC BY 4.0**, font **SIL OFL 1.1**, code **MIT** —
+  <https://fontawesome.com> (`assets/fontawesome/`)
 
 ## Mèo pixel (chạy theo con trỏ chuột)
 
@@ -10,14 +16,8 @@ giữ nguyên phần ghi nguồn này khi dùng lại.
   Nhân vật "Neko" là pixel-art kinh điển —
   <https://en.wikipedia.org/wiki/Neko_(software)>.
 
-## Footer theme
+## Giao diện
 
-- **DevBook** by [Xiaoying Riley](https://3rdwavemedia.com/) — giấy phép miễn
-  phí yêu cầu **giữ nguyên dòng ghi nguồn ở footer** ("Made with ❤️ by
-  Xiaoying Riley"). Xem `license.txt`.
-
-## Khác
-
-- **Bootstrap**, **Bootstrap Icons**, **Marked**, **DOMPurify** — các giấy phép
-  tương ứng (MIT). Xem thư mục `assets/vendor/` và các thẻ `<script>`/`<link>`
-  trong trang.
+- **DevBook** by [Xiaoying Riley](https://3rdwavemedia.com/) — bản miễn phí yêu cầu
+  **giữ dòng ghi nguồn ở footer** ("Made with ❤️ by Xiaoying Riley"). Xem `license.txt`.
+  Nếu muốn bỏ dòng này, cần mua giấy phép thương mại từ 3rd Wave Media.

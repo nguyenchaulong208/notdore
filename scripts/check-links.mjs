@@ -8,10 +8,6 @@ import { fileURLToPath } from "node:url";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
-// Trang cũ đã bị thay thế bởi kiến trúc mới (gọi /api/tools không còn tồn tại).
-// Giữ file để tham chiếu nội dung nhưng không tính vào kiểm tra.
-const IGNORE = new Set(["tool-detail.html"]);
-
 const walk = async (dir) => {
   const entries = await readdir(dir, { withFileTypes: true });
   const files = [];
@@ -33,11 +29,6 @@ let problems = 0;
 let checked = 0;
 
 for (const page of pages) {
-  const rel = relative(ROOT, page).replace(/\\/g, "/");
-  if (IGNORE.has(rel)) {
-    console.log(`… bỏ qua ${rel} (trang cũ)`);
-    continue;
-  }
   const html = await readFile(page, "utf8");
   const refs = [...html.matchAll(/(?:href|src)="([^"]+)"/g)].map((m) => m[1]);
 
