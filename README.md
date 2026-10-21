@@ -23,13 +23,15 @@ Các công cụ khác sẽ được thêm khi hoàn thiện, không đưa mục 
 ## Kiến trúc
 
 ```
-index.html                     Trang chủ: tìm kiếm + danh mục công cụ + thư viện link
+index.html                     Trang chủ: lưới công cụ 4 cột + panel danh mục bên phải
+thu-vien.html                  Trang thư viện: link ngoài theo nhóm (chỉ danh mục)
 tools/<slug>.html              Mỗi công cụ một trang riêng
 assets/css/notdore.css         Theme chung (tông sáng, tím–hồng, hiệu ứng sakura)
-assets/css/tools.css           Thành phần riêng của trang công cụ (tiền tố .nd-)
+assets/css/tools.css           Thành phần trang chủ, thư viện + trang công cụ (.nd-)
 assets/js/config.js            Cấu hình công khai (Supabase URL/anon key, email liên hệ)
 assets/js/db.js                Lớp dữ liệu duy nhất: Supabase → fallback JSON
-assets/js/tools.js             Render trang chủ
+assets/js/tools.js             Render lưới công cụ, tìm kiếm, panel danh mục + câu nói hay
+assets/js/library.js           Render thư viện theo nhóm; cuộn tới anchor #lib-cat-N
 assets/js/dia-gioi.js          Logic công cụ địa giới
 assets/data/*.json             Dữ liệu tĩnh (fallback + nguồn seed)
 db/schema.sql                  Bảng + RLS
@@ -109,6 +111,21 @@ Phạm vi hiện tại: **cấp tỉnh/thành phố trực thuộc Trung ương*
 
 ---
 
+## Giao diện trang chủ
+
+- Body: lưới 4 cột block, tối đa 20 block; 3 cột ≤1023px, 2 cột ≤767px, 1 cột ≤599px.
+  Card vuông ở 1024–1599px; từ 1600px, card cao tối đa 280px để không quá trống.
+- Panel phải: "Công cụ" (danh mục nội bộ) + "Thư viện" (nhóm link ngoài) + "Câu nói hay".
+  Chip viền đậm kèm số lượng; chip nội bộ mở trang công cụ, chip thư viện mở
+  `thu-vien.html#lib-cat-N`.
+- "Câu nói hay": 12 câu tĩnh trong `tools.js`, hiển thị theo ngày và đổi bằng nút ↻;
+  không gọi API, không phụ thuộc catalog.
+- Panel ở bên phải từ 1360px; 1024–1359px panel xuống dưới lưới (2 panel cạnh nhau,
+  panel câu nói chiếm cả 2 cột); ≤767px panel 1 cột. Container tối đa 1800px.
+- Tìm kiếm chỉ lọc lưới body; panel danh mục là điều hướng, không lọc.
+
+---
+
 ## Thêm một công cụ mới
 
 1. Tạo `tools/<slug>.html`, dùng lại header/footer của trang địa giới.
@@ -120,7 +137,9 @@ Phạm vi hiện tại: **cấp tỉnh/thành phố trực thuộc Trung ương*
    ```
 4. Thêm URL vào `sitemap.xml`.
 
-Không cần sửa `index.html` — trang chủ tự render từ catalog.
+Trang chủ tự render lưới từ catalog (tối đa 20 block, 4x5) và panel danh mục bên phải.
+Panel lấy danh mục nội bộ từ `catalog.tools` + nhóm link ngoài từ `catalog.external`;
+không trộn nhãn danh mục vào từng block.
 
 ---
 

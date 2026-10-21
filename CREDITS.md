@@ -19,5 +19,6 @@ NotDore dùng một số thành phần miễn phí sau. Giữ nguyên phần ghi
 ## Giao diện
 
 - **DevBook** by [Xiaoying Riley](https://3rdwavemedia.com/) — bản miễn phí yêu cầu
-  **giữ dòng ghi nguồn ở footer** ("Made with ❤️ by Xiaoying Riley"). Xem `license.txt`.
+  **giữ dòng ghi nguồn ở footer**. Footer cả 3 trang hiện có dòng
+  "Theme by [Xiaoying Riley](https://3rdwavemedia.com/)" kèm link. Xem `license.txt`.
   Nếu muốn bỏ dòng này, cần mua giấy phép thương mại từ 3rd Wave Media.

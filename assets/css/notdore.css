@@ -80,9 +80,9 @@ a { color: var(--accent-purple); }
 .anime-container {
   position: relative;
   z-index: 1;
-  max-width: 1160px;
+  max-width: 1800px;
   margin: 0 auto;
-  padding: 0 1.5rem;
+  padding: 0 2rem;
 }
 
 /* Sakura petals */
@@ -163,9 +163,9 @@ a { color: var(--accent-purple); }
   justify-content: space-between;
   gap: 1rem;
   padding: 0.9rem 0;
-  margin: 0 -1.5rem 0;
-  padding-left: 1.5rem;
-  padding-right: 1.5rem;
+  margin: 0 -2rem 0;
+  padding-left: 2rem;
+  padding-right: 2rem;
   background: rgba(255, 255, 255, 0.82);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
@@ -182,7 +182,7 @@ a { color: var(--accent-purple); }
 .anime-brand-text {
   display: flex;
   align-items: center;
-  gap: 0.35rem;
+  gap: 0;
 }
 
 .brand-fragment {
@@ -248,6 +248,11 @@ a { color: var(--accent-purple); }
 
 .anime-nav-link:hover {
   color: var(--accent-purple-light);
+  background: var(--bg-card-hover);
+}
+
+.anime-nav-link[aria-current="page"] {
+  color: var(--accent-purple);
   background: var(--bg-card-hover);
 }
 
@@ -800,6 +805,18 @@ a { color: var(--accent-purple); }
 
 .anime-footer-copy { color: var(--text-secondary); }
 
+.anime-footer-credit {
+  margin-top: 0.35rem;
+  font-size: 0.72rem;
+  color: var(--text-secondary);
+}
+
+.anime-footer-credit a {
+  color: var(--accent-purple);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
 /* ============================================================
    12. Animation xuất hiện
    ============================================================ */
@@ -828,12 +845,24 @@ a { color: var(--accent-purple); }
 
 @media (max-width: 767.98px) {
   .anime-header {
+    flex-wrap: wrap;
+    gap: 0.25rem;
     margin-left: -1rem;
     margin-right: -1rem;
-    padding-left: 1rem;
-    padding-right: 1rem;
+    padding: 0.65rem 1rem;
   }
-  .anime-nav-link { display: none; }
+  .anime-nav {
+    width: 100%;
+    justify-content: flex-start;
+    gap: 0.15rem;
+    margin: 0 -0.5rem;
+  }
+  .anime-nav-link {
+    display: inline-flex;
+    padding: 0.35rem 0.6rem;
+    font-size: 0.84rem;
+  }
+  #oneko { display: none; }
   .anime-hero { padding: 3rem 0.75rem 2.5rem; }
   .anime-section { padding: 2rem 0; }
   .anime-container { padding: 0 1rem; }
