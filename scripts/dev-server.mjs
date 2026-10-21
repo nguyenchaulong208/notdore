@@ -11,6 +11,37 @@ import { extname, join, normalize, resolve, sep } from "node:path";
 const ROOT = resolve(import.meta.dirname, "..");
 const PORT = Number(process.env.PORT) || 5173;
 
+// Giữ đồng bộ với api/config.js.
+const SUPABASE_URL_KEYS = [
+  "SUPABASE_URL",
+  "SUPABASE_PROJECT_URL",
+  "NEXT_PUBLIC_SUPABASE_URL",
+  "VITE_SUPABASE_URL",
+  "PUBLIC_SUPABASE_URL",
+  "NUXT_PUBLIC_SUPABASE_URL",
+  "REACT_APP_SUPABASE_URL",
+];
+
+const SUPABASE_ANON_KEYS = [
+  "SUPABASE_ANON_KEY",
+  "SUPABASE_PUBLISHABLE_KEY",
+  "NEXT_PUBLIC_SUPABASE_ANON_KEY",
+  "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY",
+  "VITE_SUPABASE_ANON_KEY",
+  "VITE_SUPABASE_PUBLISHABLE_KEY",
+  "PUBLIC_SUPABASE_ANON_KEY",
+  "NUXT_PUBLIC_SUPABASE_ANON_KEY",
+  "REACT_APP_SUPABASE_ANON_KEY",
+];
+
+const firstEnv = (keys) => {
+  for (const key of keys) {
+    const value = process.env[key];
+    if (value && value.trim()) return value.trim();
+  }
+  return "";
+};
+
 const MIME = {
   ".html": "text/html; charset=utf-8",
   ".css": "text/css; charset=utf-8",
@@ -35,6 +66,24 @@ const server = createServer(async (req, res) => {
     const url = new URL(req.url, `http://${req.headers.host}`);
     let pathname = decodeURIComponent(url.pathname);
     if (pathname.endsWith("/")) pathname += "index.html";
+
+    // Giả lập /api/config của Vercel để test Supabase ở local.
+    if (pathname === "/api/config") {
+      const supabaseUrl = firstEnv(SUPABASE_URL_KEYS).replace(/\/+$/, "");
+      const supabaseAnonKey = firstEnv(SUPABASE_ANON_KEYS);
+      const configured = Boolean(supabaseUrl && supabaseAnonKey);
+      const missing = [];
+      if (!supabaseUrl) missing.push("SUPABASE_URL");
+      if (!supabaseAnonKey) missing.push("SUPABASE_ANON_KEY");
+      res.writeHead(200, {
+        "Content-Type": "application/json; charset=utf-8",
+        "Cache-Control": "no-store",
+      });
+      res.end(JSON.stringify(configured
+        ? { configured, supabaseUrl, supabaseAnonKey }
+        : { configured: false, missing }));
+      return;
+    }
 
     const filePath = normalize(join(ROOT, pathname));
     if (!filePath.startsWith(ROOT + sep) && filePath !== ROOT) {

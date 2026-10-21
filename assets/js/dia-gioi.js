@@ -36,6 +36,10 @@
 
   const typeLabel = (t) => esc(t || '—');
 
+  const sourceLabel = (data) => data.source === 'supabase'
+    ? 'Supabase'
+    : data.degraded ? 'JSON tĩnh (Supabase lỗi)' : 'JSON tĩnh';
+
   /* ── Thống kê ────────────────────────────────────────────────────── */
 
   const renderStats = () => {
@@ -220,8 +224,8 @@
       </ul>
 
       <p class="nd-note">
-        Hiệu lực dữ liệu: ${esc(meta.effectiveFrom || '—')} · Cập nhật: ${esc(meta.generated || '—')} ·
-        Nguồn đang dùng: ${state.data.source === 'supabase' ? 'Supabase' : 'JSON tĩnh'}.
+        Hiệu lực dữ liệu: ${esc(meta.effectiveFrom || '-')} · Cập nhật: ${esc(meta.generated || '-')} ·
+        Nguồn đang dùng: ${esc(sourceLabel(state.data))}.
       </p>
 
       <div class="nd-meta-actions">
@@ -311,7 +315,7 @@
       if (ma) openUnit(ma);
 
       const badge = $('dg-source');
-      if (badge) badge.textContent = state.data.source === 'supabase' ? 'Supabase' : 'JSON tĩnh';
+      if (badge) badge.textContent = sourceLabel(state.data);
     } catch (err) {
       console.error(err);
       const host = $('dg-history-body');

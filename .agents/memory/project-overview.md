@@ -11,6 +11,7 @@ nhưng hiện tại **chỉ tập trung vào công cụ địa giới hành chí
 | Kiến trúc | HTML/CSS/JS thuần, **không build step**, deploy tĩnh Vercel |
 | Dữ liệu | **Supabase** (anon key + RLS chỉ đọc), tự động fallback `assets/data/*.json` |
 | Danh mục | Chỉ công cụ đang chạy; **không hiển thị mục "sắp có"** |
+| Dữ liệu địa giới | Legacy `admin_units` cho tra cứu 63 → 34; lớp `geo_*` mới độc lập, sẵn sàng cho cấp xã và nhiều phiên bản dữ liệu |
 | Giao diện | Tông sáng + sakura (`notdore.css`), class mới tiền tố `nd-` |
 | Trang chủ | Lưới công cụ 4 cột (block 4x4, tối đa 20 block/4x5) + panel danh mục bên phải; body chỉ công cụ, danh mục tách riêng |
 | Thư viện | Trang riêng `thu-vien.html`; **chỉ danh mục/link ngoài**, không quảng bá công cụ |
@@ -20,18 +21,23 @@ nhưng hiện tại **chỉ tập trung vào công cụ địa giới hành chí
 index.html                     # lưới công cụ 4 cột + panel danh mục phải
 thu-vien.html                  # thư viện link ngoài theo nhóm (chỉ danh mục)
 tools/dia-gioi-hanh-chinh.html # công cụ địa giới
-assets/js/config.js            # Supabase URL/anon key + email (điền tay)
+assets/js/config.js            # cấu hình công khai + nạp /api/config
 assets/js/db.js                # NotDoreDB: nguồn dữ liệu duy nhất
+api/config.js                  # Vercel Function: trả URL + anon key từ env
 assets/js/tools.js             # render lưới + tìm kiếm + panel danh mục + câu nói
 assets/js/library.js           # render thư viện theo nhóm; cuộn tới #lib-cat-N
 assets/js/dia-gioi.js          # logic tra cứu
 assets/css/tools.css           # component .nd-*
 assets/data/tools.json         # catalog fallback
 assets/data/admin-merger.json  # dữ liệu địa giới đã chuẩn hoá (tự sinh)
-db/schema.sql                  # bảng + RLS
+db/schema.sql                  # bảng + RLS (catalog, admin_units legacy)
+db/schema-geo.sql              # schema geo_*: dataset, cây đơn vị, sự kiện, view
 db/seed-tools.sql              # seed catalog
-db/seed-admin.sql              # seed địa giới (tự sinh)
-scripts/build-admin-data.mjs   # chuẩn hoá dữ liệu crawl -> JSON + SQL
+db/seed-admin.sql              # seed địa giới legacy (tự sinh)
+db/seed-geo.sql                # seed geo_* (tự sinh)
+db/source/database_vietnam_merger.json  # JSON nguồn của geo_*
+scripts/build-admin-data.mjs   # chuẩn hoá dữ liệu crawl -> JSON + SQL legacy
+scripts/build-geo-sql.mjs      # sinh db/seed-geo.sql từ JSON nguồn
 scripts/check-links.mjs        # kiểm tra link/asset nội bộ
 scripts/dev-server.mjs         # server tĩnh local (npm run dev)
 ```
@@ -48,6 +54,44 @@ dù dữ liệu từ Supabase hay JSON, nên render không cần rẽ nhánh the
   (`changed = false`, `renamedFrom = "Thừa Thiên Huế"`).
 - Cấp huyện không còn trong bộ máy từ 01/07/2025 (chính quyền 2 cấp tỉnh – xã).
   Công cụ hiện chỉ tra **cấp tỉnh**, chưa có cấp xã/phường.
+
+## Lớp dữ liệu `geo_*` (thêm 2026-10-21)
+- Quyết định: **không thay** `admin_units` / `admin_unit_history` để công cụ tra cứu
+  hiện tại không bị ảnh hưởng. Hai lớp cùng tồn tại trong một Supabase project.
+- Nguồn: `db/source/database_vietnam_merger.json` (34 tỉnh, 34 nghị quyết cấp xã,
+  số liệu xã/phường/đặc khu, văn bản pháp lý). Sinh seed bằng `npm run build:geo`.
+- Dataset hiện tại: `vn-admin-2025-07-01`, hiệu lực `2025-07-01`.
+- Seed: 34 `geo_units`, 204 `geo_unit_metrics`, 34 `geo_events`, 36 `geo_documents`,
+  4 `geo_sources`, 79 `geo_event_units` (34 target + 45 source).
+- Mô hình: `geo_datasets` (version + `is_current`), `geo_levels`, `geo_unit_types`,
+  `geo_units` (cây qua `parent_id`), `geo_unit_metrics` (long-format),
+  `geo_documents`, `geo_events` + `geo_event_units`, `geo_sources`,
+  `geo_unit_aliases`. View: `geo_current_units`, `geo_unit_summary`,
+  `geo_data_quality`.
+- **Không unique trên `code`**: nguồn có mã `43` cho cả Điện Biên và Đồng Nai.
+  Khoá ổn định là `id` (UUID) + `slug` trong từng dataset; view `geo_data_quality`
+  phát hiện mã trùng.
+- `geo_event_units.unit_id` dùng `on delete cascade` (không phải `set null`) để
+  xoá dataset/unit không làm dòng target vi phạm check `unit_id` hoặc `source_name`.
+- `geo_units` có FK ghép `(type_code, level_code) -> geo_unit_types(code, level_code)`
+  để không thể gắn type `xa` vào level `province`.
+- Dữ liệu hiện chỉ có **cấp tỉnh**; `parent_id` và type `xa`/`phuong`/`dac_ku`/
+  `thi_tran` đã sẵn sàng cho lần nhập cấp xã sau. Chưa nối vào `assets/js/db.js`.
+
+## Kết nối frontend với Supabase (2026-10-21)
+- Các trang `index.html`, `thu-vien.html`, `tools/dia-gioi-hanh-chinh.html` đã nạp
+  `@supabase/supabase-js@2` từ jsDelivr trước `config.js`/`db.js`.
+- `NotDoreDB.getAdminDivisions()` ưu tiên Supabase; chỉ fallback JSON khi chưa cấu hình
+  hoặc truy vấn lỗi. `meta` tĩnh được đọc từ JSON nếu có, không bắt buộc.
+- Công cụ tra cứu vẫn dùng legacy `admin_units` + `admin_unit_history` (cần 63 → 34,
+  region/capital/population/area). Không chuyển sang `geo_*` vì lớp mới chưa có
+  lịch sử 63 → 34 và các trường đó.
+- `assets/js/config.js` để trống URL/anon key và gọi `/api/config`; `api/config.js`
+  đọc `SUPABASE_URL` + `SUPABASE_ANON_KEY` (hoặc các biến `NEXT_PUBLIC_*`/`VITE_*`).
+  `window.NOTDORE_CONFIG_READY` cho phép `db.js` chờ config trước khi truy vấn.
+- Dev server local cũng giả lập `/api/config` từ biến môi trường. Nếu không có config,
+  trang vẫn dùng JSON tĩnh và badge hiển thị "JSON tĩnh".
+- Không đưa `service_role` vào frontend; API chỉ trả anon/publishable key.
 
 ## Điểm cần kiểm chứng (đừng tự tin tuyệt đối)
 - File crawl ghi Đồng Nai lên thành phố 29/04/2026, Quảng Ninh 01/09/2026, Bắc Ninh 20/09/2026.
@@ -94,15 +138,23 @@ dù dữ liệu từ Supabase hay JSON, nên render không cần rẽ nhánh the
   không tràn ngang. (CSS có `flex-wrap` nhưng nav co vừa nên thực tế 1 hàng ở 390.)
 - Mèo oneko mặc định góc dưới phải, chỉ hiện sau lần di chuột đầu; ẩn hẳn dưới 768px.
 
+## Lỗi thường gặp
+- `column "id" of relation "tools" does not exist`: `public.tools` đã tồn tại từ schema cũ;
+  `create table if not exists` không sửa cấu trúc bảng. Chạy `db/reset-tools.sql`
+  (sao lưu bảng cũ) rồi chạy lại `db/schema.sql` + `db/seed-tools.sql`.
+
 ## Lệnh
 ```bash
 npm run dev          # http://localhost:5173 (không cần npm install)
-npm run build:data   # sinh lại JSON + seed SQL từ file crawl
+npm run build:data   # sinh lại JSON + seed SQL legacy từ file crawl
+npm run build:geo    # sinh lại db/seed-geo.sql từ db/source/*.json
 node scripts/check-links.mjs
 ```
 
 ## Việc tiếp theo (gợi ý)
-1. Chủ dự án tạo Supabase project → điền `config.js` → chạy 3 file SQL.
-2. Hoàn thiện công cụ địa giới: bổ sung cấp xã/phường nếu có nguồn dữ liệu.
+1. Đã chạy 5 file SQL trên Supabase. Kiểm tra Vercel có `SUPABASE_URL` +
+   `SUPABASE_ANON_KEY`, redeploy, rồi xác nhận badge trang tra cứu hiện "Supabase".
+2. Hoàn thiện công cụ địa giới: bổ sung cấp xã/phường nếu có nguồn dữ liệu;
+   dùng `geo_units.parent_id` + type `xa`/`phuong`/`dac_ku`.
 3. Cân nhắc bản đồ (cần GeoJSON) — hiện chưa có dữ liệu hình học.
 4. Chỉ thêm công cụ mới khi đã hoàn thiện công cụ hiện tại.

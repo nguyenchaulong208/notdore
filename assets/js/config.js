@@ -1,9 +1,12 @@
 /**
  * config.js — cấu hình công khai của site.
  *
- * Điền supabaseUrl + supabaseAnonKey để đọc dữ liệu từ Supabase.
- * Anon key là khoá công khai (chỉ đọc nhờ RLS) — KHÔNG đặt service_role key ở đây.
- * Để trống cả hai => site tự đọc từ assets/data/*.json (chế độ tĩnh, không cần DB).
+ * Có 2 cách cấu hình Supabase:
+ *   1. Dán trực tiếp supabaseUrl + supabaseAnonKey bên dưới.
+ *   2. Để trống và khai báo biến môi trường trên Vercel; /api/config sẽ trả về.
+ *
+ * Anon/publishable key là khóa công khai (chỉ đọc theo RLS) — KHÔNG dùng service_role.
+ * Nếu cả hai trống => site dùng assets/data/*.json.
  */
 window.NOTDORE_CONFIG = {
   supabaseUrl: "",
@@ -13,3 +16,30 @@ window.NOTDORE_CONFIG = {
   email: "nguyenchaulong.data208@gmail.com",
   siteName: "NotDore",
 };
+
+/**
+ * Nạp cấu hình từ /api/config (Vercel Environment Variables).
+ * db.js chờ promise này trước khi quyết định dùng Supabase.
+ */
+window.NOTDORE_CONFIG_READY = (async () => {
+  const cfg = window.NOTDORE_CONFIG;
+  if (cfg.supabaseUrl && cfg.supabaseAnonKey) return cfg;
+
+  try {
+    const res = await fetch('/api/config', {
+      cache: 'no-store',
+      headers: { accept: 'application/json' },
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    if (data.supabaseUrl) cfg.supabaseUrl = data.supabaseUrl;
+    if (data.supabaseAnonKey) cfg.supabaseAnonKey = data.supabaseAnonKey;
+    if (data.configured === false) {
+      console.info('[config] /api/config chưa có cấu hình:', (data.missing || []).join(', '));
+    }
+  } catch (err) {
+    // Local static server / file:// không có /api/config — dùng JSON tĩnh.
+    console.info('[config] Không đọc được /api/config, dùng JSON tĩnh:', err.message || err);
+  }
+  return cfg;
+})();

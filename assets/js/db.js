@@ -27,6 +27,25 @@
     cfg.supabaseUrl && cfg.supabaseAnonKey && global.supabase && global.supabase.createClient
   );
 
+  let warnedMissingSdk = false;
+
+  /** Chờ config.js nạp xong /api/config trước khi quyết định dùng Supabase. */
+  const ensureConfig = async () => {
+    if (global.NOTDORE_CONFIG_READY) {
+      try {
+        await global.NOTDORE_CONFIG_READY;
+      } catch {
+        // config.js đã ghi log; tiếp tục với JSON tĩnh.
+      }
+    }
+
+    if (cfg.supabaseUrl && cfg.supabaseAnonKey && !global.supabase && !warnedMissingSdk) {
+      warnedMissingSdk = true;
+      console.warn('[db] Đã cấu hình Supabase nhưng chưa nạp supabase-js.');
+    }
+    return cfg;
+  };
+
   const getClient = () => {
     if (!client) client = global.supabase.createClient(cfg.supabaseUrl, cfg.supabaseAnonKey);
     return client;
@@ -71,79 +90,91 @@
 
   /* ── Catalog: danh mục + công cụ + link ngoài ─────────────────────── */
   const getCatalog = () => memo('catalog', async () => {
-    const local = await fetchJSON('assets/data/tools.json');
+    await ensureConfig();
 
-    if (!isSupabaseReady()) return { ...local, source: 'local' };
+    if (isSupabaseReady()) {
+      try {
+        const sb = getClient();
+        const [cats, tools] = await Promise.all([
+          sb.from('tool_categories').select('*').order('sort_order'),
+          sb.from('tools').select('*').order('sort_order'),
+        ]);
+        if (cats.error) throw cats.error;
+        if (tools.error) throw tools.error;
+        if (!tools.data?.length) throw new Error('Bảng tools rỗng');
 
-    try {
-      const sb = getClient();
-      const [cats, tools] = await Promise.all([
-        sb.from('tool_categories').select('*').order('sort_order'),
-        sb.from('tools').select('*').order('sort_order'),
-      ]);
-      if (cats.error) throw cats.error;
-      if (tools.error) throw tools.error;
-      if (!tools.data?.length) throw new Error('Bảng tools rỗng');
-
-      return {
-        version: local.version ?? 1,
-        categories: cats.data.map((c) => ({
-          id: c.id, name: c.name, description: c.description,
-          icon: c.icon, sortOrder: c.sort_order,
-        })),
-        tools: tools.data.map(mapTool),
-        external: local.external ?? [],
-        source: 'supabase',
-      };
-    } catch (err) {
-      console.warn('[db] Supabase lỗi, dùng dữ liệu tĩnh:', err.message || err);
-      return { ...local, source: 'local', degraded: true };
+        // JSON chỉ giữ metadata (version, external links) không có trong DB.
+        const local = await fetchJSON('assets/data/tools.json').catch(() => null);
+        return {
+          version: local?.version ?? 1,
+          categories: cats.data.map((c) => ({
+            id: c.id, name: c.name, description: c.description,
+            icon: c.icon, sortOrder: c.sort_order,
+          })),
+          tools: tools.data.map(mapTool),
+          external: local?.external ?? [],
+          source: 'supabase',
+        };
+      } catch (err) {
+        console.warn('[db] Supabase lỗi, dùng dữ liệu tĩnh:', err.message || err);
+      }
     }
+
+    const local = await fetchJSON('assets/data/tools.json');
+    return { ...local, source: 'local', degraded: isSupabaseReady() };
   });
 
   /* ── Địa giới hành chính ──────────────────────────────────────────── */
   const getAdminDivisions = () => memo('admin', async () => {
-    const local = await fetchJSON('assets/data/admin-merger.json');
+    await ensureConfig();
 
-    if (!isSupabaseReady()) return { ...local, source: 'local' };
+    // Supabase là nguồn chính. Chỉ tải JSON khi chưa cấu hình Supabase
+    // hoặc khi truy vấn Supabase thất bại.
+    if (isSupabaseReady()) {
+      try {
+        const sb = getClient();
+        const [units, history] = await Promise.all([
+          sb.from('admin_units').select('*').order('name'),
+          sb.from('admin_unit_history').select('*').order('old_name'),
+        ]);
+        if (units.error) throw units.error;
+        if (history.error) throw history.error;
+        if (!units.data?.length) throw new Error('Bảng admin_units rỗng');
+        if (!history.data?.length) throw new Error('Bảng admin_unit_history rỗng');
 
-    try {
-      const sb = getClient();
-      const [units, history] = await Promise.all([
-        sb.from('admin_units').select('*').order('name'),
-        sb.from('admin_unit_history').select('*').order('old_name'),
-      ]);
-      if (units.error) throw units.error;
-      if (history.error) throw history.error;
-      if (!units.data?.length) throw new Error('Bảng admin_units rỗng');
+        const changedCodes = new Set(history.data.filter((h) => h.changed).map((h) => h.new_code));
+        const renamed = new Map(
+          history.data.filter((h) => !h.changed).map((h) => [h.new_code, h.old_name])
+        );
 
-      const changedCodes = new Set(history.data.filter((h) => h.changed).map((h) => h.new_code));
-      const renamed = new Map(
-        history.data.filter((h) => !h.changed).map((h) => [h.new_code, h.old_name])
-      );
+        const provinces = units.data.map((row) => {
+          const p = mapProvince(row, changedCodes);
+          const old = renamed.get(p.code);
+          // Chỉ coi là "đổi tên" khi tên cũ khác tên mới (bỏ tiền tố loại đơn vị)
+          p.renamedFrom = old && !p.name.toLowerCase().includes(old.toLowerCase()) ? old : null;
+          return p;
+        });
 
-      const provinces = units.data.map((row) => {
-        const p = mapProvince(row, changedCodes);
-        const old = renamed.get(p.code);
-        // Chỉ coi là "đổi tên" khi tên cũ khác tên mới (bỏ tiền tố loại đơn vị)
-        p.renamedFrom = old && !p.name.toLowerCase().includes(old.toLowerCase()) ? old : null;
-        return p;
-      });
+        // Meta tĩnh chỉ dùng cho nguồn/ghi chú; không bắt buộc để hiển thị dữ liệu.
+        const local = await fetchJSON('assets/data/admin-merger.json').catch(() => null);
 
-      return {
-        meta: { ...local.meta, stats: computeStats(provinces, history.data) },
-        provinces,
-        history: history.data.map((h) => ({
-          oldName: h.old_name, oldType: h.old_type, newCode: h.new_code,
-          newName: provinces.find((p) => p.code === h.new_code)?.name ?? null,
-          changed: Boolean(h.changed), note: h.note,
-        })),
-        source: 'supabase',
-      };
-    } catch (err) {
-      console.warn('[db] Supabase lỗi, dùng dữ liệu tĩnh:', err.message || err);
-      return { ...local, source: 'local', degraded: true };
+        return {
+          meta: { ...(local?.meta ?? {}), stats: computeStats(provinces, history.data) },
+          provinces,
+          history: history.data.map((h) => ({
+            oldName: h.old_name, oldType: h.old_type, newCode: h.new_code,
+            newName: provinces.find((p) => p.code === h.new_code)?.name ?? null,
+            changed: Boolean(h.changed), note: h.note,
+          })),
+          source: 'supabase',
+        };
+      } catch (err) {
+        console.warn('[db] Supabase lỗi, dùng dữ liệu tĩnh:', err.message || err);
+      }
     }
+
+    const local = await fetchJSON('assets/data/admin-merger.json');
+    return { ...local, source: 'local', degraded: isSupabaseReady() };
   });
 
   const computeStats = (provinces, history) => ({
