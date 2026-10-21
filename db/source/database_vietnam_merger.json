@@ -1,0 +1,977 @@
+{
+  "meta": {
+    "created_by": "Việt Nam Administrative Merger Database (2026)",
+    "source": [
+      "Nghị quyết 202/2025/QH15 (12/6/2025) – Sắp xếp ĐVHC cấp tỉnh",
+      "34 Nghị quyết của UBTVQH (1654–NQ-UBTVQH15 đến 1687/NQ-UBTVQH15, 16/6/2025)",
+      "Quyết định 19/2025/QĐ-TTg (30/6/2025) – Bảng mã số đơn vị hành chính",
+      "Chính phủ – xaydungchinhsach.chinhphu.vn – Toàn văn 34 nghị quyết cấp xã"
+    ],
+    "effective_date": "01/07/2025",
+    "total_provinces": 34,
+    "total_units_after": 3321,
+    "total_xa": 2499,
+    "total_phuong": 682,
+    "total_dac_ku": 13,
+    "total_not_applied": 127,
+    "note": "Cấp xã/phường/đặc khu do 34 Nghị quyết UBTVQH quy định. Không có dữ liệu cấp huyện được ghi nhận đầy đủ tại nguồn chính thống."
+  },
+  "tinh": [
+    {
+      "ma": "31",
+      "ten": "An Giang",
+      "loai": "tỉnh",
+      "noi_dung": "Gói 1: Kiên Giang + An Giang thành tỉnh An Giang (NQ 202/2025/QH15, iu 1, dk 23); Gói 2: Tiền Giang + An Giang thành tỉnh An Giang (NQ 202/2025/QH15, iu 1, dk 21).",
+      "so_don_vi_truoc": null,
+      "so_don_vi_moi": 102,
+      "xac_thuc_dong": "01/07/2025",
+      "so_xa_truoc": 85,
+      "so_xa_moi": 79,
+      "so_phuong_moi": 14,
+      "so_dac_ku_moi": 3,
+      "so_not_applied": 6
+    },
+    {
+      "ma": "32",
+      "ten": "Bắc Ninh",
+      "loai": "tỉnh",
+      "noi_dung": "Gói 1: Bắc Giang + Bắc Ninh thành tỉnh Bắc Ninh (NQ 202/2025/QH15, iu 1, dk 5).",
+      "so_don_vi_truoc": null,
+      "so_don_vi_moi": 99,
+      "xac_thuc_dong": "01/07/2025",
+      "so_xa_truoc": 66,
+      "so_xa_moi": 65,
+      "so_phuong_moi": 33,
+      "so_dac_ku_moi": 0,
+      "so_not_applied": 1
+    },
+    {
+      "ma": "34",
+      "ten": "Cà Mau",
+      "loai": "tỉnh",
+      "noi_dung": "Gói 1: Bắc Liêu + Cà Mau thành tỉnh Cà Mau (NQ 202/2025/QH15, iu 1, dk 22).",
+      "so_don_vi_truoc": null,
+      "so_don_vi_moi": 64,
+      "xac_thuc_dong": "01/07/2025",
+      "so_xa_truoc": 55,
+      "so_xa_moi": 54,
+      "so_phuong_moi": 9,
+      "so_dac_ku_moi": 0,
+      "so_not_applied": 1
+    },
+    {
+      "ma": "36",
+      "ten": "Cần Thơ",
+      "loai": "thanh_pho_truc_thuoc_trung_quan",
+      "noi_dung": "Gói 1: TP. Cần Thơ + Sóc Trăng + Hậu Giang thành thành phố TP. Cần Thơ (NQ 202/2025/QH15, iu 1, dk 19).",
+      "so_don_vi_truoc": null,
+      "so_don_vi_moi": 103,
+      "xac_thuc_dong": "01/07/2025",
+      "so_xa_truoc": 72,
+      "so_xa_moi": 65,
+      "so_phuong_moi": 30,
+      "so_dac_ku_moi": 0,
+      "so_not_applied": 8
+    },
+    {
+      "ma": "39",
+      "ten": "Cao Bằng",
+      "loai": "tỉnh",
+      "noi_dung": "Cao Bằng không sáp nhập với đơn vị khác (NQ 202/2025/QH15, iu 1).",
+      "so_don_vi_truoc": null,
+      "so_don_vi_moi": 56,
+      "xac_thuc_dong": "01/07/2025",
+      "so_xa_truoc": 53,
+      "so_xa_moi": 53,
+      "so_phuong_moi": 3,
+      "so_dac_ku_moi": 0,
+      "so_not_applied": 0
+    },
+    {
+      "ma": "40",
+      "ten": "Đà Nẵng",
+      "loai": "thanh_pho_truc_thuoc_trung_quan",
+      "noi_dung": "Đà Nẵng giữ nguyên; gói 1: Liên Chiểu thành thành phố Liên Chiểu; gói 2: Hòa Vang thành thành phố Hòa Vang; gói 3: Hải Châu 2 thành quận Hải Châu 2; gói 4: Hoàng Sa thành quận Cẩm Phô (bán đảo Hoàng Sa); gói 5: Cẩm Phô thành quận Cẩm Phô.",
+      "so_don_vi_truoc": null,
+      "so_don_vi_moi": 94,
+      "xac_thuc_dong": "01/07/2025",
+      "so_xa_truoc": 70,
+      "so_xa_moi": 68,
+      "so_phuong_moi": 23,
+      "so_dac_ku_moi": 1,
+      "so_not_applied": 2
+    },
+    {
+      "ma": "41",
+      "ten": "Đắk Lắk",
+      "loai": "tỉnh",
+      "noi_dung": "Đắk Lắk giữ nguyên; gói 1: Buôn Ma Thuột + Ea H'leo thành thành phố Buôn Ma Thuột; gói 2: Ea Kar + Ea Súp thành huyện Ea Kar; gói 3: Ea GLong + Krông Nô thành huyện Krông Nô; gói 4: Đắk Glong + Krông Nô thành huyện Đắk Glong; gói 5: Đắk Hà + Krông Nô thành huyện Đắk Hà; gói 6: Króng Nô + Krông Bông thành huyện Krông Bông.",
+      "so_don_vi_truoc": null,
+      "so_don_vi_moi": 102,
+      "xac_thuc_dong": "01/07/2025",
+      "so_xa_truoc": 88,
+      "so_xa_moi": 82,
+      "so_phuong_moi": 14,
+      "so_dac_ku_moi": 0,
+      "so_not_applied": 6
+    },
+    {
+      "ma": "43",
+      "ten": "Điện Biên",
+      "loai": "tỉnh",
+      "noi_dung": "Điện Biên không sáp nhập với đơn vị khác (NQ 202/2025/QH15, iu 1).",
+      "so_don_vi_truoc": null,
+      "so_don_vi_moi": 45,
+      "xac_thuc_dong": "01/07/2025",
+      "so_xa_truoc": 42,
+      "so_xa_moi": 42,
+      "so_phuong_moi": 3,
+      "so_dac_ku_moi": 0,
+      "so_not_applied": 0
+    },
+    {
+      "ma": "43",
+      "ten": "Đồng Nai",
+      "loai": "tỉnh",
+      "noi_dung": "Đồng Nai không sáp nhập với đơn vị khác ở cấp tỉnh (NQ 202/2025/QH15, iu 1). Thống kê cấp xã: 95 đơn vị (67 xã, 21 phường).",
+      "so_don_vi_truoc": null,
+      "so_don_vi_moi": 95,
+      "xac_thuc_dong": "01/07/2025",
+      "so_xa_truoc": 72,
+      "so_xa_moi": 67,
+      "so_phuong_moi": 21,
+      "so_dac_ku_moi": 0,
+      "so_not_applied": 7
+    },
+    {
+      "ma": "44",
+      "ten": "Đồng Tháp",
+      "loai": "tỉnh",
+      "noi_dung": "Đồng Tháp không sáp nhập với đơn vị khác (NQ 202/2025/QH15, iu 1).",
+      "so_don_vi_truoc": null,
+      "so_don_vi_moi": 102,
+      "xac_thuc_dong": "01/07/2025",
+      "so_xa_truoc": 82,
+      "so_xa_moi": 82,
+      "so_phuong_moi": 20,
+      "so_dac_ku_moi": 0,
+      "so_not_applied": 0
+    },
+    {
+      "ma": "45",
+      "ten": "Gia Lai",
+      "loai": "tỉnh",
+      "noi_dung": "Gói 1: Bình Định + Gia Lai thành tỉnh Gia Lai (NQ 202/2025/QH15, iu 1, dk 12); Gói 2: Phú Yên + Gia Lai thành tỉnh Gia Lai (NQ 202/2025/QH15, iu 1, dk 15).",
+      "so_don_vi_truoc": null,
+      "so_don_vi_moi": 135,
+      "xac_thuc_dong": "01/07/2025",
+      "so_xa_truoc": 110,
+      "so_xa_moi": 101,
+      "so_phuong_moi": 25,
+      "so_dac_ku_moi": 0,
+      "so_not_applied": 9
+    },
+    {
+      "ma": "46",
+      "ten": "Hà Nội",
+      "loai": "thanh_pho_truc_thuoc_trung_quan",
+      "noi_dung": "Hà Nội giữ nguyên; 126 đơn vị cấp xã (51 phường, 75 xã).",
+      "so_don_vi_truoc": null,
+      "so_don_vi_moi": 126,
+      "xac_thuc_dong": "01/07/2025",
+      "so_xa_truoc": 75,
+      "so_xa_moi": 75,
+      "so_phuong_moi": 51,
+      "so_dac_ku_moi": 0,
+      "so_not_applied": 0
+    },
+    {
+      "ma": "47",
+      "ten": "Hà Tĩnh",
+      "loai": "tỉnh",
+      "noi_dung": "Hà Tĩnh giữ nguyên; gói 1: Hương Sơn + Hương Khê thành tỉnh Hà Tĩnh; gói 2: Đức Thọ + Cam Lộ thành tỉnh Hà Tĩnh; gói 3: Cẩm Xuyên + Diễn Châu thành tỉnh Hà Tĩnh; gói 4: Vinh + Hương Sơn thành tỉnh Hà Tĩnh.",
+      "so_don_vi_truoc": null,
+      "so_don_vi_moi": 69,
+      "xac_thuc_dong": "01/07/2025",
+      "so_xa_truoc": 60,
+      "so_xa_moi": 58,
+      "so_phuong_moi": 9,
+      "so_dac_ku_moi": 0,
+      "so_not_applied": 2
+    },
+    {
+      "ma": "48",
+      "ten": "Hải Phòng",
+      "loai": "thanh_pho_truc_thuoc_trung_quan",
+      "noi_dung": "Gói 1: Hải Phòng + Hải Dương thành thành phố Hải Phòng (NQ 202/2025/QH15, iu 1, dk 7).",
+      "so_don_vi_truoc": null,
+      "so_don_vi_moi": 114,
+      "xac_thuc_dong": "01/07/2025",
+      "so_xa_truoc": 67,
+      "so_xa_moi": 67,
+      "so_phuong_moi": 45,
+      "so_dac_ku_moi": 2,
+      "so_not_applied": 0
+    },
+    {
+      "ma": "49",
+      "ten": "Hưng Yên",
+      "loai": "tỉnh",
+      "noi_dung": "Gói 1: Thái Bình + Hưng Yên thành tỉnh Hưng Yên (NQ 202/2025/QH15, iu 1, dk 6).",
+      "so_don_vi_truoc": null,
+      "so_don_vi_moi": 104,
+      "xac_thuc_dong": "01/07/2025",
+      "so_xa_truoc": 93,
+      "so_xa_moi": 93,
+      "so_phuong_moi": 11,
+      "so_dac_ku_moi": 0,
+      "so_not_applied": 0
+    },
+    {
+      "ma": "51",
+      "ten": "Thành phố Huế",
+      "loai": "thanh_pho_truc_thuoc_trung_quan",
+      "noi_dung": "Huế giữ nguyên; gói 1: Giàng Chải + Quảng Điền thành phường Giàng Chải; gói 2: Phú Xuyên + Quảng Điền thành phường Phú Xuyên; gói 3: Phong Điền + Quảng Điền thành phường Phong Điền; gói 4: Hương Thủy + Phong Điền thành phường Hương Thủy.",
+      "so_don_vi_truoc": null,
+      "so_don_vi_moi": 40,
+      "xac_thuc_dong": "01/07/2025",
+      "so_xa_truoc": 19,
+      "so_xa_moi": 19,
+      "so_phuong_moi": 20,
+      "so_dac_ku_moi": 0,
+      "so_not_applied": 1
+    },
+    {
+      "ma": "52",
+      "ten": "Khánh Hòa",
+      "loai": "tỉnh",
+      "noi_dung": "Gói 1: Ninh Thuận + Khánh Hòa thành tỉnh Khánh Hòa (NQ 202/2025/QH15, iu 1, dk 13).",
+      "so_don_vi_truoc": null,
+      "so_don_vi_moi": 65,
+      "xac_thuc_dong": "01/07/2025",
+      "so_xa_truoc": 48,
+      "so_xa_moi": 48,
+      "so_phuong_moi": 16,
+      "so_dac_ku_moi": 1,
+      "so_not_applied": 0
+    },
+    {
+      "ma": "53",
+      "ten": "Lai Châu",
+      "loai": "tỉnh",
+      "noi_dung": "Lai Châu không sáp nhập với đơn vị khác (NQ 202/2025/QH15, iu 1).",
+      "so_don_vi_truoc": null,
+      "so_don_vi_moi": 38,
+      "xac_thuc_dong": "01/07/2025",
+      "so_xa_truoc": 36,
+      "so_xa_moi": 34,
+      "so_phuong_moi": 2,
+      "so_dac_ku_moi": 0,
+      "so_not_applied": 2
+    },
+    {
+      "ma": "54",
+      "ten": "Lâm Đồng",
+      "loai": "tỉnh",
+      "noi_dung": "Gói 1: Kon Tum + Bình Thuận + Lâm Đồng thành tỉnh Lâm Đồng (NQ 202/2025/QH15, iu 1, dk 14).",
+      "so_don_vi_truoc": null,
+      "so_don_vi_moi": 124,
+      "xac_thuc_dong": "01/07/2025",
+      "so_xa_truoc": 103,
+      "so_xa_moi": 99,
+      "so_phuong_moi": 20,
+      "so_dac_ku_moi": 1,
+      "so_not_applied": 4
+    },
+    {
+      "ma": "55",
+      "ten": "Lạng Sơn",
+      "loai": "tỉnh",
+      "noi_dung": "Lạng Sơn không sáp nhập với đơn vị khác (NQ 202/2025/QH15, iu 1).",
+      "so_don_vi_truoc": null,
+      "so_don_vi_moi": 65,
+      "xac_thuc_dong": "01/07/2025",
+      "so_xa_truoc": 61,
+      "so_xa_moi": 61,
+      "so_phuong_moi": 4,
+      "so_dac_ku_moi": 0,
+      "so_not_applied": 0
+    },
+    {
+      "ma": "56",
+      "ten": "Lào Cai",
+      "loai": "tỉnh",
+      "noi_dung": "Gói 1: Yên Bái + Lào Cai thành tỉnh Lào Cai (NQ 202/2025/QH15, iu 1, dk 2).",
+      "so_don_vi_truoc": null,
+      "so_don_vi_moi": 99,
+      "xac_thuc_dong": "01/07/2025",
+      "so_xa_truoc": 89,
+      "so_xa_moi": 81,
+      "so_phuong_moi": 10,
+      "so_dac_ku_moi": 0,
+      "so_not_applied": 8
+    },
+    {
+      "ma": "57",
+      "ten": "Nghệ An",
+      "loai": "tỉnh",
+      "noi_dung": "Nghệ An không sáp nhập với đơn vị khác (NQ 202/2025/QH15, iu 1).",
+      "so_don_vi_truoc": null,
+      "so_don_vi_moi": 130,
+      "xac_thuc_dong": "01/07/2025",
+      "so_xa_truoc": 119,
+      "so_xa_moi": 110,
+      "so_phuong_moi": 11,
+      "so_dac_ku_moi": 0,
+      "so_not_applied": 9
+    },
+    {
+      "ma": "58",
+      "ten": "Ninh Bình",
+      "loai": "tỉnh",
+      "noi_dung": "Gói 1: Hà Nam + Nam Định + Ninh Bình thành tỉnh Ninh Bình (NQ 202/2025/QH15, iu 1, dk 8).",
+      "so_don_vi_truoc": null,
+      "so_don_vi_moi": 129,
+      "xac_thuc_dong": "01/07/2025",
+      "so_xa_truoc": 97,
+      "so_xa_moi": 97,
+      "so_phuong_moi": 32,
+      "so_dac_ku_moi": 0,
+      "so_not_applied": 0
+    },
+    {
+      "ma": "59",
+      "ten": "Phú Thọ",
+      "loai": "tỉnh",
+      "noi_dung": "Gói 1: Vĩnh Phúc + Hòa Bình + Phú Thọ thành tỉnh Phú Thọ (NQ 202/2025/QH15, iu 1, dk 4).",
+      "so_don_vi_truoc": null,
+      "so_don_vi_moi": 148,
+      "xac_thuc_dong": "01/07/2025",
+      "so_xa_truoc": 133,
+      "so_xa_moi": 131,
+      "so_phuong_moi": 15,
+      "so_dac_ku_moi": 0,
+      "so_not_applied": 2
+    },
+    {
+      "ma": "60",
+      "ten": "Quảng Ngãi",
+      "loai": "tỉnh",
+      "noi_dung": "Gói 1: Kon Tum + Quảng Ngãi thành tỉnh Quảng Ngãi (NQ 202/2025/QH15, iu 1, dk 11).",
+      "so_don_vi_truoc": null,
+      "so_don_vi_moi": 96,
+      "xac_thuc_dong": "01/07/2025",
+      "so_xa_truoc": 86,
+      "so_xa_moi": 81,
+      "so_phuong_moi": 9,
+      "so_dac_ku_moi": 1,
+      "so_not_applied": 5
+    },
+    {
+      "ma": "61",
+      "ten": "Quảng Ninh",
+      "loai": "thanh_pho_truc_thuoc_trung_quan",
+      "noi_dung": "Quảng Ninh không sáp nhập với đơn vị khác ở cấp tỉnh (NQ 202/2025/QH15, iu 1). Thống kê cấp xã: 54 đơn vị (21 xã, 30 phường, 2 đặc khu).",
+      "so_don_vi_truoc": null,
+      "so_don_vi_moi": 54,
+      "xac_thuc_dong": "01/07/2025",
+      "so_xa_truoc": 22,
+      "so_xa_moi": 21,
+      "so_phuong_moi": 30,
+      "so_dac_ku_moi": 2,
+      "so_not_applied": 1
+    },
+    {
+      "ma": "62",
+      "ten": "Quảng Trị",
+      "loai": "tỉnh",
+      "noi_dung": "Quảng Trị không sáp nhập với đơn vị khác (NQ 202/2025/QH15, iu 1).",
+      "so_don_vi_truoc": null,
+      "so_don_vi_moi": 78,
+      "xac_thuc_dong": "01/07/2025",
+      "so_xa_truoc": 69,
+      "so_xa_moi": 68,
+      "so_phuong_moi": 8,
+      "so_dac_ku_moi": 1,
+      "so_not_applied": 1
+    },
+    {
+      "ma": "63",
+      "ten": "Sơn La",
+      "loai": "tỉnh",
+      "noi_dung": "Sơn La không sáp nhập với đơn vị khác (NQ 202/2025/QH15, iu 1).",
+      "so_don_vi_truoc": null,
+      "so_don_vi_moi": 75,
+      "xac_thuc_dong": "01/07/2025",
+      "so_xa_truoc": 67,
+      "so_xa_moi": 60,
+      "so_phuong_moi": 8,
+      "so_dac_ku_moi": 0,
+      "so_not_applied": 7
+    },
+    {
+      "ma": "64",
+      "ten": "Tây Ninh",
+      "loai": "tỉnh",
+      "noi_dung": "Gói 1: Long An + Tây Ninh thành tỉnh Tây Ninh (NQ 202/2025/QH15, iu 1, dk 18).",
+      "so_don_vi_truoc": null,
+      "so_don_vi_moi": 96,
+      "xac_thuc_dong": "01/07/2025",
+      "so_xa_truoc": 82,
+      "so_xa_moi": 82,
+      "so_phuong_moi": 14,
+      "so_dac_ku_moi": 0,
+      "so_not_applied": 0
+    },
+    {
+      "ma": "65",
+      "ten": "Thái Nguyên",
+      "loai": "tỉnh",
+      "noi_dung": "Gói 1: Bắc Kạn + Thái Nguyên thành tỉnh Thái Nguyên (NQ 202/2025/QH15, iu 1, dk 3).",
+      "so_don_vi_truoc": null,
+      "so_don_vi_moi": 92,
+      "xac_thuc_dong": "01/07/2025",
+      "so_xa_truoc": 77,
+      "so_xa_moi": 75,
+      "so_phuong_moi": 15,
+      "so_dac_ku_moi": 0,
+      "so_not_applied": 2
+    },
+    {
+      "ma": "66",
+      "ten": "Thanh Hóa",
+      "loai": "tỉnh",
+      "noi_dung": "Gói 1: Thanh Hóa + Quảng Nam thành thành phố Thanh Hóa (NQ 202/2025/QH15, iu 1, dk 10).",
+      "so_don_vi_truoc": null,
+      "so_don_vi_moi": 166,
+      "xac_thuc_dong": "01/07/2025",
+      "so_xa_truoc": 147,
+      "so_xa_moi": 126,
+      "so_phuong_moi": 19,
+      "so_dac_ku_moi": 0,
+      "so_not_applied": 21
+    },
+    {
+      "ma": "67",
+      "ten": "Thành phố Hồ Chí Minh",
+      "loai": "thanh_pho_truc_thuoc_trung_quan",
+      "noi_dung": "Gói 1: TP. Hồ Chí Minh + Bình Dương + Ba Rịa - Vũng Tàu thành thành phố TP. Hồ Chí Minh (NQ 202/2025/QH15, iu 1, dk 16).",
+      "so_don_vi_truoc": null,
+      "so_don_vi_moi": 168,
+      "xac_thuc_dong": "01/07/2025",
+      "so_xa_truoc": 54,
+      "so_xa_moi": 50,
+      "so_phuong_moi": 112,
+      "so_dac_ku_moi": 1,
+      "so_not_applied": 5
+    },
+    {
+      "ma": "68",
+      "ten": "Tuyên Quang",
+      "loai": "tỉnh",
+      "noi_dung": "Gói 1: Hà Giang + Tuyến Quang thành tỉnh Tuyến Quang (NQ 202/2025/QH15, iu 1, dk 1).",
+      "so_don_vi_truoc": null,
+      "so_don_vi_moi": 124,
+      "xac_thuc_dong": "01/07/2025",
+      "so_xa_truoc": 117,
+      "so_xa_moi": 104,
+      "so_phuong_moi": 7,
+      "so_dac_ku_moi": 0,
+      "so_not_applied": 13
+    },
+    {
+      "ma": "70",
+      "ten": "Vĩnh Long",
+      "loai": "tỉnh",
+      "noi_dung": "Gói 1: Bình Định + Trà Vinh + Vĩnh Long thành tỉnh Vĩnh Long (NQ 202/2025/QH15, iu 1, dk 20).",
+      "so_don_vi_truoc": null,
+      "so_don_vi_moi": 124,
+      "xac_thuc_dong": "01/07/2025",
+      "so_xa_truoc": 105,
+      "so_xa_moi": 101,
+      "so_phuong_moi": 19,
+      "so_dac_ku_moi": 0,
+      "so_not_applied": 4
+    }
+  ],
+  "danh_gia_capan_xa_phuong": [
+    {
+      "ma_tinh": "31",
+      "ten_tinh": "An Giang",
+      "so_xa": "79",
+      "so_phuong": "14",
+      "so_dac_ku": "3",
+      "so_not_applied": "6",
+      "nghia_quyet": "1654/NQ-UBTVQH15"
+    },
+    {
+      "ma_tinh": "32",
+      "ten_tinh": "Bắc Ninh",
+      "so_xa": "65",
+      "so_phuong": "33",
+      "so_dac_ku": "0",
+      "so_not_applied": "1",
+      "nghia_quyet": "1658/NQ-UBTVQH15"
+    },
+    {
+      "ma_tinh": "34",
+      "ten_tinh": "Cà Mau",
+      "so_xa": "54",
+      "so_phuong": "9",
+      "so_dac_ku": "0",
+      "so_not_applied": "1",
+      "nghia_quyet": "1655/NQ-UBTVQH15"
+    },
+    {
+      "ma_tinh": "36",
+      "ten_tinh": "Cần Thơ",
+      "so_xa": "65",
+      "so_phuong": "30",
+      "so_dac_ku": "0",
+      "so_not_applied": "8",
+      "nghia_quyet": "1668/NQ-UBTVQH15"
+    },
+    {
+      "ma_tinh": "39",
+      "ten_tinh": "Cao Bằng",
+      "so_xa": "53",
+      "so_phuong": "3",
+      "so_dac_ku": "0",
+      "so_not_applied": "0",
+      "nghia_quyet": "1657/NQ-UBTVQH15"
+    },
+    {
+      "ma_tinh": "40",
+      "ten_tinh": "Đà Nẵng",
+      "so_xa": "68",
+      "so_phuong": "23",
+      "so_dac_ku": "1",
+      "so_not_applied": "2",
+      "nghia_quyet": "1659/NQ-UBTVQH15"
+    },
+    {
+      "ma_tinh": "41",
+      "ten_tinh": "Đắk Lắk",
+      "so_xa": "82",
+      "so_phuong": "14",
+      "so_dac_ku": "0",
+      "so_not_applied": "6",
+      "nghia_quyet": "1660/NQ-UBTVQH15"
+    },
+    {
+      "ma_tinh": "43",
+      "ten_tinh": "Điện Biên",
+      "so_xa": "42",
+      "so_phuong": "3",
+      "so_dac_ku": "0",
+      "so_not_applied": "0",
+      "nghia_quyet": "1661/NQ-UBTVQH15"
+    },
+    {
+      "ma_tinh": "43",
+      "ten_tinh": "Đồng Nai",
+      "so_xa": "67",
+      "so_phuong": "21",
+      "so_dac_ku": "0",
+      "so_not_applied": "7",
+      "nghia_quyet": "1662/NQ-UBTVQH15"
+    },
+    {
+      "ma_tinh": "44",
+      "ten_tinh": "Đồng Tháp",
+      "so_xa": "82",
+      "so_phuong": "20",
+      "so_dac_ku": "0",
+      "so_not_applied": "0",
+      "nghia_quyet": "1663/NQ-UBTVQH15"
+    },
+    {
+      "ma_tinh": "45",
+      "ten_tinh": "Gia Lai",
+      "so_xa": "101",
+      "so_phuong": "25",
+      "so_dac_ku": "0",
+      "so_not_applied": "9",
+      "nghia_quyet": "1664/NQ-UBTVQH15"
+    },
+    {
+      "ma_tinh": "46",
+      "ten_tinh": "Hà Nội",
+      "so_xa": "75",
+      "so_phuong": "51",
+      "so_dac_ku": "0",
+      "so_not_applied": "0",
+      "nghia_quyet": "1656/NQ-UBTVQH15"
+    },
+    {
+      "ma_tinh": "47",
+      "ten_tinh": "Hà Tĩnh",
+      "so_xa": "58",
+      "so_phuong": "9",
+      "so_dac_ku": "0",
+      "so_not_applied": "2",
+      "nghia_quyet": "1665/NQ-UBTVQH15"
+    },
+    {
+      "ma_tinh": "48",
+      "ten_tinh": "Hải Phòng",
+      "so_xa": "67",
+      "so_phuong": "45",
+      "so_dac_ku": "2",
+      "so_not_applied": "0",
+      "nghia_quyet": "1669/NQ-UBTVQH15"
+    },
+    {
+      "ma_tinh": "49",
+      "ten_tinh": "Hưng Yên",
+      "so_xa": "93",
+      "so_phuong": "11",
+      "so_dac_ku": "0",
+      "so_not_applied": "0",
+      "nghia_quyet": "1666/NQ-UBTVQH15"
+    },
+    {
+      "ma_tinh": "51",
+      "ten_tinh": "Thành phố Huế",
+      "so_xa": "19",
+      "so_phuong": "20",
+      "so_dac_ku": "0",
+      "so_not_applied": "1",
+      "nghia_quyet": "1675/NQ-UBTVQH15"
+    },
+    {
+      "ma_tinh": "52",
+      "ten_tinh": "Khánh Hòa",
+      "so_xa": "48",
+      "so_phuong": "16",
+      "so_dac_ku": "1",
+      "so_not_applied": "0",
+      "nghia_quyet": "1667/NQ-UBTVQH15"
+    },
+    {
+      "ma_tinh": "53",
+      "ten_tinh": "Lai Châu",
+      "so_xa": "34",
+      "so_phuong": "2",
+      "so_dac_ku": "0",
+      "so_not_applied": "2",
+      "nghia_quyet": "1670/NQ-UBTVQH15"
+    },
+    {
+      "ma_tinh": "54",
+      "ten_tinh": "Lâm Đồng",
+      "so_xa": "99",
+      "so_phuong": "20",
+      "so_dac_ku": "1",
+      "so_not_applied": "4",
+      "nghia_quyet": "1671/NQ-UBTVQH15"
+    },
+    {
+      "ma_tinh": "55",
+      "ten_tinh": "Lạng Sơn",
+      "so_xa": "61",
+      "so_phuong": "4",
+      "so_dac_ku": "0",
+      "so_not_applied": "0",
+      "nghia_quyet": "1672/NQ-UBTVQH15"
+    },
+    {
+      "ma_tinh": "56",
+      "ten_tinh": "Lào Cai",
+      "so_xa": "81",
+      "so_phuong": "10",
+      "so_dac_ku": "0",
+      "so_not_applied": "8",
+      "nghia_quyet": "1673/NQ-UBTVQH15"
+    },
+    {
+      "ma_tinh": "57",
+      "ten_tinh": "Nghệ An",
+      "so_xa": "110",
+      "so_phuong": "11",
+      "so_dac_ku": "0",
+      "so_not_applied": "9",
+      "nghia_quyet": "1678/NQ-UBTVQH15"
+    },
+    {
+      "ma_tinh": "58",
+      "ten_tinh": "Ninh Bình",
+      "so_xa": "97",
+      "so_phuong": "32",
+      "so_dac_ku": "0",
+      "so_not_applied": "0",
+      "nghia_quyet": "1674/NQ-UBTVQH15"
+    },
+    {
+      "ma_tinh": "59",
+      "ten_tinh": "Phú Thọ",
+      "so_xa": "131",
+      "so_phuong": "15",
+      "so_dac_ku": "0",
+      "so_not_applied": "2",
+      "nghia_quyet": "1676/NQ-UBTVQH15"
+    },
+    {
+      "ma_tinh": "60",
+      "ten_tinh": "Quảng Ngãi",
+      "so_xa": "81",
+      "so_phuong": "9",
+      "so_dac_ku": "1",
+      "so_not_applied": "5",
+      "nghia_quyet": "1677/NQ-UBTVQH15"
+    },
+    {
+      "ma_tinh": "61",
+      "ten_tinh": "Quảng Ninh",
+      "so_xa": "21",
+      "so_phuong": "30",
+      "so_dac_ku": "2",
+      "so_not_applied": "1",
+      "nghia_quyet": "1679/NQ-UBTVQH15"
+    },
+    {
+      "ma_tinh": "62",
+      "ten_tinh": "Quảng Trị",
+      "so_xa": "68",
+      "so_phuong": "8",
+      "so_dac_ku": "1",
+      "so_not_applied": "1",
+      "nghia_quyet": "1680/NQ-UBTVQH15"
+    },
+    {
+      "ma_tinh": "63",
+      "ten_tinh": "Sơn La",
+      "so_xa": "60",
+      "so_phuong": "8",
+      "so_dac_ku": "0",
+      "so_not_applied": "7",
+      "nghia_quyet": "1681/NQ-UBTVQH15"
+    },
+    {
+      "ma_tinh": "64",
+      "ten_tinh": "Tây Ninh",
+      "so_xa": "82",
+      "so_phuong": "14",
+      "so_dac_ku": "0",
+      "so_not_applied": "0",
+      "nghia_quyet": "1682/NQ-UBTVQH15"
+    },
+    {
+      "ma_tinh": "65",
+      "ten_tinh": "Thái Nguyên",
+      "so_xa": "75",
+      "so_phuong": "15",
+      "so_dac_ku": "0",
+      "so_not_applied": "2",
+      "nghia_quyet": "1683/NQ-UBTVQH15"
+    },
+    {
+      "ma_tinh": "66",
+      "ten_tinh": "Thanh Hóa",
+      "so_xa": "126",
+      "so_phuong": "19",
+      "so_dac_ku": "0",
+      "so_not_applied": "21",
+      "nghia_quyet": "1686/NQ-UBTVQH15"
+    },
+    {
+      "ma_tinh": "67",
+      "ten_tinh": "Thành phố Hồ Chí Minh",
+      "so_xa": "50",
+      "so_phuong": "112",
+      "so_dac_ku": "1",
+      "so_not_applied": "5",
+      "nghia_quyet": "1685/NQ-UBTVQH15"
+    },
+    {
+      "ma_tinh": "68",
+      "ten_tinh": "Tuyên Quang",
+      "so_xa": "104",
+      "so_phuong": "7",
+      "so_dac_ku": "0",
+      "so_not_applied": "13",
+      "nghia_quyet": "1684/NQ-UBTVQH15"
+    },
+    {
+      "ma_tinh": "70",
+      "ten_tinh": "Vĩnh Long",
+      "so_xa": "101",
+      "so_phuong": "19",
+      "so_dac_ku": "0",
+      "so_not_applied": "4",
+      "nghia_quyet": "1687/NQ-UBTVQH15"
+    }
+  ],
+  "chitiet_cong_hoan": [
+    {
+      "so_quyet": "1654/NQ-UBTVQH15",
+      "ten_tinh": "An Giang",
+      "loai": "Kết luận 1: An Giang + Cần Thơ"
+    },
+    {
+      "so_quyet": "1655/NQ-UBTVQH15",
+      "ten_tinh": "Cà Mau",
+      "loai": "Kết luận 1: Cà Mau + Bạc Liêu"
+    },
+    {
+      "so_quyet": "1656/NQ-UBTVQH15",
+      "ten_tinh": "Hà Nội",
+      "loai": "Kết luận 1: Hà Nội (đồng bộ cấp xã)"
+    },
+    {
+      "so_quyet": "1657/NQ-UBTVQH15",
+      "ten_tinh": "Cao Bằng",
+      "loai": "Kết luận 1: Cao Bằng (Đông + Tây)"
+    },
+    {
+      "so_quyet": "1658/NQ-UBTVQH15",
+      "ten_tinh": "Bắc Ninh",
+      "loai": "Kết luận 1: Bắc Ninh + Hưng Yên"
+    },
+    {
+      "so_quyet": "1659/NQ-UBTVQH15",
+      "ten_tinh": "Đà Nẵng",
+      "loai": "Kết luận 1: Đà Nẵng (chỉnh thể diện tích)"
+    },
+    {
+      "so_quyet": "1660/NQ-UBTVQH15",
+      "ten_tinh": "Đắk Lắk",
+      "loai": "Kết luận 1: Đắk Lắk (chỉnh thể diện tích)"
+    },
+    {
+      "so_quyet": "1661/NQ-UBTVQH15",
+      "ten_tinh": "Điện Biên",
+      "loai": "Kết luận 1: Điện Biên (tạo 1 tỉnh lịch sử)"
+    },
+    {
+      "so_quyet": "1662/NQ-UBTVQH15",
+      "ten_tinh": "Đồng Nai",
+      "loai": "Kết luận 1: Đồng Nai (chỉnh thể diện tích)"
+    },
+    {
+      "so_quyet": "1663/NQ-UBTVQH15",
+      "ten_tinh": "Đồng Tháp",
+      "loai": "Kết luận 1: Đồng Tháp + Hậu Giang"
+    },
+    {
+      "so_quyet": "1664/NQ-UBTVQH15",
+      "ten_tinh": "Gia Lai",
+      "loai": "Kết luận 1: Gia Lai + Đắk Nông"
+    },
+    {
+      "so_quyet": "1665/NQ-UBTVQH15",
+      "ten_tinh": "Hà Tĩnh",
+      "loai": "Kết luận 1: Hà Tĩnh (chỉnh thể diện tích)"
+    },
+    {
+      "so_quyet": "1666/NQ-UBTVQH15",
+      "ten_tinh": "Hưng Yên",
+      "loai": "Kết luận 1: Hưng Yên (chỉnh thể diện tích)"
+    },
+    {
+      "so_quyet": "1667/NQ-UBTVQH15",
+      "ten_tinh": "Khánh Hòa",
+      "loai": "Kết luận 1: Khánh Hòa (chỉnh thể diện tích)"
+    },
+    {
+      "so_quyet": "1668/NQ-UBTVQH15",
+      "ten_tinh": "Cần Thơ",
+      "loai": "Kết luận 1: Cần Thơ (chỉnh thể diện tích)"
+    },
+    {
+      "so_quyet": "1669/NQ-UBTVQH15",
+      "ten_tinh": "Hải Phòng",
+      "loai": "Kết luận 1: Hải Phòng (chỉnh thể diện tích)"
+    },
+    {
+      "so_quyet": "1670/NQ-UBTVQH15",
+      "ten_tinh": "Lai Châu",
+      "loai": "Kết luận 1: Lai Châu + Sơn La"
+    },
+    {
+      "so_quyet": "1671/NQ-UBTVQH15",
+      "ten_tinh": "Lâm Đồng",
+      "loai": "Kết luận 1: Lâm Đồng (chỉnh thể diện tích)"
+    },
+    {
+      "so_quyet": "1672/NQ-UBTVQH15",
+      "ten_tinh": "Lạng Sơn",
+      "loai": "Kết luận 1: Lạng Sơn (chỉnh thể diện tích)"
+    },
+    {
+      "so_quyet": "1673/NQ-UBTVQH15",
+      "ten_tinh": "Lào Cai",
+      "loai": "Kết luận 1: Lào Cai + Lạng Sơn"
+    },
+    {
+      "so_quyet": "1674/NQ-UBTVQH15",
+      "ten_tinh": "Ninh Bình",
+      "loai": "Kết luận 1: Ninh Bình (chỉnh thể diện tích)"
+    },
+    {
+      "so_quyet": "1675/NQ-UBTVQH15",
+      "ten_tinh": "Thành phố Huế",
+      "loai": "Kết luận 1: Huế (chỉnh thể diện tích)"
+    },
+    {
+      "so_quyet": "1676/NQ-UBTVQH15",
+      "ten_tinh": "Phú Thọ",
+      "loai": "Kết luận 1: Phú Thọ (chỉnh thể diện tích)"
+    },
+    {
+      "so_quyet": "1677/NQ-UBTVQH15",
+      "ten_tinh": "Quảng Ngãi",
+      "loai": "Kết luận 1: Quảng Ngãi (chỉnh thể diện tích)"
+    },
+    {
+      "so_quyet": "1678/NQ-UBTVQH15",
+      "ten_tinh": "Nghệ An",
+      "loai": "Kết luận 1: Nghệ An (chỉnh thể diện tích)"
+    },
+    {
+      "so_quyet": "1679/NQ-UBTVQH15",
+      "ten_tinh": "Quảng Ninh",
+      "loai": "Kết luận 1: Quảng Ninh (tạo 1 thành phố)"
+    },
+    {
+      "so_quyet": "1680/NQ-UBTVQH15",
+      "ten_tinh": "Quảng Trị",
+      "loai": "Kết luận 1: Quảng Trị (chỉnh thể diện tích)"
+    },
+    {
+      "so_quyet": "1681/NQ-UBTVQH15",
+      "ten_tinh": "Sơn La",
+      "loai": "Kết luận 1: Sơn La (chỉnh thể diện tích)"
+    },
+    {
+      "so_quyet": "1682/NQ-UBTVQH15",
+      "ten_tinh": "Tây Ninh",
+      "loai": "Kết luận 1: Tây Ninh + Bình Dương"
+    },
+    {
+      "so_quyet": "1683/NQ-UBTVQH15",
+      "ten_tinh": "Thái Nguyên",
+      "loai": "Kết luận 1: Thái Nguyên (chỉnh thể diện tích)"
+    },
+    {
+      "so_quyet": "1684/NQ-UBTVQH15",
+      "ten_tinh": "Tuyên Quang",
+      "loai": "Kết luận 1: Tuyên Quang + Lâm Đồng"
+    },
+    {
+      "so_quyet": "1685/NQ-UBTVQH15",
+      "ten_tinh": "Thành phố Hồ Chí Minh",
+      "loai": "Kết luận 1: TP.HCM (đồng bộ cấp xã)"
+    },
+    {
+      "so_quyet": "1686/NQ-UBTVQH15",
+      "ten_tinh": "Thanh Hóa",
+      "loai": "Kết luận 1: Thanh Hóa + Ninh Bình"
+    },
+    {
+      "so_quyet": "1687/NQ-UBTVQH15",
+      "ten_tinh": "Vĩnh Long",
+      "loai": "Kết luận 1: Vĩnh Long + Long An"
+    }
+  ]
+}
