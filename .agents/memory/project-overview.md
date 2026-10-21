@@ -53,11 +53,20 @@ dù dữ liệu từ Supabase hay JSON, nên render không cần rẽ nhánh the
   UI hiển thị "Giữ nguyên".
 - Tên file crawl: `vietnam-admin-merger.json` (số ít), đặt ở root.
 
-## Trạng thái file cũ
-- `tool-detail.html` + `assets/js/{merge-wizard,invoice-*,hoa-don-xml,admin-*,article-detail,mail,utils,main,index}.js`
-  là **di sản v1**, không trang nào dùng. `tool-detail.html` gọi `/api/tools` đã bị xoá nên hỏng;
-  `scripts/check-links.mjs` bỏ qua file này. Giữ để tham chiếu, xoá khi chủ dự án đồng ý.
-- `api/`, `db/` cũ, `lib/` đã bị dọn sạch trong lần reset.
+## Dọn dẹp (2026-10-21)
+- Đã xoá: `tool-detail.html`, 35 file JS v1 (`admin-*`, `invoice-*`, `merge-wizard-*`,
+  `article-detail`, `hoa-don-xml`, `van-ban-*`, `mail`, `main`, `utils`, `index`),
+  `anime.css` / `cybercore.css` / `pages.css`, `Techsoft.jpg`, các bản Bootstrap /
+  Popper / smoothscroll không dùng, toàn bộ Font Awesome trừ `js/all.min.js`,
+  và các thư mục rỗng `api/`, `lib/`, `state/`.
+- Còn lại: 5 file JS (`config`, `db`, `tools`, `dia-gioi`, `oneko`), 2 file CSS
+  (`notdore`, `tools`), Bootstrap (`bootstrap.min.css` + `bootstrap.bundle.min.js`),
+  Font Awesome `all.min.js` + LICENSE, `oneko.gif`.
+- Font Awesome render bằng JS (`all.min.js` tự chứa, không cần `webfonts/` hay `svgs/`).
+  Trang gọi `FontAwesome.dom.watch()` sau sự kiện `load` để icon được sinh ra động
+  (thẻ công cụ, bảng, modal) cũng được thay bằng `<svg>`.
+- `CREDITS.md` đã cập nhật đúng thư viện còn dùng. Lưu ý: license DevBook yêu cầu
+  giữ dòng ghi nguồn footer — hiện footer chỉ ghi "Made with ❤️ by Theodore".
 
 ## Lệnh
 ```bash

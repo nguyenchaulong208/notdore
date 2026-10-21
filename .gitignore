@@ -1,81 +1,18 @@
-# ============================
-# PYTHON
-# ============================
-__pycache__/
-*.py[cod]
-*.pyo
-*.pyd
-*.so
+# Phụ thuộc
+node_modules/
 
-# Virtual environment
-venv/
-env/
-.venv/
-
-# Jupyter
-.ipynb_checkpoints/
-
-# ============================
-# FASTAPI / UVICORN
-# ============================
-*.log
-*.pid
-
-# ============================
-# ENVIRONMENT VARIABLES
-# ============================
+# Biến môi trường — không commit key
 .env
 .env.local
-.env.production
-.env.development
+.env.*.local
 
-# ============================
-# DATABASE / MIGRATIONS
-# ============================
-# SQLite (nếu dùng tạm)
-*.db
-*.sqlite3
-
-# Alembic
-alembic/versions/*.pyc
-alembic/*.pyc
-
-# ============================
-# UPLOAD FILES
-# ============================
-uploads/
-storage/
-files/
-media/
-static/uploads/
-
-
-# ============================
-# EDITOR / OS FILES
-# ============================
+# Hệ điều hành / editor
 .DS_Store
 Thumbs.db
-
-# VSCode
 .vscode/
+.idea/
 *.code-workspace
 
-# PyCharm
-.idea/
-
-# ============================
-# CACHE / BUILD
-# ============================
+# Log & thư mục build tạm
+*.log
 dist/
-build/
-*.egg-info/
-.cache/
-# ============================
-# SCRIPTS DATABASE
-# ============================
-scriptsDB/
-
-# ============================
-# DEPENDENCIES
-# ============================
-node_modules/

@@ -177,5 +177,14 @@
     <script src="../assets/js/db.js"></script>
     <script src="../assets/js/dia-gioi.js"></script>
     <script src="../assets/js/oneko.js" data-cat="../assets/images/oneko.gif"></script>
+    <script>
+        // Font Awesome chỉ tự thay <i> một lần khi tải trang. Bật watch() để icon
+        // trong bảng, thẻ đơn vị và modal (render động) cũng thành <svg>.
+        window.addEventListener('load', function () {
+            if (window.FontAwesome && window.FontAwesome.dom && window.FontAwesome.dom.watch) {
+                window.FontAwesome.dom.watch();
+            }
+        });
+    </script>
 </body>
 </html>
