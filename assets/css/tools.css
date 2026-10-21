@@ -688,6 +688,8 @@
 .nd-stat span { font-size: .82rem; color: var(--text-secondary); }
 
 /* Thanh công cụ */
+.nd-toolbar--nested { margin-bottom: .75rem; }
+
 .nd-toolbar {
   display: flex;
   flex-wrap: wrap;

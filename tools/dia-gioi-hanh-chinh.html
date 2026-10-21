@@ -4,12 +4,12 @@
     <meta charset="utf-8">
     <title>Tra cứu địa giới hành chính sau sáp nhập 2025 — NotDore</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Đối chiếu 63 tỉnh thành trước sáp nhập sang 34 đơn vị hành chính cấp tỉnh hiện nay. Tìm theo tên cũ, tên mới, vùng hoặc mã đơn vị.">
+    <meta name="description" content="Đối chiếu 63 tỉnh thành trước sáp nhập sang 34 đơn vị cấp tỉnh, kèm 3.321 xã/phường/đặc khu hiệu lực 01/07/2025. Tìm theo tên cũ, tên mới, vùng hoặc mã đơn vị.">
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="NotDore">
     <meta property="og:locale" content="vi_VN">
     <meta property="og:title" content="Tra cứu địa giới hành chính sau sáp nhập 2025">
-    <meta property="og:description" content="63 tỉnh thành cũ nay thuộc đơn vị nào? Tra cứu nhanh theo tên cũ, tên mới, vùng hoặc mã đơn vị.">
+    <meta property="og:description" content="63 tỉnh thành cũ nay thuộc đơn vị nào? Tra cứu cấp tỉnh và 3.321 xã/phường/đặc khu sau sáp nhập.">
     <meta property="og:url" content="https://www.notdore.io.vn/tools/dia-gioi-hanh-chinh.html">
     <meta name="twitter:card" content="summary">
     <meta name="google-adsense-account" content="ca-pub-9767208027997083">
@@ -58,8 +58,8 @@
 
             <p class="nd-data-note">
                 <i class="fas fa-circle-info" aria-hidden="true"></i>
-                Dữ liệu cấp tỉnh/thành phố trực thuộc Trung ương. Một số đơn vị có thay đổi cấp hành chính sau 2025 —
-                xem tab <strong>Nguồn &amp; ghi chú</strong> trước khi dùng cho hồ sơ chính thức.
+                Dữ liệu cấp tỉnh/thành phố và cấp xã/phường/đặc khu, hiệu lực 01/07/2025. Cấp huyện không còn
+                trong bộ máy hành chính 2 cấp — xem tab <strong>Nguồn &amp; ghi chú</strong> trước khi dùng cho hồ sơ chính thức.
             </p>
 
             <div class="nd-stats" id="dg-stats" aria-live="polite"></div>
@@ -76,6 +76,11 @@
                     </button>
                 </li>
                 <li role="presentation">
+                    <button type="button" role="tab" data-dg-tab="communes" aria-selected="false">
+                        <i class="fas fa-location-dot me-1" aria-hidden="true"></i>Xã / phường
+                    </button>
+                </li>
+                <li role="presentation">
                     <button type="button" role="tab" data-dg-tab="meta" aria-selected="false">
                         <i class="fas fa-circle-info me-1" aria-hidden="true"></i>Nguồn &amp; ghi chú
                     </button>
@@ -89,7 +94,7 @@
                            placeholder="Tên đơn vị cũ hoặc mới, mã (vd 79), vùng…"
                            autocomplete="off">
                 </div>
-                <div class="nd-field">
+                <div class="nd-field" data-dg-province-only>
                     <label for="dg-region">Vùng</label>
                     <select id="dg-region" class="nd-select">
                         <option value="all">Tất cả</option>
@@ -98,7 +103,7 @@
                         <option value="Nam Bộ">Nam Bộ</option>
                     </select>
                 </div>
-                <div class="nd-field">
+                <div class="nd-field" data-dg-province-only>
                     <label for="dg-type">Loại đơn vị</label>
                     <select id="dg-type" class="nd-select">
                         <option value="all">Tất cả</option>
@@ -107,11 +112,11 @@
                         <option value="Thủ đô">Thủ đô</option>
                     </select>
                 </div>
-                <label class="nd-check">
+                <label class="nd-check" data-dg-province-only>
                     <input type="checkbox" id="dg-only-changed">
                     Chỉ đơn vị có sáp nhập
                 </label>
-                <span class="nd-count" id="dg-count" aria-live="polite"></span>
+                <span class="nd-count" id="dg-count" aria-live="polite" data-dg-province-only></span>
             </div>
 
             <section id="dg-panel-history" role="tabpanel">
@@ -140,12 +145,56 @@
                 <div id="dg-units"></div>
             </section>
 
+            <section id="dg-panel-communes" role="tabpanel" hidden>
+                <div class="nd-toolbar nd-toolbar--nested">
+                    <div class="nd-field">
+                        <label for="dg-commune-province">Tỉnh / Thành phố</label>
+                        <select id="dg-commune-province" class="nd-select">
+                            <option value="all">Tất cả</option>
+                        </select>
+                    </div>
+                    <div class="nd-field">
+                        <label for="dg-commune-type">Loại đơn vị</label>
+                        <select id="dg-commune-type" class="nd-select">
+                            <option value="all">Tất cả</option>
+                            <option value="xa">Xã</option>
+                            <option value="phuong">Phường</option>
+                            <option value="dac_ku">Đặc khu</option>
+                        </select>
+                    </div>
+                    <span class="nd-count" id="dg-commune-count" aria-live="polite"></span>
+                </div>
+
+                <div class="nd-table-wrap">
+                    <table class="nd-table">
+                        <caption class="visually-hidden">Danh sách xã, phường, đặc khu sau sắp xếp 01/07/2025</caption>
+                        <thead>
+                            <tr>
+                                <th scope="col">Xã / phường / đặc khu</th>
+                                <th scope="col">Loại</th>
+                                <th scope="col">Tỉnh / Thành phố</th>
+                                <th scope="col">Mã</th>
+                            </tr>
+                        </thead>
+                        <tbody id="dg-commune-body">
+                            <tr><td colspan="4" class="nd-empty-cell">
+                                <i class="fas fa-spinner fa-spin me-2"></i>Đang tải dữ liệu cấp xã.
+                            </td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <p class="nd-note mt-3" id="dg-commune-source">
+                    Cấp huyện không còn trong bộ máy hành chính 2 cấp từ 01/07/2025.
+                </p>
+            </section>
+
             <section id="dg-panel-meta" role="tabpanel" hidden>
                 <div class="nd-table-wrap p-3 p-md-4" id="dg-meta"></div>
             </section>
 
             <p class="nd-note mt-3">
-                Nguồn dữ liệu: <span id="dg-source">Supabase</span> · Cấp hành chính: tỉnh/thành phố trực thuộc Trung ương.
+                Nguồn dữ liệu: <span id="dg-source">Supabase</span> · Cấp hành chính: tỉnh/thành phố + xã/phường/đặc khu.
             </p>
         </main>
 

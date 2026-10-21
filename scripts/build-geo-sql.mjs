@@ -6,8 +6,9 @@
  *   npm run build:geo
  *   node scripts/build-geo-sql.mjs "C:\duong\dan\database_vietnam_merger.json"
  *
- * Kết quả: db/seed-geo.sql
+ * Kết quả: db/seed-geo.sql (34 cấp tỉnh + 3.321 xã/phường/đặc khu)
  * Schema tương ứng: db/schema-geo.sql
+ * Dữ liệu cấp xã đọc thêm: db/source/communes-open-api.json
  *
  * Script giữ nguyên dữ liệu gốc (kể cả mã trùng), chỉ chuẩn hoá thành các bảng
  * có khoá ổn định (slug) để có thể bổ sung cấp xã/phường và các kỳ dữ liệu sau.
@@ -21,6 +22,7 @@ const OUT = resolve(ROOT, "db/seed-geo.sql");
 
 const inputPath =
   process.argv[2] ?? resolve(ROOT, "db/source/database_vietnam_merger.json");
+const communesPath = resolve(ROOT, "db/source/communes-open-api.json");
 
 const DATASET_CODE = "vn-admin-2025-07-01";
 const DATASET_NAME = "Việt Nam — Đơn vị hành chính sau sắp xếp 01/07/2025";
@@ -100,6 +102,14 @@ if (!provincesRaw.length) {
 
 const warnings = [];
 
+/* Dữ liệu cấp xã là tùy chọn: nếu chưa có file thì seed chỉ có 34 tỉnh. */
+let communesRaw = null;
+try {
+  communesRaw = JSON.parse(await readFile(communesPath, "utf8"));
+} catch {
+  warnings.push(`Chưa có ${communesPath}; seed chỉ sinh cấp tỉnh.`);
+}
+
 const resolutionByKey = new Map();
 for (const resolution of resolutionsRaw) {
   const key = normalizeName(resolution.ten_tinh);
@@ -174,6 +184,58 @@ const provinces = provincesRaw.map((province, index) => {
     eventType: classifyEvent(province, resolution),
   };
 });
+
+/* ── Chuẩn hoá xã/phường/đặc khu ────────────────────────────────────────── */
+
+const communeStats = communesRaw?.meta?.stats ?? null;
+const communeUnits = [];
+
+if (Array.isArray(communesRaw?.communes) && communesRaw.communes.length) {
+  const provinceSlugs = new Set(provinces.map((province) => province.slug));
+  const usedCommuneSlugs = new Set();
+
+  for (const [index, commune] of communesRaw.communes.entries()) {
+    if (!provinceSlugs.has(commune.parentSlug)) {
+      warnings.push(`Cấp xã ${commune.name}: không tìm thấy parentSlug '${commune.parentSlug}'.`);
+      continue;
+    }
+
+    const baseSlug = `${commune.code}-${slugify(commune.name)}`;
+    let slug = baseSlug;
+    let suffix = 2;
+    while (usedCommuneSlugs.has(slug)) {
+      slug = `${baseSlug}-${suffix}`;
+      suffix += 1;
+    }
+    usedCommuneSlugs.add(slug);
+
+    communeUnits.push({
+      parentSlug: commune.parentSlug,
+      typeCode: commune.type,
+      code: commune.code,
+      name: commune.name,
+      slug,
+      sortOrder: Number(commune.sortOrder) || index + 1,
+      effectiveFrom: commune.effectiveFrom ?? EFFECTIVE_FROM,
+      metadata: {
+        source: communesRaw.meta?.source ?? "provinces.open-api.vn",
+        source_url: communesRaw.meta?.sourceUrl ?? null,
+        province_code: commune.provinceCode ?? null,
+        province_name: commune.provinceName ?? null,
+        geo_province_code: commune.geoProvinceCode ?? null,
+        api_province_code: commune.apiProvinceCode ?? null,
+        short_codename: commune.shortCodename ?? null,
+        type_label: commune.typeLabel ?? null,
+      },
+    });
+  }
+
+  if (communeUnits.length !== 3321) {
+    warnings.push(`Số xã/phường/đặc khu=${communeUnits.length}, kỳ vọng 3321.`);
+  }
+} else {
+  warnings.push("Không có dữ liệu cấp xã; seed chỉ sinh 34 tỉnh.");
+}
 
 /* Kiểm tra tổng số liệu so với meta. */
 const sum = (list, key) =>
@@ -413,8 +475,19 @@ push(`  ${sqlJson({
       wards: totals.wards,
       special_zones: totals.specialZones,
       not_applied: totals.notApplied,
+      newly_formed_communes: totals.communes,
+      newly_formed_wards: totals.wards,
     },
+    official_totals: communeStats ? {
+      provinces: communeStats.provinces,
+      total: communeStats.total,
+      communes: communeStats.xa,
+      wards: communeStats.phuong,
+      special_zones: communeStats.dac_ku,
+      not_applied: totals.notApplied,
+    } : null,
     source_file: basename(inputPath),
+    commune_source_file: communeUnits.length ? basename(communesPath) : null,
   })}`);
 push(");");
 push();
@@ -507,7 +580,25 @@ push(") as v(level_code, type_code, code, name, slug, sort_order, effective_from
 push(`join public.geo_datasets d on d.code = ${sqlText(DATASET_CODE)};`);
 push();
 
-push("-- ── 6. Chỉ số theo đơn vị ────────────────────────────────────────────────────");
+if (communeUnits.length) {
+  push("-- ── 6. Xã / phường / đặc khu (cấp xã) ────────────────────────────────────────");
+  push("insert into public.geo_units");
+  push("  (dataset_id, parent_id, level_code, type_code, code, name, slug, sort_order, effective_from, metadata)");
+  push("select d.id, parent.id, 'commune', v.type_code, v.code, v.name, v.slug,");
+  push("       v.sort_order, v.effective_from::date, v.metadata");
+  push("from (values");
+  const communeValues = communeUnits.map((commune) => {
+    return `  (${sqlText(commune.parentSlug)}, ${sqlText(commune.typeCode)}, ${sqlText(commune.code)}, ${sqlText(commune.name)}, ${sqlText(commune.slug)}, ${sqlNumber(commune.sortOrder)}, ${sqlText(commune.effectiveFrom)}, ${sqlJson(commune.metadata)})`;
+  });
+  push(communeValues.join(",\n"));
+  push(") as v(parent_slug, type_code, code, name, slug, sort_order, effective_from, metadata)");
+  push(`join public.geo_datasets d on d.code = ${sqlText(DATASET_CODE)}`);
+  push("join public.geo_units parent on parent.dataset_id = d.id");
+  push("  and parent.level_code = 'province' and parent.slug = v.parent_slug;");
+  push();
+}
+
+push("-- ── 7. Chỉ số theo đơn vị ────────────────────────────────────────────────────");
 push("insert into public.geo_unit_metrics (unit_id, metric_code, value, source_document_id)");
 push("select u.id, v.metric_code, v.value, doc.id");
 push("from (values");
@@ -521,7 +612,7 @@ push("join public.geo_units u on u.dataset_id = d.id and u.slug = v.unit_slug");
 push("left join public.geo_documents doc on doc.document_number = v.document_number;");
 push();
 
-push("-- ── 7. Sự kiện sắp xếp ───────────────────────────────────────────────────────");
+push("-- ── 8. Sự kiện sắp xếp ───────────────────────────────────────────────────────");
 push("insert into public.geo_events");
 push("  (dataset_id, document_id, event_type, status, title, description, effective_from, metadata)");
 push("select d.id, doc.id, v.event_type, 'effective', v.title, v.description,");
@@ -536,7 +627,7 @@ push(`join public.geo_datasets d on d.code = ${sqlText(DATASET_CODE)}`);
 push("left join public.geo_documents doc on doc.document_number = v.document_number;");
 push();
 
-push("-- ── 8. Liên kết sự kiện ↔ đơn vị (nguồn / đích) ─────────────────────────────");
+push("-- ── 9. Liên kết sự kiện ↔ đơn vị (nguồn / đích) ─────────────────────────────");
 push("insert into public.geo_event_units (event_id, unit_id, source_name, role)");
 push("select e.id,");
 push("       case when v.role = 'target' then u.id end,");
@@ -554,7 +645,7 @@ push("join public.geo_units u on u.dataset_id = d.id and u.slug = v.province_slu
 push("join public.geo_events e on e.dataset_id = d.id and e.metadata->>'province_slug' = v.province_slug;");
 push();
 
-push("-- ── 9. Nguồn tham chiếu ──────────────────────────────────────────────────────");
+push("-- ── 10. Nguồn tham chiếu ─────────────────────────────────────────────────────");
 push("insert into public.geo_sources (dataset_id, title, publisher, url, accessed_at, sort_order)");
 push("select d.id, v.title, v.publisher, v.url, v.accessed_at::date, v.sort_order");
 push("from (values");
@@ -568,6 +659,13 @@ const sourceValues = (Array.isArray(meta.source) ? meta.source : []).map((source
   const isGovernmentPortal = /xaydungchinhsach\.chinhphu\.vn/i.test(source);
   return `  (${sqlText(source)}, ${sqlText(sourcePublishers[index] ?? null)}, ${sqlText(isGovernmentPortal ? "https://xaydungchinhsach.chinhphu.vn" : null)}, null::date, ${index + 1})`;
 });
+
+if (communeUnits.length && communesRaw?.meta?.sourceUrl) {
+  sourceValues.push(
+    `  (${sqlText("provinces.open-api.vn — API v2, depth=2")}, ${sqlText("Open API Vietnam")}, ${sqlText(communesRaw.meta.sourceUrl)}, ${sqlText(communesRaw.meta.generated)}, ${sourceValues.length + 1})`,
+  );
+}
+
 if (sourceValues.length) {
   push(sourceValues.join(",\n"));
   push(") as v(title, publisher, url, accessed_at, sort_order)");
@@ -581,12 +679,13 @@ push();
 push("commit;");
 push();
 push("-- Kiểm tra nhanh sau khi chạy:");
-push("-- select count(*) from public.geo_units;                 -- 34");
+push("-- select count(*) from public.geo_units;                 -- 34 tỉnh + 3321 xã/phường");
+push("-- select level_code, count(*) from public.geo_units group by level_code;");
 push("-- select count(*) from public.geo_unit_metrics;         -- 204");
 push("-- select count(*) from public.geo_events;               -- 34");
 push("-- select count(*) from public.geo_event_units;          -- 79");
 push("-- select count(*) from public.geo_documents;            -- 36");
-push("-- select count(*) from public.geo_sources;              -- 4");
+push("-- select count(*) from public.geo_sources;              -- 5");
 push("-- select * from public.geo_data_quality;                -- cảnh báo mã trùng (nếu có)");
 push();
 
@@ -595,7 +694,9 @@ await writeFile(OUT, `${lines.join("\n")}\n`, "utf8");
 
 console.log(`Đã ghi ${OUT}`);
 console.log(
-  `Tỉnh/thành: ${provinces.length}, chỉ số: ${metrics.length}, sự kiện: ${events.length}, văn bản: ${documents.size}, nguồn: ${(meta.source ?? []).length}`,
+  `Tỉnh/thành: ${provinces.length}, xã/phường: ${communeUnits.length}, ` +
+  `chỉ số: ${metrics.length}, sự kiện: ${events.length}, văn bản: ${documents.size}, ` +
+  `nguồn: ${(meta.source ?? []).length + (communeUnits.length ? 1 : 0)}`,
 );
 if (warnings.length) {
   console.log(`\nCảnh báo (${warnings.length}):`);

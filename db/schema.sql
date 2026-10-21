@@ -87,6 +87,13 @@ create policy "public read" on public.tools              for select to anon, aut
 create policy "public read" on public.admin_units        for select to anon, authenticated using (true);
 create policy "public read" on public.admin_unit_history for select to anon, authenticated using (true);
 
+-- Cấp quyền đọc cho PostgREST; RLS vẫn là lớp kiểm soát cuối.
+-- Thiếu GRANT sẽ bị 401 "permission denied for table ...", dù policy đã đúng.
+grant usage on schema public to anon, authenticated;
+grant select on public.tool_categories, public.tools,
+  public.admin_units, public.admin_unit_history
+to anon, authenticated;
+
 -- ─────────────────────────────────────────────────────────────────────────────
 -- 4. Trigger updated_at
 -- ─────────────────────────────────────────────────────────────────────────────
