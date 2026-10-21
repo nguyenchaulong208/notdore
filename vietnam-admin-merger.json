@@ -1,0 +1,392 @@
+{
+  "service": "vietnam-admin-merger",
+  "title": "Đối chiếu địa giới hành chính Việt Nam sau sáp nhập 2025",
+  "version": "1.0",
+  "generated": "2026-10-21",
+  "source": {
+    "legal": [
+      "Nghị quyết 202/2025/QH15 ngày 12/6/2025 của Quốc hội",
+      "34 Nghị quyết của Ủy ban Thường vụ Quốc hội ngày 16/6/2025",
+      "Hiệu lực từ 01/07/2025",
+      "Bổ sung: Quyết định 19/2025/QĐ-TTg (vanban.chinhphu.vn/?pageid=27160&docid=214409)",
+      "Dữ liệu hình học: sapnhap.bando.com.vn / Tài Nguyên – Môi Trường – Bản Đồ Việt Nam"
+    ],
+    "note": "Cấp chính (tỉnh/thành phố trực thuộc trung ương): 34 đơn vị sau sáp nhập 2025 (28 tỉnh + 6 TP.TRƯỞNG). 29/4/2026: Đồng Nai -> thành phố; 01/9/2026: Quảng Ninh -> thành phố; 20/9/2026: Bắc Ninh -> thành phố."
+  },
+  "units": [
+    {
+      "ma": "92",
+      "ten": "Thành phố Cần Thơ",
+      "type": "Thành phố",
+      "thuoc_trung_uong": true,
+      "predecessors": "thành phố Cần Thơ, tỉnh Sóc Trăng và tỉnh Hậu Giang",
+      "capital": "Cần Thơ (cũ)",
+      "population": 4199824,
+      "area_km2": 6360.83,
+      "hex_code": "92"
+    },
+    {
+      "ma": "48",
+      "ten": "Thành phố Đà Nẵng",
+      "type": "Thành phố",
+      "thuoc_trung_uong": true,
+      "predecessors": "thành phố Đà Nẵng và tỉnh Quảng Nam",
+      "capital": "Đà Nẵng (cũ)",
+      "population": 3065628,
+      "area_km2": 11859.59,
+      "hex_code": "48"
+    },
+    {
+      "ma": "31",
+      "ten": "Thành phố Hải Phòng",
+      "type": "Thành phố",
+      "thuoc_trung_uong": true,
+      "predecessors": "thành phố Hải Phòng và tỉnh Hải Dương",
+      "capital": "Hải Phòng (cũ)",
+      "population": 4664124,
+      "area_km2": 3194.72,
+      "hex_code": "31"
+    },
+    {
+      "ma": "79",
+      "ten": "Thành phố Hồ Chí Minh",
+      "type": "Thành phố",
+      "thuoc_trung_uong": true,
+      "predecessors": "TPHCM, tỉnh Bà Rịa - Vũng Tàu và tỉnh Bình Dương",
+      "capital": "Tp. HCM (cũ)",
+      "population": 14002598,
+      "area_km2": 6772.59,
+      "hex_code": "79"
+    },
+    {
+      "ma": "46",
+      "ten": "Thành phố Huế",
+      "type": "Thành phố",
+      "thuoc_trung_uong": true,
+      "predecessors": "giữ nguyên",
+      "capital": "giữ nguyên",
+      "population": 1432986,
+      "area_km2": 4947.11,
+      "hex_code": "46"
+    },
+    {
+      "ma": "01",
+      "ten": "Thủ đô Hà Nội",
+      "type": "Thủ đô",
+      "thuoc_trung_uong": true,
+      "predecessors": "giữ nguyên",
+      "capital": "giữ nguyên",
+      "population": 8807523,
+      "area_km2": 3359.84,
+      "hex_code": "01"
+    },
+    {
+      "ma": "91",
+      "ten": "Tỉnh An Giang",
+      "type": "Tỉnh",
+      "thuoc_trung_uong": false,
+      "predecessors": "tỉnh Kiên Giang và tỉnh An Giang",
+      "capital": "Kiên Giang (cũ)",
+      "population": 4952238,
+      "area_km2": 9888.91,
+      "hex_code": "91"
+    },
+    {
+      "ma": "24",
+      "ten": "Tỉnh Bắc Ninh",
+      "type": "Tỉnh",
+      "thuoc_trung_uong": false,
+      "predecessors": "tỉnh Bắc Giang và tỉnh Bắc Ninh",
+      "capital": "Bắc Giang (cũ)",
+      "population": 3619433,
+      "area_km2": 4718.6,
+      "hex_code": "24"
+    },
+    {
+      "ma": "96",
+      "ten": "Tỉnh Cà Mau",
+      "type": "Tỉnh",
+      "thuoc_trung_uong": false,
+      "predecessors": "tỉnh Bạc Liêu và tỉnh Cà Mau",
+      "capital": "Cà mau (cũ)",
+      "population": 2606672,
+      "area_km2": 7942.39,
+      "hex_code": "96"
+    },
+    {
+      "ma": "04",
+      "ten": "Tỉnh Cao Bằng",
+      "type": "Tỉnh",
+      "thuoc_trung_uong": false,
+      "predecessors": "giữ nguyên",
+      "capital": "giữ nguyên",
+      "population": 573119,
+      "area_km2": 6700.39,
+      "hex_code": "04"
+    },
+    {
+      "ma": "66",
+      "ten": "Tỉnh Đắk Lắk",
+      "type": "Tỉnh",
+      "thuoc_trung_uong": false,
+      "predecessors": "tỉnh Phú Yên và tỉnh Đắk Lắk",
+      "capital": "Đắk Lắk (cũ)",
+      "population": 3346853,
+      "area_km2": 18096.4,
+      "hex_code": "66"
+    },
+    {
+      "ma": "11",
+      "ten": "Tỉnh Điện Biên",
+      "type": "Tỉnh",
+      "thuoc_trung_uong": false,
+      "predecessors": "giữ nguyên",
+      "capital": "giữ nguyên",
+      "population": 673091,
+      "area_km2": 9539.93,
+      "hex_code": "11"
+    },
+    {
+      "ma": "75",
+      "ten": "Thành phố Đồng Nai",
+      "type": "Thành phố",
+      "thuoc_trung_uong": true,
+      "predecessors": "tỉnh Bình Phước và tỉnh Đồng Nai. Từ ngày 30/04/2026, Tỉnh Đồng Nai mới (sau sáp nhập) chuyển thành Thành phố Đồng Nai và thêm 10 xã chuyển thành phường.",
+      "capital": "Đồng Nai (cũ)",
+      "population": 4491408,
+      "area_km2": 12737.18,
+      "hex_code": "75"
+    },
+    {
+      "ma": "82",
+      "ten": "Tỉnh Đồng Tháp",
+      "type": "Tỉnh",
+      "thuoc_trung_uong": false,
+      "predecessors": "tỉnh Tiền Giang và tỉnh Đồng Tháp",
+      "capital": "Tiền Giang (cũ)",
+      "population": 4370046,
+      "area_km2": 5938.64,
+      "hex_code": "82"
+    },
+    {
+      "ma": "52",
+      "ten": "Tỉnh Gia Lai",
+      "type": "Tỉnh",
+      "thuoc_trung_uong": false,
+      "predecessors": "tỉnh Bình Định và tỉnh Gia Lai",
+      "capital": "Bình Định (cũ)",
+      "population": 3583693,
+      "area_km2": 21576.53,
+      "hex_code": "52"
+    },
+    {
+      "ma": "42",
+      "ten": "Tỉnh Hà Tĩnh",
+      "type": "Tỉnh",
+      "thuoc_trung_uong": false,
+      "predecessors": "giữ nguyên",
+      "capital": "giữ nguyên",
+      "population": 1622901,
+      "area_km2": 5994.45,
+      "hex_code": "42"
+    },
+    {
+      "ma": "33",
+      "ten": "Tỉnh Hưng Yên",
+      "type": "Tỉnh",
+      "thuoc_trung_uong": false,
+      "predecessors": "tỉnh Thái Bình và tỉnh Hưng Yên",
+      "capital": "Hưng Yên (cũ)",
+      "population": 3567943,
+      "area_km2": 2514.81,
+      "hex_code": "33"
+    },
+    {
+      "ma": "56",
+      "ten": "Tỉnh Khánh Hòa",
+      "type": "Tỉnh",
+      "thuoc_trung_uong": false,
+      "predecessors": "tỉnh Ninh Thuận và tỉnh Khánh Hòa",
+      "capital": "Khánh Hòa (cũ)",
+      "population": 2243554,
+      "area_km2": 8555.86,
+      "hex_code": "56"
+    },
+    {
+      "ma": "12",
+      "ten": "Tỉnh Lai Châu",
+      "type": "Tỉnh",
+      "thuoc_trung_uong": false,
+      "predecessors": "giữ nguyên",
+      "capital": "giữ nguyên",
+      "population": 512601,
+      "area_km2": 9068.73,
+      "hex_code": "12"
+    },
+    {
+      "ma": "68",
+      "ten": "Tỉnh Lâm Đồng",
+      "type": "Tỉnh",
+      "thuoc_trung_uong": false,
+      "predecessors": "tỉnh Đắk Nông, tỉnh Bình Thuận và tỉnh Lâm Đồng",
+      "capital": "Lâm Đồng (cũ)",
+      "population": 3872999,
+      "area_km2": 24233.07,
+      "hex_code": "68"
+    },
+    {
+      "ma": "20",
+      "ten": "Tỉnh Lạng Sơn",
+      "type": "Tỉnh",
+      "thuoc_trung_uong": false,
+      "predecessors": "giữ nguyên",
+      "capital": "giữ nguyên",
+      "population": 881384,
+      "area_km2": 8310.18,
+      "hex_code": "20"
+    },
+    {
+      "ma": "15",
+      "ten": "Tỉnh Lào Cai",
+      "type": "Tỉnh",
+      "thuoc_trung_uong": false,
+      "predecessors": "tỉnh Yên Bái và tỉnh Lào Cai",
+      "capital": "Yên Bái (cũ)",
+      "population": 1778785,
+      "area_km2": 13256.92,
+      "hex_code": "15"
+    },
+    {
+      "ma": "40",
+      "ten": "Tỉnh Nghệ An",
+      "type": "Tỉnh",
+      "thuoc_trung_uong": false,
+      "predecessors": "giữ nguyên",
+      "capital": "giữ nguyên",
+      "population": 3831694,
+      "area_km2": 16486.5,
+      "hex_code": "40"
+    },
+    {
+      "ma": "37",
+      "ten": "Tỉnh Ninh Bình",
+      "type": "Tỉnh",
+      "thuoc_trung_uong": false,
+      "predecessors": "tỉnh Hà Nam, tỉnh Nam Định và tỉnh Ninh Bình",
+      "capital": "Ninh Bình (cũ)",
+      "population": 4412264,
+      "area_km2": 3942.62,
+      "hex_code": "37"
+    },
+    {
+      "ma": "25",
+      "ten": "Tỉnh Phú Thọ",
+      "type": "Tỉnh",
+      "thuoc_trung_uong": false,
+      "predecessors": "tỉnh Vĩnh Phúc, tỉnh Hòa Bình và tỉnh Phú Thọ",
+      "capital": "Phú Thọ (cũ)",
+      "population": 4022638,
+      "area_km2": 9361.38,
+      "hex_code": "25"
+    },
+    {
+      "ma": "51",
+      "ten": "Tỉnh Quảng Ngãi",
+      "type": "Tỉnh",
+      "thuoc_trung_uong": false,
+      "predecessors": "tỉnh Kon Tum và tỉnh Quảng Ngãi",
+      "capital": "Quảng Ngãi (cũ)",
+      "population": 2161755,
+      "area_km2": 14832.55,
+      "hex_code": "51"
+    },
+    {
+      "ma": "22",
+      "ten": "Tỉnh Quảng Ninh",
+      "type": "Tỉnh",
+      "thuoc_trung_uong": false,
+      "predecessors": "giữ nguyên",
+      "capital": "giữ nguyên",
+      "population": 1497447,
+      "area_km2": 6207.95,
+      "hex_code": "22"
+    },
+    {
+      "ma": "44",
+      "ten": "Tỉnh Quảng Trị",
+      "type": "Tỉnh",
+      "thuoc_trung_uong": false,
+      "predecessors": "tỉnh Quảng Bình và tỉnh Quảng Trị",
+      "capital": "Quảng Bình (cũ)",
+      "population": 1870845,
+      "area_km2": 12700.0,
+      "hex_code": "44"
+    },
+    {
+      "ma": "14",
+      "ten": "Tỉnh Sơn La",
+      "type": "Tỉnh",
+      "thuoc_trung_uong": false,
+      "predecessors": "giữ nguyên",
+      "capital": "giữ nguyên",
+      "population": 1404587,
+      "area_km2": 14108.89,
+      "hex_code": "14"
+    },
+    {
+      "ma": "80",
+      "ten": "Tỉnh Tây Ninh",
+      "type": "Tỉnh",
+      "thuoc_trung_uong": false,
+      "predecessors": "tỉnh Long An và tỉnh Tây Ninh",
+      "capital": "Long An (cũ)",
+      "population": 3254170,
+      "area_km2": 8536.44,
+      "hex_code": "80"
+    },
+    {
+      "ma": "19",
+      "ten": "Tỉnh Thái Nguyên",
+      "type": "Tỉnh",
+      "thuoc_trung_uong": false,
+      "predecessors": "tỉnh Bắc Kạn và tỉnh Thái Nguyên",
+      "capital": "Thái Nguyên (cũ)",
+      "population": 1799489,
+      "area_km2": 8375.21,
+      "hex_code": "19"
+    },
+    {
+      "ma": "38",
+      "ten": "Tỉnh Thanh Hóa",
+      "type": "Tỉnh",
+      "thuoc_trung_uong": false,
+      "predecessors": "giữ nguyên",
+      "capital": "giữ nguyên",
+      "population": 4324783,
+      "area_km2": 11114.71,
+      "hex_code": "38"
+    },
+    {
+      "ma": "08",
+      "ten": "Tỉnh Tuyên Quang",
+      "type": "Tỉnh",
+      "thuoc_trung_uong": false,
+      "predecessors": "tỉnh Hà Giang và tỉnh Tuyên Quang",
+      "capital": "Tuyên Quang (cũ)",
+      "population": 1865270,
+      "area_km2": 13795.5,
+      "hex_code": "08"
+    },
+    {
+      "ma": "86",
+      "ten": "Tỉnh Vĩnh Long",
+      "type": "Tỉnh",
+      "thuoc_trung_uong": false,
+      "predecessors": "tỉnh Bến Tre, tỉnh Trà Vinh và tỉnh Vĩnh Long",
+      "capital": "Vĩnh Long (cũ)",
+      "population": 4257581,
+      "area_km2": 6296.2,
+      "hex_code": "86"
+    }
+  ]
+}

@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8">
+    <title>Tra cứu địa giới hành chính sau sáp nhập 2025 — NotDore</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Đối chiếu 63 tỉnh thành trước sáp nhập sang 34 đơn vị hành chính cấp tỉnh hiện nay. Tìm theo tên cũ, tên mới, vùng hoặc mã đơn vị.">
+    <meta name="google-adsense-account" content="ca-pub-9767208027997083">
+    <link rel="shortcut icon" href="../favicon.ico">
+    <link rel="canonical" href="https://www.notdore.io.vn/tools/dia-gioi-hanh-chinh.html">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet">
+    <script defer src="../assets/fontawesome/js/all.min.js"></script>
+    <link rel="stylesheet" href="../assets/plugins/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="../assets/css/notdore.css">
+    <link rel="stylesheet" href="../assets/css/tools.css">
+</head>
+<body class="anime-page">
+
+    <div class="sakura-container" aria-hidden="true">
+        <div class="sakura"></div><div class="sakura"></div><div class="sakura"></div>
+        <div class="sakura"></div><div class="sakura"></div><div class="sakura"></div>
+    </div>
+
+    <div class="anime-container">
+
+        <header class="anime-header">
+            <a class="anime-brand" href="../index.html">
+                <div class="anime-brand-text">
+                    <span class="brand-fragment">Not</span>
+                    <span class="brand-fragment brand-fragment--main">Dore</span>
+                </div>
+            </a>
+            <nav class="anime-nav" aria-label="Điều hướng chính">
+                <a href="../index.html#tools" class="anime-nav-link">Công cụ</a>
+                <a href="../index.html#library" class="anime-nav-link">Thư viện</a>
+                <a href="../index.html#contact" class="anime-nav-link">Liên hệ</a>
+            </nav>
+        </header>
+
+        <main class="nd-tool-header">
+            <nav class="nd-breadcrumb" aria-label="Breadcrumb">
+                <a href="../index.html">Trang chủ</a> <span aria-hidden="true">/</span>
+                <a href="../index.html#tools">Công cụ</a> <span aria-hidden="true">/</span>
+                <span>Địa giới hành chính</span>
+            </nav>
+
+            <h1 class="nd-tool-title">Tra cứu địa giới hành chính</h1>
+            <p class="nd-tool-sub">
+                Đối chiếu đơn vị hành chính cấp tỉnh trước và sau sáp nhập (hiệu lực 01/07/2025).
+                Gõ tên cũ như <em>Sóc Trăng</em> để xem hiện thuộc đơn vị nào, hoặc tìm theo tên mới, vùng, mã đơn vị.
+            </p>
+
+            <p class="nd-data-note">
+                <i class="fas fa-circle-info" aria-hidden="true"></i>
+                Dữ liệu cấp tỉnh/thành phố trực thuộc Trung ương. Một số đơn vị có thay đổi cấp hành chính sau 2025 —
+                xem tab <strong>Nguồn &amp; ghi chú</strong> trước khi dùng cho hồ sơ chính thức.
+            </p>
+
+            <div class="nd-stats" id="dg-stats" aria-live="polite"></div>
+
+            <ul class="nd-tabs mb-3" role="tablist">
+                <li role="presentation">
+                    <button type="button" role="tab" data-dg-tab="history" class="active" aria-selected="true">
+                        <i class="fas fa-right-left me-1" aria-hidden="true"></i>Trước → sau sáp nhập
+                    </button>
+                </li>
+                <li role="presentation">
+                    <button type="button" role="tab" data-dg-tab="units" aria-selected="false">
+                        <i class="fas fa-map-location-dot me-1" aria-hidden="true"></i>34 đơn vị hiện tại
+                    </button>
+                </li>
+                <li role="presentation">
+                    <button type="button" role="tab" data-dg-tab="meta" aria-selected="false">
+                        <i class="fas fa-circle-info me-1" aria-hidden="true"></i>Nguồn &amp; ghi chú
+                    </button>
+                </li>
+            </ul>
+
+            <div class="nd-toolbar">
+                <div class="nd-field nd-field--grow">
+                    <label for="dg-search">Tìm kiếm</label>
+                    <input id="dg-search" class="nd-input" type="search"
+                           placeholder="Tên đơn vị cũ hoặc mới, mã (vd 79), vùng…"
+                           autocomplete="off">
+                </div>
+                <div class="nd-field">
+                    <label for="dg-region">Vùng</label>
+                    <select id="dg-region" class="nd-select">
+                        <option value="all">Tất cả</option>
+                        <option value="Bắc Bộ">Bắc Bộ</option>
+                        <option value="Trung Bộ">Trung Bộ</option>
+                        <option value="Nam Bộ">Nam Bộ</option>
+                    </select>
+                </div>
+                <div class="nd-field">
+                    <label for="dg-type">Loại đơn vị</label>
+                    <select id="dg-type" class="nd-select">
+                        <option value="all">Tất cả</option>
+                        <option value="Tỉnh">Tỉnh</option>
+                        <option value="Thành phố">Thành phố</option>
+                        <option value="Thủ đô">Thủ đô</option>
+                    </select>
+                </div>
+                <label class="nd-check">
+                    <input type="checkbox" id="dg-only-changed">
+                    Chỉ đơn vị có sáp nhập
+                </label>
+                <span class="nd-count" id="dg-count" aria-live="polite"></span>
+            </div>
+
+            <section id="dg-panel-history" role="tabpanel">
+                <div class="nd-table-wrap">
+                    <table class="nd-table">
+                        <caption class="visually-hidden">Đối chiếu đơn vị hành chính trước và sau sáp nhập</caption>
+                        <thead>
+                            <tr>
+                                <th scope="col">Trước 01/07/2025</th>
+                                <th scope="col">Loại</th>
+                                <th scope="col" aria-label="Chuyển sang"></th>
+                                <th scope="col">Hiện tại</th>
+                                <th scope="col">Trạng thái</th>
+                            </tr>
+                        </thead>
+                        <tbody id="dg-history-body">
+                            <tr><td colspan="5" class="nd-empty-cell">
+                                <i class="fas fa-spinner fa-spin me-2"></i>Đang tải dữ liệu…
+                            </td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section id="dg-panel-units" role="tabpanel" hidden>
+                <div id="dg-units"></div>
+            </section>
+
+            <section id="dg-panel-meta" role="tabpanel" hidden>
+                <div class="nd-table-wrap p-3 p-md-4" id="dg-meta"></div>
+            </section>
+
+            <p class="nd-note mt-3">
+                Nguồn dữ liệu: <span id="dg-source">Supabase</span> · Cấp hành chính: tỉnh/thành phố trực thuộc Trung ương.
+            </p>
+        </main>
+
+        <footer class="anime-footer">
+            <p>NotDore — công cụ nhỏ, giải quyết việc thật.</p>
+            <p class="anime-footer-copy">
+                <a href="../index.html">Về trang chủ</a> · Dữ liệu tham khảo, không thay thế văn bản pháp luật gốc.
+            </p>
+        </footer>
+
+    </div>
+
+    <!-- Modal chi tiết đơn vị -->
+    <div class="modal fade" id="dg-modal" tabindex="-1" aria-labelledby="dg-modal-title" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 class="modal-title h5" id="dg-modal-title"></h2>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+                </div>
+                <div class="modal-body" id="dg-modal-body"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../assets/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="../assets/js/config.js"></script>
+    <script src="../assets/js/db.js"></script>
+    <script src="../assets/js/dia-gioi.js"></script>
+    <script src="../assets/js/oneko.js" data-cat="../assets/images/oneko.gif"></script>
+</body>
+</html>

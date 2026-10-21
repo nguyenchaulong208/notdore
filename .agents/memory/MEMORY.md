@@ -1,3 +1,1 @@
-- [DB Schema v2](db-schema-v2.md) — documents table has issued_date, expiry_date, status; use migration_v1_to_v2.sql to preserve old data
-- [Admin Tool](admin-tool.md) — /admin (local-only) generates SQL scripts; never writes to DB directly; future-ready for crawler output
-- [GitHub push authentication](github-push-auth.md) — confirm Git-pane access after shell pushes fail; never request or expose a token.
+- [Project overview](project-overview.md) — kiến trúc v2 (rebuild 2026-10): static + vanilla JS, Supabase có fallback JSON, công cụ địa giới 63→34, quy ước `nd-*`, dữ liệu cần kiểm chứng.
