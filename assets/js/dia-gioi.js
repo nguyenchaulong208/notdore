@@ -167,7 +167,29 @@
       ${p.renamedFrom ? `<p class="nd-note">Tên cũ: ${esc(p.renamedFrom)}</p>` : ''}
       ${p.predecessorsRaw ? `<h6 class="nd-detail-heading">Mô tả từ nguồn</h6><p class="nd-note">${esc(p.predecessorsRaw)}</p>` : ''}
       ${p.note ? `<div class="nd-warn"><i class="fas fa-circle-info me-2"></i>${esc(p.note)}</div>` : ''}
+      <div class="nd-modal-actions">
+        <button type="button" class="anime-btn anime-btn--outline anime-btn--sm" id="dg-copy">
+          <i class="fas fa-link me-1" aria-hidden="true"></i><span id="dg-copy-label">Sao chép liên kết</span>
+        </button>
+      </div>
     `;
+
+    const copyBtn = $('dg-copy');
+    if (copyBtn) {
+      copyBtn.addEventListener('click', async () => {
+        const url = new URL(location.href);
+        url.search = `?ma=${encodeURIComponent(p.code)}`;
+        url.hash = '';
+        const label = $('dg-copy-label');
+        try {
+          await navigator.clipboard.writeText(url.href);
+          label.textContent = 'Đã chép ✓';
+        } catch {
+          window.prompt('Sao chép liên kết:', url.href);
+        }
+        setTimeout(() => { label.textContent = 'Sao chép liên kết'; }, 1600);
+      });
+    }
 
     bootstrap.Modal.getOrCreateInstance(modalEl).show();
   };
@@ -180,18 +202,34 @@
     const { meta } = state.data;
 
     host.innerHTML = `
+      <h3 class="nd-subheading">Bối cảnh</h3>
+      <p class="nd-meta-text">
+        Từ 01/07/2025, chính quyền địa phương được tổ chức theo 2 cấp (tỉnh – xã); cấp huyện không còn
+        trong bộ máy hành chính. 63 đơn vị cấp tỉnh được sắp xếp lại còn 34 đơn vị. Công cụ này đối chiếu
+        tên cũ và tên hiện tại ở <strong>cấp tỉnh</strong>; chưa bao gồm cấp xã/phường.
+      </p>
+
       <h3 class="nd-subheading">Căn cứ pháp lý & nguồn dữ liệu</h3>
       <ul class="nd-source-list">
         ${(meta.sources || []).map((s) => `<li>${esc(s)}</li>`).join('')}
       </ul>
+
       <h3 class="nd-subheading">Lưu ý khi sử dụng</h3>
       <ul class="nd-source-list">
         ${(meta.notes || []).map((s) => `<li>${esc(s)}</li>`).join('')}
       </ul>
+
       <p class="nd-note">
         Hiệu lực dữ liệu: ${esc(meta.effectiveFrom || '—')} · Cập nhật: ${esc(meta.generated || '—')} ·
         Nguồn đang dùng: ${state.data.source === 'supabase' ? 'Supabase' : 'JSON tĩnh'}.
-      </p>`;
+      </p>
+
+      <div class="nd-meta-actions">
+        <a class="anime-btn anime-btn--outline anime-btn--sm"
+           href="${esc(new URL('assets/data/admin-merger.json', DB.ROOT).href)}" download>
+          <i class="fas fa-download me-1" aria-hidden="true"></i>Tải dữ liệu JSON
+        </a>
+      </div>`;
   };
 
   /* ── Điều khiển ──────────────────────────────────────────────────── */
@@ -266,7 +304,8 @@
         state.q = q;
         $('dg-search').value = q;
       }
-      setTab(params.get('tab') === 'units' ? 'units' : 'history');
+      const tabParam = params.get('tab');
+      setTab(['units', 'meta'].includes(tabParam) ? tabParam : 'history');
 
       const ma = params.get('ma');
       if (ma) openUnit(ma);

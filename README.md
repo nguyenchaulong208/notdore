@@ -1,22 +1,22 @@
 # NotDore
 
-Bộ công cụ làm việc chạy trực tiếp trên trình duyệt, dành cho người làm kế toán – thuế – nhân sự Việt Nam.
-Không cần đăng nhập, không gửi file lên server: mọi phép tính và xử lý dữ liệu diễn ra tại máy người dùng.
+Website công cụ chạy trực tiếp trên trình duyệt. Không cần cài đặt, không gửi dữ liệu lên server.
+
+Công cụ đầu tiên: **tra cứu địa giới hành chính Việt Nam** — đối chiếu 63 tỉnh thành trước sáp nhập
+sang 34 đơn vị hiện tại (hiệu lực 01/07/2025).
 
 Site: <https://www.notdore.io.vn>
 
 ---
 
-## Công cụ hiện có
+## Công cụ
 
 | Công cụ | Trang | Trạng thái |
 |---|---|---|
-| Tra cứu địa giới hành chính (63 → 34, sáp nhập 2025) | `tools/dia-gioi-hanh-chinh.html` | Hoạt động |
-| Tính lương Gross ↔ Net | — | Sắp có |
-| Đọc số tiền thành chữ | — | Sắp có |
-| Lịch trả nợ vay | — | Sắp có |
+| Tra cứu địa giới hành chính (63 → 34) | `tools/dia-gioi-hanh-chinh.html` | Hoạt động |
 
-Danh mục công cụ lưu ở `assets/data/tools.json` (fallback) và bảng `tools` trên Supabase.
+Danh mục lưu ở `assets/data/tools.json` (fallback) và bảng `tools` trên Supabase.
+Các công cụ khác sẽ được thêm khi hoàn thiện, không đưa mục "sắp có" lên giao diện.
 
 ---
 
@@ -37,6 +37,7 @@ db/seed-tools.sql              Seed danh mục công cụ
 db/seed-admin.sql              Seed địa giới (tự sinh)
 scripts/build-admin-data.mjs   Chuẩn hoá dữ liệu crawl → JSON + SQL
 scripts/dev-server.mjs         Server tĩnh local
+scripts/check-links.mjs        Kiểm tra link/asset nội bộ
 ```
 
 **Không có build step.** HTML/CSS/JS thuần, deploy tĩnh trên Vercel.
@@ -85,20 +86,28 @@ window.NOTDORE_CONFIG = {
 
 Để trống hai trường trên → site tự đọc JSON tĩnh.
 
-## Cập nhật dữ liệu địa giới
+---
+
+## Dữ liệu địa giới
+
+Nguồn gốc: `vietnam-admin-merger.json` (file crawl, cấp tỉnh).
 
 ```bash
 npm run build:data
 ```
 
-Script đọc `vietnam-admin-merger.json` (file crawl gốc), đối chiếu với bảng 63 → 34
-viết trong `scripts/build-admin-data.mjs`, rồi ghi ra:
+Script đối chiếu dữ liệu crawl với bảng 63 → 34 viết trong `scripts/build-admin-data.mjs`,
+rồi ghi ra:
 
 - `assets/data/admin-merger.json`
 - `db/seed-admin.sql`
 
-Nếu bảng đối chiếu và file crawl lệch nhau, script in cảnh báo — sửa trước khi deploy.
+Nếu hai nguồn lệch nhau, script in cảnh báo — sửa trước khi deploy.
 Chạy lại `db/seed-admin.sql` trong Supabase sau mỗi lần build.
+
+Phạm vi hiện tại: **cấp tỉnh/thành phố trực thuộc Trung ương**. Chưa có cấp xã/phường.
+
+---
 
 ## Thêm một công cụ mới
 
@@ -106,8 +115,8 @@ Chạy lại `db/seed-admin.sql` trong Supabase sau mỗi lần build.
 2. Tạo `assets/js/<slug>.js` (IIFE, đọc dữ liệu qua `NotDoreDB` nếu cần).
 3. Thêm mục vào `assets/data/tools.json` **và** `db/seed-tools.sql`:
    ```json
-   { "id": "<slug>", "categoryId": "tai-chinh", "name": "...", "url": "tools/<slug>.html",
-     "status": "ready", "icon": "fa-calculator", "tags": ["..."] }
+   { "id": "<slug>", "categoryId": "dia-gioi", "name": "...", "url": "tools/<slug>.html",
+     "status": "ready", "icon": "fa-map-location-dot", "tags": ["..."] }
    ```
 4. Thêm URL vào `sitemap.xml`.
 
@@ -119,7 +128,7 @@ Không cần sửa `index.html` — trang chủ tự render từ catalog.
 
 - Không thêm bundler, framework JS hay bước build.
 - Class CSS mới dùng tiền tố `nd-`.
-- Comment và nội dung hiển thị bằng tiếng Việt.
+- Chú thích trong code và nội dung hiển thị bằng tiếng Việt.
 - Không commit key bí mật; `config.js` chỉ chứa thông tin công khai.
 
 ## Giấy phép & ghi công
