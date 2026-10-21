@@ -41,12 +41,17 @@ db/seed-tools.sql              Seed danh mục công cụ
 db/reset-tools.sql             Sao lưu + xoá tools cũ nếu khác schema v3
 db/fix-grants.sql              Cấp SELECT cho anon khi gặp lỗi 401 permission denied
 db/seed-admin.sql              Seed địa giới legacy (tự sinh)
-db/seed-geo.sql                Seed lớp geo_* (tự sinh, gồm cấp xã)
+db/seed-geo.sql                Seed geo_* gộp (dùng psql/CLI; quá lớn cho SQL Editor)
+db/seed-geo-1-core.sql         Seed phần 1/3: dataset, cấp/loại, văn bản, 34 tỉnh
+db/seed-geo-2-communes/        Seed phần 2/3: 34 file xã/phường theo tỉnh (mỗi file ≤34KB)
+db/seed-geo-2-communes-all.sql Seed phần 2/3 gộp (psql/CLI; quá lớn cho SQL Editor)
+db/seed-geo-3-relations.sql    Seed phần 3/3: chỉ số, sự kiện, liên kết, nguồn
 db/source/database_vietnam_merger.json  Nguồn JSON cấp tỉnh của lớp geo_*
 db/source/communes-open-api.json        Nguồn chuẩn hoá 3.321 xã/phường/đặc khu
 assets/data/admin-communes.json        Fallback tĩnh cho cấp xã/phường/đặc khu
 scripts/build-admin-data.mjs   Chuẩn hoá dữ liệu crawl → JSON + SQL legacy
-scripts/build-geo-sql.mjs      Chuẩn hoá JSON → db/seed-geo.sql
+scripts/build-geo-sql.mjs      Chuẩn hoá JSON → db/seed-geo.sql + file theo tỉnh
+scripts/split-geo-seed.mjs     Cắt seed-geo.sql thành 3 phần
 scripts/fetch-communes.mjs     Tải cấp xã từ provinces.open-api.vn + đối chiếu số liệu
 scripts/dev-server.mjs         Server tĩnh local
 scripts/check-links.mjs        Kiểm tra link/asset nội bộ
@@ -92,11 +97,13 @@ Không cần `npm install` — dự án không có dependency runtime.
    - `db/schema-geo.sql`
    - `db/seed-tools.sql`
    - `db/seed-admin.sql`
-   - `db/seed-geo.sql`
+   - `db/seed-geo-1-core.sql`
+   - `db/seed-geo-2-communes/*.sql` (34 file theo tỉnh, chạy theo thứ tự bất kỳ)
+   - `db/seed-geo-3-relations.sql`
 
-> `db/schema-geo.sql` + `db/seed-geo.sql` là lớp cấp xã/phường/đặc khu. Nếu project đã có
-> `geo_*` từ trước, chỉ cần chạy lại `db/seed-geo.sql` để nạp thêm 3.321 đơn vị cấp xã;
-> frontend vẫn hiển thị ngay qua `assets/data/admin-communes.json` nếu chưa seed.
+> `db/seed-geo.sql` là bản gộp cho `psql`/CLI; **không dùng trong SQL Editor** vì quá lớn.
+> Nếu project đã có `geo_*` từ trước, chỉ cần chạy lại 3 file trên để nạp thêm 3.321 đơn vị
+> cấp xã; frontend vẫn hiển thị ngay qua `assets/data/admin-communes.json` nếu chưa seed.
 
 3. Cấu hình frontend — chọn **một** trong hai cách:
 
@@ -136,8 +143,9 @@ $env:SUPABASE_ANON_KEY="eyJhbGciOi..."
 npm run dev
 ```
 
-> `schema-geo.sql` + `seed-geo.sql` là lớp dữ liệu mới, **không thay thế** hai bảng
-> `admin_units` / `admin_unit_history`. Công cụ tra cứu hiện tại vẫn đọc lớp legacy;
+> `schema-geo.sql` + `seed-geo-1-core.sql` + `seed-geo-2-communes/` +
+> `seed-geo-3-relations.sql` là lớp dữ liệu mới, **không thay thế** hai bảng
+> `admin_units` / `admin_unit_history`. Công cụ tra cứu cấp tỉnh vẫn đọc lớp legacy;
 > hai lớp có thể cùng tồn tại trong một project Supabase.
 
 ### Trang tra cứu vẫn báo "JSON tĩnh"
@@ -172,9 +180,14 @@ ghi "JSON tĩnh (Supabase lỗi)" hoặc "JSON tĩnh". Để có dữ liệu Sup
 
 ```text
 1. Chạy db/schema-geo.sql
-2. Chạy db/seed-geo.sql
-3. Tải lại trang; kiểm tra: select level_code, count(*) from public.geo_units group by level_code;
+2. Chạy db/seed-geo-1-core.sql
+3. Chạy các file db/seed-geo-2-communes/*.sql (34 file theo tỉnh)
+4. Chạy db/seed-geo-3-relations.sql
+5. Tải lại trang; kiểm tra:
+   select level_code, count(*) from public.geo_units group by level_code;
 ```
+
+`db/seed-geo.sql` là bản gộp, chỉ dùng với `psql`/CLI khi SQL Editor báo quá lớn.
 
 Nếu `assets/data/admin-communes.json` bị thiếu, chạy `npm run fetch:communes` để tạo lại.
 
@@ -244,10 +257,16 @@ tổng **3.321 đơn vị** và số lượng từng tỉnh với 34 Nghị quy�
 
 ```bash
 npm run fetch:communes   # tải cấp xã từ API (có kiểm tra số liệu)
-npm run build:geo        # sinh lại db/seed-geo.sql (34 tỉnh + 3.321 xã/phường)
+npm run build:geo        # sinh db/seed-geo.sql + 34 file xã theo tỉnh + 3 file phần
 ```
 
-Script ghi `db/seed-geo.sql` và in cảnh báo dữ liệu. Seed hiện tại:
+Script ghi:
+
+- `db/seed-geo.sql` — bản gộp cho `psql`/CLI (không dùng trong SQL Editor).
+- `db/seed-geo-1-core.sql`, `db/seed-geo-3-relations.sql` — hai phần nhỏ.
+- `db/seed-geo-2-communes/seed-geo-2-communes-*.sql` — 34 file theo tỉnh, mỗi file ≤34KB.
+
+Seed hiện tại:
 
 - dataset `vn-admin-2025-07-01`, hiệu lực `2025-07-01`
 - 34 đơn vị cấp tỉnh
@@ -258,7 +277,7 @@ Script ghi `db/seed-geo.sql` và in cảnh báo dữ liệu. Seed hiện tại:
 Mô hình chính:
 
 - `geo_datasets`: phiên bản dữ liệu; `is_current` + `effective_from/to`
-- `geo_units`: cây đơn vị; `parent_id` sẵn sàng cho cấp xã/phường/đặc khu;
+- `geo_units`: cây đơn vị; đã có 34 tỉnh + 3.321 xã/phường/đặc khu;
   FK ghép `(type_code, level_code)` bảo đảm loại đơn vị đúng cấp
 - `geo_unit_metrics`: chỉ số long-format, thêm chỉ số mới không cần đổi schema
 - `geo_events` + `geo_event_units`: sự kiện và liên kết nguồn/đích

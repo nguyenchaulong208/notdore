@@ -1,0 +1,92 @@
+-- =============================================================================
+-- NotDore - seed geo_* cấp xã: Sơn La (75 đơn vị).
+-- Chạy SAU db/seed-geo-1-core.sql. Có thể chạy song song với các tỉnh khác.
+-- =============================================================================
+begin;
+
+insert into public.geo_units
+  (dataset_id, parent_id, level_code, type_code, code, name, slug, sort_order, effective_from, metadata)
+select d.id, parent.id, 'commune', v.type_code, v.code, v.name, v.slug,
+       v.sort_order, v.effective_from::date, v.metadata
+from (values
+  ('63-son-la', 'phuong', '3646', 'Phường Tô Hiệu', '3646-phuong-to-hieu', 1, '2025-07-01', '{"province_code":"14","province_name":"Tỉnh Sơn La"}'::jsonb),
+  ('63-son-la', 'phuong', '3664', 'Phường Chiềng An', '3664-phuong-chieng-an', 2, '2025-07-01', '{"province_code":"14","province_name":"Tỉnh Sơn La"}'::jsonb),
+  ('63-son-la', 'phuong', '3670', 'Phường Chiềng Cơi', '3670-phuong-chieng-coi', 3, '2025-07-01', '{"province_code":"14","province_name":"Tỉnh Sơn La"}'::jsonb),
+  ('63-son-la', 'phuong', '3679', 'Phường Chiềng Sinh', '3679-phuong-chieng-sinh', 4, '2025-07-01', '{"province_code":"14","province_name":"Tỉnh Sơn La"}'::jsonb),
+  ('63-son-la', 'xa', '3688', 'Xã Mường Chiên', '3688-xa-muong-chien', 5, '2025-07-01', '{"province_code":"14","province_name":"Tỉnh Sơn La"}'::jsonb),
+  ('63-son-la', 'xa', '3694', 'Xã Mường Giôn', '3694-xa-muong-gion', 6, '2025-07-01', '{"province_code":"14","province_name":"Tỉnh Sơn La"}'::jsonb),
+  ('63-son-la', 'xa', '3703', 'Xã Quỳnh Nhai', '3703-xa-quynh-nhai', 7, '2025-07-01', '{"province_code":"14","province_name":"Tỉnh Sơn La"}'::jsonb),
+  ('63-son-la', 'xa', '3712', 'Xã Mường Sại', '3712-xa-muong-sai', 8, '2025-07-01', '{"province_code":"14","province_name":"Tỉnh Sơn La"}'::jsonb),
+  ('63-son-la', 'xa', '3721', 'Xã Thuận Châu', '3721-xa-thuan-chau', 9, '2025-07-01', '{"province_code":"14","province_name":"Tỉnh Sơn La"}'::jsonb),
+  ('63-son-la', 'xa', '3724', 'Xã Bình Thuận', '3724-xa-binh-thuan', 10, '2025-07-01', '{"province_code":"14","province_name":"Tỉnh Sơn La"}'::jsonb),
+  ('63-son-la', 'xa', '3727', 'Xã Mường É', '3727-xa-muong-e', 11, '2025-07-01', '{"province_code":"14","province_name":"Tỉnh Sơn La"}'::jsonb),
+  ('63-son-la', 'xa', '3754', 'Xã Chiềng La', '3754-xa-chieng-la', 12, '2025-07-01', '{"province_code":"14","province_name":"Tỉnh Sơn La"}'::jsonb),
+  ('63-son-la', 'xa', '3757', 'Xã Mường Khiêng', '3757-xa-muong-khieng', 13, '2025-07-01', '{"province_code":"14","province_name":"Tỉnh Sơn La"}'::jsonb),
+  ('63-son-la', 'xa', '3760', 'Xã Mường Bám', '3760-xa-muong-bam', 14, '2025-07-01', '{"province_code":"14","province_name":"Tỉnh Sơn La"}'::jsonb),
+  ('63-son-la', 'xa', '3763', 'Xã Long Hẹ', '3763-xa-long-he', 15, '2025-07-01', '{"province_code":"14","province_name":"Tỉnh Sơn La"}'::jsonb),
+  ('63-son-la', 'xa', '3781', 'Xã Co Mạ', '3781-xa-co-ma', 16, '2025-07-01', '{"province_code":"14","province_name":"Tỉnh Sơn La"}'::jsonb),
+  ('63-son-la', 'xa', '3784', 'Xã Nậm Lầu', '3784-xa-nam-lau', 17, '2025-07-01', '{"province_code":"14","province_name":"Tỉnh Sơn La"}'::jsonb),
+  ('63-son-la', 'xa', '3799', 'Xã Muổi Nọi', '3799-xa-muoi-noi', 18, '2025-07-01', '{"province_code":"14","province_name":"Tỉnh Sơn La"}'::jsonb),
+  ('63-son-la', 'xa', '3808', 'Xã Mường La', '3808-xa-muong-la', 19, '2025-07-01', '{"province_code":"14","province_name":"Tỉnh Sơn La"}'::jsonb),
+  ('63-son-la', 'xa', '3814', 'Xã Chiềng Lao', '3814-xa-chieng-lao', 20, '2025-07-01', '{"province_code":"14","province_name":"Tỉnh Sơn La"}'::jsonb),
+  ('63-son-la', 'xa', '3820', 'Xã Ngọc Chiến', '3820-xa-ngoc-chien', 21, '2025-07-01', '{"province_code":"14","province_name":"Tỉnh Sơn La"}'::jsonb),
+  ('63-son-la', 'xa', '3847', 'Xã Mường Bú', '3847-xa-muong-bu', 22, '2025-07-01', '{"province_code":"14","province_name":"Tỉnh Sơn La"}'::jsonb),
+  ('63-son-la', 'xa', '3850', 'Xã Chiềng Hoa', '3850-xa-chieng-hoa', 23, '2025-07-01', '{"province_code":"14","province_name":"Tỉnh Sơn La"}'::jsonb),
+  ('63-son-la', 'xa', '3856', 'Xã Bắc Yên', '3856-xa-bac-yen', 24, '2025-07-01', '{"province_code":"14","province_name":"Tỉnh Sơn La"}'::jsonb),
+  ('63-son-la', 'xa', '3862', 'Xã Xím Vàng', '3862-xa-xim-vang', 25, '2025-07-01', '{"province_code":"14","province_name":"Tỉnh Sơn La"}'::jsonb),
+  ('63-son-la', 'xa', '3868', 'Xã Tà Xùa', '3868-xa-ta-xua', 26, '2025-07-01', '{"province_code":"14","province_name":"Tỉnh Sơn La"}'::jsonb),
+  ('63-son-la', 'xa', '3871', 'Xã Pắc Ngà', '3871-xa-pac-nga', 27, '2025-07-01', '{"province_code":"14","province_name":"Tỉnh Sơn La"}'::jsonb),
+  ('63-son-la', 'xa', '3880', 'Xã Tạ Khoa', '3880-xa-ta-khoa', 28, '2025-07-01', '{"province_code":"14","province_name":"Tỉnh Sơn La"}'::jsonb),
+  ('63-son-la', 'xa', '3892', 'Xã Chiềng Sại', '3892-xa-chieng-sai', 29, '2025-07-01', '{"province_code":"14","province_name":"Tỉnh Sơn La"}'::jsonb),
+  ('63-son-la', 'xa', '3901', 'Xã Suối Tọ', '3901-xa-suoi-to', 30, '2025-07-01', '{"province_code":"14","province_name":"Tỉnh Sơn La"}'::jsonb),
+  ('63-son-la', 'xa', '3907', 'Xã Mường Cơi', '3907-xa-muong-coi', 31, '2025-07-01', '{"province_code":"14","province_name":"Tỉnh Sơn La"}'::jsonb),
+  ('63-son-la', 'xa', '3910', 'Xã Phù Yên', '3910-xa-phu-yen', 32, '2025-07-01', '{"province_code":"14","province_name":"Tỉnh Sơn La"}'::jsonb),
+  ('63-son-la', 'xa', '3922', 'Xã Gia Phù', '3922-xa-gia-phu', 33, '2025-07-01', '{"province_code":"14","province_name":"Tỉnh Sơn La"}'::jsonb),
+  ('63-son-la', 'xa', '3943', 'Xã Mường Bang', '3943-xa-muong-bang', 34, '2025-07-01', '{"province_code":"14","province_name":"Tỉnh Sơn La"}'::jsonb),
+  ('63-son-la', 'xa', '3958', 'Xã Tường Hạ', '3958-xa-tuong-ha', 35, '2025-07-01', '{"province_code":"14","province_name":"Tỉnh Sơn La"}'::jsonb),
+  ('63-son-la', 'xa', '3961', 'Xã Kim Bon', '3961-xa-kim-bon', 36, '2025-07-01', '{"province_code":"14","province_name":"Tỉnh Sơn La"}'::jsonb),
+  ('63-son-la', 'xa', '3970', 'Xã Tân Phong', '3970-xa-tan-phong', 37, '2025-07-01', '{"province_code":"14","province_name":"Tỉnh Sơn La"}'::jsonb),
+  ('63-son-la', 'phuong', '3979', 'Phường Mộc Sơn', '3979-phuong-moc-son', 38, '2025-07-01', '{"province_code":"14","province_name":"Tỉnh Sơn La"}'::jsonb),
+  ('63-son-la', 'phuong', '3980', 'Phường Mộc Châu', '3980-phuong-moc-chau', 39, '2025-07-01', '{"province_code":"14","province_name":"Tỉnh Sơn La"}'::jsonb),
+  ('63-son-la', 'phuong', '3982', 'Phường Thảo Nguyên', '3982-phuong-thao-nguyen', 40, '2025-07-01', '{"province_code":"14","province_name":"Tỉnh Sơn La"}'::jsonb),
+  ('63-son-la', 'xa', '3985', 'Xã Chiềng Sơn', '3985-xa-chieng-son', 41, '2025-07-01', '{"province_code":"14","province_name":"Tỉnh Sơn La"}'::jsonb),
+  ('63-son-la', 'xa', '3997', 'Xã Tân Yên', '3997-xa-tan-yen', 42, '2025-07-01', '{"province_code":"14","province_name":"Tỉnh Sơn La"}'::jsonb),
+  ('63-son-la', 'xa', '4000', 'Xã Đoàn Kết', '4000-xa-doan-ket', 43, '2025-07-01', '{"province_code":"14","province_name":"Tỉnh Sơn La"}'::jsonb),
+  ('63-son-la', 'xa', '4006', 'Xã Song Khủa', '4006-xa-song-khua', 44, '2025-07-01', '{"province_code":"14","province_name":"Tỉnh Sơn La"}'::jsonb),
+  ('63-son-la', 'xa', '4018', 'Xã Tô Múa', '4018-xa-to-mua', 45, '2025-07-01', '{"province_code":"14","province_name":"Tỉnh Sơn La"}'::jsonb),
+  ('63-son-la', 'phuong', '4033', 'Phường Vân Sơn', '4033-phuong-van-son', 46, '2025-07-01', '{"province_code":"14","province_name":"Tỉnh Sơn La"}'::jsonb),
+  ('63-son-la', 'xa', '4045', 'Xã Lóng Sập', '4045-xa-long-sap', 47, '2025-07-01', '{"province_code":"14","province_name":"Tỉnh Sơn La"}'::jsonb),
+  ('63-son-la', 'xa', '4048', 'Xã Vân Hồ', '4048-xa-van-ho', 48, '2025-07-01', '{"province_code":"14","province_name":"Tỉnh Sơn La"}'::jsonb),
+  ('63-son-la', 'xa', '4057', 'Xã Xuân Nha', '4057-xa-xuan-nha', 49, '2025-07-01', '{"province_code":"14","province_name":"Tỉnh Sơn La"}'::jsonb),
+  ('63-son-la', 'xa', '4075', 'Xã Yên Châu', '4075-xa-yen-chau', 50, '2025-07-01', '{"province_code":"14","province_name":"Tỉnh Sơn La"}'::jsonb),
+  ('63-son-la', 'xa', '4078', 'Xã Chiềng Hặc', '4078-xa-chieng-hac', 51, '2025-07-01', '{"province_code":"14","province_name":"Tỉnh Sơn La"}'::jsonb),
+  ('63-son-la', 'xa', '4087', 'Xã Yên Sơn', '4087-xa-yen-son', 52, '2025-07-01', '{"province_code":"14","province_name":"Tỉnh Sơn La"}'::jsonb),
+  ('63-son-la', 'xa', '4096', 'Xã Lóng Phiêng', '4096-xa-long-phieng', 53, '2025-07-01', '{"province_code":"14","province_name":"Tỉnh Sơn La"}'::jsonb),
+  ('63-son-la', 'xa', '4099', 'Xã Phiêng Khoài', '4099-xa-phieng-khoai', 54, '2025-07-01', '{"province_code":"14","province_name":"Tỉnh Sơn La"}'::jsonb),
+  ('63-son-la', 'xa', '4105', 'Xã Mai Sơn', '4105-xa-mai-son', 55, '2025-07-01', '{"province_code":"14","province_name":"Tỉnh Sơn La"}'::jsonb),
+  ('63-son-la', 'xa', '4108', 'Xã Chiềng Sung', '4108-xa-chieng-sung', 56, '2025-07-01', '{"province_code":"14","province_name":"Tỉnh Sơn La"}'::jsonb),
+  ('63-son-la', 'xa', '4117', 'Xã Mường Chanh', '4117-xa-muong-chanh', 57, '2025-07-01', '{"province_code":"14","province_name":"Tỉnh Sơn La"}'::jsonb),
+  ('63-son-la', 'xa', '4123', 'Xã Chiềng Mung', '4123-xa-chieng-mung', 58, '2025-07-01', '{"province_code":"14","province_name":"Tỉnh Sơn La"}'::jsonb),
+  ('63-son-la', 'xa', '4132', 'Xã Chiềng Mai', '4132-xa-chieng-mai', 59, '2025-07-01', '{"province_code":"14","province_name":"Tỉnh Sơn La"}'::jsonb),
+  ('63-son-la', 'xa', '4136', 'Xã Tà Hộc', '4136-xa-ta-hoc', 60, '2025-07-01', '{"province_code":"14","province_name":"Tỉnh Sơn La"}'::jsonb),
+  ('63-son-la', 'xa', '4144', 'Xã Phiêng Cằm', '4144-xa-phieng-cam', 61, '2025-07-01', '{"province_code":"14","province_name":"Tỉnh Sơn La"}'::jsonb),
+  ('63-son-la', 'xa', '4159', 'Xã Phiêng Pằn', '4159-xa-phieng-pan', 62, '2025-07-01', '{"province_code":"14","province_name":"Tỉnh Sơn La"}'::jsonb),
+  ('63-son-la', 'xa', '4168', 'Xã Sông Mã', '4168-xa-song-ma', 63, '2025-07-01', '{"province_code":"14","province_name":"Tỉnh Sơn La"}'::jsonb),
+  ('63-son-la', 'xa', '4171', 'Xã Bó Sinh', '4171-xa-bo-sinh', 64, '2025-07-01', '{"province_code":"14","province_name":"Tỉnh Sơn La"}'::jsonb),
+  ('63-son-la', 'xa', '4183', 'Xã Mường Lầm', '4183-xa-muong-lam', 65, '2025-07-01', '{"province_code":"14","province_name":"Tỉnh Sơn La"}'::jsonb),
+  ('63-son-la', 'xa', '4186', 'Xã Nậm Ty', '4186-xa-nam-ty', 66, '2025-07-01', '{"province_code":"14","province_name":"Tỉnh Sơn La"}'::jsonb),
+  ('63-son-la', 'xa', '4195', 'Xã Chiềng Sơ', '4195-xa-chieng-so', 67, '2025-07-01', '{"province_code":"14","province_name":"Tỉnh Sơn La"}'::jsonb),
+  ('63-son-la', 'xa', '4204', 'Xã Chiềng Khoong', '4204-xa-chieng-khoong', 68, '2025-07-01', '{"province_code":"14","province_name":"Tỉnh Sơn La"}'::jsonb),
+  ('63-son-la', 'xa', '4210', 'Xã Huổi Một', '4210-xa-huoi-mot', 69, '2025-07-01', '{"province_code":"14","province_name":"Tỉnh Sơn La"}'::jsonb),
+  ('63-son-la', 'xa', '4219', 'Xã Mường Hung', '4219-xa-muong-hung', 70, '2025-07-01', '{"province_code":"14","province_name":"Tỉnh Sơn La"}'::jsonb),
+  ('63-son-la', 'xa', '4222', 'Xã Chiềng Khương', '4222-xa-chieng-khuong', 71, '2025-07-01', '{"province_code":"14","province_name":"Tỉnh Sơn La"}'::jsonb),
+  ('63-son-la', 'xa', '4228', 'Xã Púng Bánh', '4228-xa-pung-banh', 72, '2025-07-01', '{"province_code":"14","province_name":"Tỉnh Sơn La"}'::jsonb),
+  ('63-son-la', 'xa', '4231', 'Xã Sốp Cộp', '4231-xa-sop-cop', 73, '2025-07-01', '{"province_code":"14","province_name":"Tỉnh Sơn La"}'::jsonb),
+  ('63-son-la', 'xa', '4240', 'Xã Mường Lèo', '4240-xa-muong-leo', 74, '2025-07-01', '{"province_code":"14","province_name":"Tỉnh Sơn La"}'::jsonb),
+  ('63-son-la', 'xa', '4246', 'Xã Mường Lạn', '4246-xa-muong-lan', 75, '2025-07-01', '{"province_code":"14","province_name":"Tỉnh Sơn La"}'::jsonb)
+) as v(parent_slug, type_code, code, name, slug, sort_order, effective_from, metadata)
+join public.geo_datasets d on d.code = 'vn-admin-2025-07-01'
+join public.geo_units parent on parent.dataset_id = d.id
+  and parent.level_code = 'province' and parent.slug = v.parent_slug;
+
+commit;
