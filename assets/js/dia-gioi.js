@@ -28,6 +28,7 @@
     onlyChanged: false,
     communeProvince: 'all',
     communeType: 'all',
+    direction: 'before-to-current',
   };
 
   const $ = (id) => document.getElementById(id);
@@ -41,6 +42,50 @@
     if (n.startsWith(k)) return 3;
     if (n.includes(k)) return 2;
     return 1;
+  };
+
+  const addressContains = (query, name) => {
+    const haystack = normalize(query);
+    const normalizedName = normalize(name);
+    const shortName = normalizedName.replace(/^(tinh|thanh pho|thu do|xa|phuong|dac khu)\s+/, '');
+    return [normalizedName, shortName]
+      .some((term) => term.length >= 3 && haystack.includes(term));
+  };
+
+  const parseLookupQuery = (value) => {
+    const raw = String(value ?? '').trim();
+    const colon = raw.indexOf(':');
+    if (colon >= 0) {
+      const prefix = normalize(raw.slice(0, colon));
+      const beforePrefixes = ['cu', 'truoc', 'old', 'before'];
+      const currentPrefixes = ['moi', 'sau', 'new', 'current'];
+      if (beforePrefixes.includes(prefix)) {
+        return { query: raw.slice(colon + 1).trim(), direction: 'before-to-current' };
+      }
+      if (currentPrefixes.includes(prefix)) {
+        return { query: raw.slice(colon + 1).trim(), direction: 'current-to-before' };
+      }
+    }
+
+    const normalizedQuery = normalize(raw);
+    if (!normalizedQuery) return { query: '', direction: 'before-to-current' };
+    const queryWords = ` ${normalizedQuery.replace(/[^a-z0-9]+/g, ' ')} `;
+    const matchesBefore = (state.data?.history || [])
+      .some((h) => addressContains(raw, h.oldName));
+    const matchesCurrent = (state.data?.provinces || [])
+      .some((p) => addressContains(raw, p.name));
+    const containsFullCurrentName = (state.data?.provinces || [])
+      .some((p) => normalize(p.name).length > 3 && normalizedQuery.includes(normalize(p.name)));
+    const containsDistrict = / (quan|huyen|thi xa|thi tran) /.test(queryWords);
+    const containsCurrentCommune = / (xa|phuong|dac khu) /.test(queryWords);
+
+    let direction = 'before-to-current';
+    if (containsFullCurrentName) direction = 'current-to-before';
+    else if (containsDistrict && matchesBefore) direction = 'before-to-current';
+    else if (containsCurrentCommune && matchesCurrent) direction = 'current-to-before';
+    else if (matchesCurrent && !matchesBefore) direction = 'current-to-before';
+
+    return { query: raw, direction };
   };
 
   const typeLabel = (t) => esc(t || '—');
@@ -85,13 +130,37 @@
 
   const filterHistory = () => (state.data.history || []).filter((h) => {
     if (state.onlyChanged && !h.changed) return false;
+    const province = state.data.provinces.find((x) => x.code === h.newCode);
     if (state.region !== 'all') {
-      const p = state.data.provinces.find((x) => x.code === h.newCode);
-      if (!p || p.region !== state.region) return false;
+      if (!province || province.region !== state.region) return false;
     }
-    return matches([h.oldName, h.oldType, h.newName, h.newCode, h.note].join(' '), state.q);
+    if (state.type !== 'all') {
+      const type = state.direction === 'current-to-before' ? province?.type : h.oldType;
+      if (type !== state.type) return false;
+    }
+
+    const matchesBeforeAddress = state.q && state.data.history
+      .some((item) => addressContains(state.q, item.oldName));
+    const matchesCurrentAddress = state.q && state.data.provinces
+      .some((item) => addressContains(state.q, item.name));
+    const addressSide = state.direction === 'current-to-before'
+      ? (matchesCurrentAddress ? 'current' : matchesBeforeAddress ? 'before' : null)
+      : (matchesBeforeAddress ? 'before' : matchesCurrentAddress ? 'current' : null);
+
+    if (addressSide === 'before') return addressContains(state.q, h.oldName);
+    if (addressSide === 'current') {
+      return addressContains(state.q, h.newName) || addressContains(state.q, province?.name);
+    }
+
+    const textMatches = matches(
+      [h.oldName, h.oldType, h.newName, h.newCode, h.note].join(' '),
+      state.q,
+    );
+    return textMatches;
   }).sort((a, b) =>
-    scoreName(b.oldName, state.q) - scoreName(a.oldName, state.q) ||
+    (state.direction === 'current-to-before'
+      ? scoreName(b.newName, state.q) - scoreName(a.newName, state.q)
+      : scoreName(b.oldName, state.q) - scoreName(a.oldName, state.q)) ||
     a.oldName.localeCompare(b.oldName, 'vi')
   );
 
@@ -100,15 +169,62 @@
     const body = $('dg-history-body');
     if (!body) return;
 
-    $('dg-count').textContent = `${rows.length} / ${state.data.history.length} đơn vị`;
+    const beforeHeading = $('dg-history-before-heading');
+    const currentHeading = $('dg-history-current-heading');
+    const count = $('dg-count');
+    const reverse = state.direction === 'current-to-before';
+    if (beforeHeading) beforeHeading.textContent = reverse ? 'Hiện tại' : 'Trước 01/07/2025';
+    if (currentHeading) currentHeading.textContent = reverse ? 'Trước 01/07/2025' : 'Hiện tại';
 
     if (!rows.length) {
+      if (count) count.textContent = '0 đơn vị';
       body.innerHTML = `<tr><td colspan="5" class="nd-empty-cell">
         <i class="fas fa-magnifying-glass me-2"></i>Không tìm thấy đơn vị phù hợp.
       </td></tr>`;
       return;
     }
 
+    if (reverse) {
+      const groups = new Map();
+      rows.forEach((h) => {
+        const province = state.data.provinces.find((p) => p.code === h.newCode);
+        if (province) groups.set(province.code, province);
+      });
+      const list = [...groups.values()].sort((a, b) =>
+        scoreName(b.name, state.q) - scoreName(a.name, state.q) ||
+        a.name.localeCompare(b.name, 'vi')
+      );
+      if (count) count.textContent = `${list.length} / ${state.data.provinces.length} đơn vị hiện tại`;
+
+      body.innerHTML = list.map((province) => {
+        const predecessors = state.data.history
+          .filter((h) => h.newCode === province.code)
+          .sort((a, b) => a.oldName.localeCompare(b.oldName, 'vi'));
+        const status = province.changed
+          ? 'Có sáp nhập'
+          : province.renamedFrom ? 'Đổi tên' : 'Giữ nguyên';
+
+        return `
+          <tr>
+            <td data-label="Hiện tại">
+              <button type="button" class="nd-link" data-code="${esc(province.code)}">${esc(province.name)}</button>
+            </td>
+            <td data-label="Loại">${typeLabel(province.type)}</td>
+            <td class="nd-arrow" aria-hidden="true"><i class="fas fa-arrow-right"></i></td>
+            <td data-label="Trước sáp nhập">
+              <div class="nd-unit-from">
+                ${predecessors.map((h) => `<span title="${esc(h.oldType)}">${esc(h.oldName)}</span>`).join('')}
+              </div>
+            </td>
+            <td data-label="Trạng thái">
+              <span class="nd-pill ${province.changed ? 'nd-pill--merge' : 'nd-pill--keep'}">${esc(status)}</span>
+            </td>
+          </tr>`;
+      }).join('');
+      return;
+    }
+
+    if (count) count.textContent = `${rows.length} / ${state.data.history.length} đơn vị`;
     body.innerHTML = rows.map((h) => `
       <tr>
         <td data-label="Trước sáp nhập"><strong>${esc(h.oldName)}</strong></td>
@@ -183,17 +299,43 @@
     state.communeProvince = select.value;
   };
 
-  const filterCommunes = () => (state.communes?.communes || []).filter((c) => {
-    if (state.communeProvince !== 'all' && c.provinceCode !== state.communeProvince) return false;
-    if (state.communeType !== 'all' && c.type !== state.communeType) return false;
-    return matches(
-      [c.name, c.typeLabel, c.provinceName, c.code, c.shortCodename].join(' '),
-      state.q,
+  const filterCommunes = () => {
+    const all = state.communes?.communes || [];
+    const query = state.q;
+    const matchedCommuneCodes = new Set(query
+      ? all.filter((c) => [
+        c.name,
+        c.shortCodename?.replace(/_/g, ' '),
+      ].some((name) => addressContains(query, name))).map((c) => c.code)
+      : []);
+    const matchedProvinceCodes = new Set(query ? [
+      ...state.data.provinces
+        .filter((p) => [p.name, p.renamedFrom, ...(p.mergedFrom || [])]
+          .some((name) => addressContains(query, name)))
+        .map((p) => p.code),
+      ...state.data.history
+        .filter((h) => addressContains(query, h.oldName))
+        .map((h) => h.newCode),
+    ] : []);
+
+    return all.filter((c) => {
+      if (state.communeProvince !== 'all' && c.provinceCode !== state.communeProvince) return false;
+      if (state.communeType !== 'all' && c.type !== state.communeType) return false;
+      if (!query) return true;
+      if (matchedCommuneCodes.size) {
+        return matchedCommuneCodes.has(c.code) &&
+          (!matchedProvinceCodes.size || matchedProvinceCodes.has(c.provinceCode));
+      }
+      if (matchedProvinceCodes.size) return matchedProvinceCodes.has(c.provinceCode);
+      return matches(
+        [c.name, c.typeLabel, c.provinceName, c.code, c.shortCodename].join(' '),
+        query,
+      );
+    }).sort((a, b) =>
+      scoreName(b.name, query) - scoreName(a.name, query) ||
+      a.name.localeCompare(b.name, 'vi')
     );
-  }).sort((a, b) =>
-    scoreName(b.name, state.q) - scoreName(a.name, state.q) ||
-    a.name.localeCompare(b.name, 'vi')
-  );
+  };
 
   const renderCommunes = () => {
     const body = $('dg-commune-body');
@@ -229,8 +371,7 @@
     }
 
     const rows = filterCommunes();
-    const limit = (!state.q && state.communeProvince === 'all') ? 300 : 1000;
-    const shown = rows.slice(0, limit);
+    const shown = rows;
 
     if (count) {
       count.textContent = rows.length === all.length
@@ -257,14 +398,12 @@
     }
 
     if (source) {
-      const hidden = rows.length - shown.length;
       const label = state.communes.source === 'none'
         ? 'chưa có dữ liệu'
         : sourceLabel(state.communes);
       source.innerHTML = `Nguồn cấp xã: <strong>${esc(label)}</strong> ` +
         `· ${esc(state.communes.meta?.effectiveFrom || '01/07/2025')} ` +
-        `· Cấp huyện không còn từ 01/07/2025.` +
-        (hidden > 0 ? ` Đang hiển thị ${shown.length}/${rows.length}; chọn tỉnh hoặc tìm kiếm để thu hẹp.` : '');
+        `· Danh sách hiện hành; chưa có đối chiếu lịch sử cấp xã. Cấp huyện không còn từ 01/07/2025.`;
     }
   };
 
@@ -427,13 +566,7 @@
     document.querySelectorAll('[data-dg-province-only]').forEach((el) => {
       el.hidden = tab === 'communes';
     });
-
-    const search = $('dg-search');
-    if (search) {
-      search.placeholder = tab === 'communes'
-        ? 'Tên xã/phường, tỉnh/thành phố, mã...'
-        : 'Tên đơn vị cũ hoặc mới, mã (vd 79), vùng.';
-    }
+    updateSearchPlaceholder();
 
     renderCurrent();
     if (tab === 'communes') loadCommunes();
@@ -443,6 +576,16 @@
     if (state.tab === 'history') renderHistory();
     else if (state.tab === 'units') renderUnits();
     else if (state.tab === 'communes') renderCommunes();
+  };
+
+  const updateSearchPlaceholder = () => {
+    const search = $('dg-search');
+    if (!search) return;
+    if (state.tab === 'communes') {
+      search.placeholder = 'Tên xã/phường hoặc địa chỉ hiện hành…';
+    } else {
+      search.placeholder = 'Địa chỉ cũ hoặc mới; thêm cũ: / mới: nếu cần…';
+    }
   };
 
   const bind = () => {
@@ -457,7 +600,9 @@
     search.addEventListener('input', () => {
       clearTimeout(timer);
       timer = setTimeout(() => {
-        state.q = search.value;
+        const parsed = parseLookupQuery(search.value);
+        state.q = parsed.query;
+        state.direction = parsed.direction;
         renderCurrent();
       }, 120);
     });
@@ -507,7 +652,9 @@
       const params = new URLSearchParams(location.search);
       const q = params.get('q') || '';
       if (q) {
-        state.q = q;
+        const parsed = parseLookupQuery(q);
+        state.q = parsed.query;
+        state.direction = parsed.direction;
         $('dg-search').value = q;
       }
       const tabParam = params.get('tab');

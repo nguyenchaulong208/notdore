@@ -772,6 +772,13 @@
   overflow: auto;
 }
 
+.nd-table-wrap--scroll {
+  max-height: min(72vh, 42rem);
+  overflow: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+}
+
 .nd-table { width: 100%; border-collapse: collapse; font-size: .9rem; }
 .nd-table th {
   position: sticky;

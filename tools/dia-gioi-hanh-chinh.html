@@ -53,13 +53,13 @@
             <h1 class="nd-tool-title">Tra cứu địa giới hành chính</h1>
             <p class="nd-tool-sub">
                 Đối chiếu đơn vị hành chính cấp tỉnh trước và sau sáp nhập (hiệu lực 01/07/2025).
-                Gõ tên cũ như <em>Sóc Trăng</em> để xem hiện thuộc đơn vị nào, hoặc tìm theo tên mới, vùng, mã đơn vị.
+                Có thể tìm theo tên cũ, tên mới hoặc địa chỉ đầy đủ; thêm tiền tố <em>cũ:</em> hoặc <em>mới:</em> nếu cần chỉ rõ chiều tra cứu.
             </p>
 
             <p class="nd-data-note">
                 <i class="fas fa-circle-info" aria-hidden="true"></i>
-                Dữ liệu cấp tỉnh/thành phố và cấp xã/phường/đặc khu, hiệu lực 01/07/2025. Cấp huyện không còn
-                trong bộ máy hành chính 2 cấp — xem tab <strong>Nguồn &amp; ghi chú</strong> trước khi dùng cho hồ sơ chính thức.
+                Đối chiếu lịch sử hiện có ở cấp tỉnh; danh sách xã/phường là hiện hành. Cấp huyện không còn từ 01/07/2025.
+                Xem tab Nguồn &amp; ghi chú trước khi dùng cho hồ sơ chính thức.
             </p>
 
             <div class="nd-stats" id="dg-stats" aria-live="polite"></div>
@@ -67,7 +67,7 @@
             <ul class="nd-tabs mb-3" role="tablist">
                 <li role="presentation">
                     <button type="button" role="tab" data-dg-tab="history" class="active" aria-selected="true">
-                        <i class="fas fa-right-left me-1" aria-hidden="true"></i>Trước → sau sáp nhập
+                        <i class="fas fa-right-left me-1" aria-hidden="true"></i>Tra cứu trước ↔ sau sáp nhập
                     </button>
                 </li>
                 <li role="presentation">
@@ -91,7 +91,7 @@
                 <div class="nd-field nd-field--grow">
                     <label for="dg-search">Tìm kiếm</label>
                     <input id="dg-search" class="nd-input" type="search"
-                           placeholder="Tên đơn vị cũ hoặc mới, mã (vd 79), vùng…"
+                           placeholder="Địa chỉ cũ hoặc mới; thêm cũ: / mới: nếu cần…"
                            autocomplete="off">
                 </div>
                 <div class="nd-field" data-dg-province-only>
@@ -120,15 +120,15 @@
             </div>
 
             <section id="dg-panel-history" role="tabpanel">
-                <div class="nd-table-wrap">
+                <div class="nd-table-wrap nd-table-wrap--scroll">
                     <table class="nd-table">
                         <caption class="visually-hidden">Đối chiếu đơn vị hành chính trước và sau sáp nhập</caption>
                         <thead>
                             <tr>
-                                <th scope="col">Trước 01/07/2025</th>
+                                <th scope="col" id="dg-history-before-heading">Trước 01/07/2025</th>
                                 <th scope="col">Loại</th>
                                 <th scope="col" aria-label="Chuyển sang"></th>
-                                <th scope="col">Hiện tại</th>
+                                <th scope="col" id="dg-history-current-heading">Hiện tại</th>
                                 <th scope="col">Trạng thái</th>
                             </tr>
                         </thead>
@@ -165,7 +165,7 @@
                     <span class="nd-count" id="dg-commune-count" aria-live="polite"></span>
                 </div>
 
-                <div class="nd-table-wrap">
+                <div class="nd-table-wrap nd-table-wrap--scroll">
                     <table class="nd-table">
                         <caption class="visually-hidden">Danh sách xã, phường, đặc khu sau sắp xếp 01/07/2025</caption>
                         <thead>
@@ -185,7 +185,7 @@
                 </div>
 
                 <p class="nd-note mt-3" id="dg-commune-source">
-                    Cấp huyện không còn trong bộ máy hành chính 2 cấp từ 01/07/2025.
+                    Danh sách xã/phường là hiện hành; chưa có dữ liệu đối chiếu lịch sử cấp xã. Cấp huyện không còn từ 01/07/2025.
                 </p>
             </section>
 
