@@ -32,7 +32,7 @@ assets/data/tools.json         # catalog fallback
 assets/data/admin-merger.json  # dữ liệu cấp tỉnh đã chuẩn hoá (tự sinh)
 assets/data/admin-communes.json # dữ liệu 3.321 xã/phường/đặc khu (fallback)
 db/schema.sql                  # bảng + RLS (catalog, admin_units legacy)
-db/schema-geo.sql              # schema geo_*: dataset, cây đơn vị, sự kiện, view
+db/schema-geo.sql              # schema geo_*: dataset, cây đơn vị, sự kiện, tổng hợp, view
 db/seed-tools.sql              # seed catalog
 db/seed-admin.sql              # seed địa giới legacy (tự sinh)
 db/seed-geo.sql                # seed geo_* gộp (psql/CLI; quá lớn cho SQL Editor)
@@ -40,10 +40,18 @@ db/seed-geo-1-core.sql         # seed phần 1: dataset, cấp/loại, văn bả
 db/seed-geo-2-communes/        # seed phần 2: 34 file xã/phường theo tỉnh (≤34KB/file)
 db/seed-geo-2-communes-all.sql # seed phần 2 gộp (psql/CLI; quá lớn cho SQL Editor)
 db/seed-geo-3-relations.sql    # seed phần 3: chỉ số, sự kiện, liên kết, nguồn
+db/seed-commune-reform-summary.sql  # seed tổng hợp 2025 + đánh dấu 127 đơn vị giữ nguyên
+db/data/commune-reform-summary.json # nguồn tổng hợp + 127 tên không sắp xếp
 db/source/database_vietnam_merger.json  # JSON nguồn cấp tỉnh của geo_*
 db/source/communes-open-api.json        # JSON nguồn cấp xã đã đối chiếu
+db/source/danh_sach_xa_phuong_truoc_sau_sap_xep.json # 34 tỉnh + 127 tên giữ nguyên
+admin/                        # admin local: CRUD + SQL/import, key chỉ ở server
+admin/server.mjs              # server/proxy PostgREST + Management API/psql
+admin/public/                 # giao diện admin
 scripts/build-admin-data.mjs   # chuẩn hoá dữ liệu crawl -> JSON + SQL legacy
 scripts/build-geo-sql.mjs      # sinh db/seed-geo.sql + file theo tỉnh
+scripts/build-reform-summary-data.mjs # chuẩn hoá 127 tên + fallback admin-communes
+scripts/build-reform-summary-sql.mjs  # sinh SQL tổng hợp sắp xếp 2025
 scripts/split-geo-seed.mjs     # cắt seed-geo.sql thành 3 phần
 scripts/fetch-communes.mjs     # tải cấp xã từ provinces.open-api.vn
 scripts/check-links.mjs        # kiểm tra link/asset nội bộ
@@ -125,6 +133,48 @@ trả **cùng shape** dù dữ liệu từ Supabase hay JSON, nên render không
   tab cấp xã vẫn hiển thị qua `assets/data/admin-communes.json`. Cần chạy `db/seed-geo.sql`
   để đổi sang Supabase.
 
+## Số liệu tổng hợp sắp xếp 2025 (2026-10-22)
+- File đính kèm ban đầu chỉ có **số liệu tổng hợp theo 34 tỉnh/thành**. File mới
+  `danh_sach_xa_phuong_truoc_sau_sap_xep.json` bổ sung **tên 127 đơn vị không thực hiện
+  sắp xếp**; vẫn **không có tên của 3.194 đơn vị còn lại**.
+- Đã chuẩn hoá vào `db/data/commune-reform-summary.json` bằng
+  `scripts/build-reform-summary-data.mjs`; sinh SQL bằng
+  `scripts/build-reform-summary-sql.mjs` → `db/seed-commune-reform-summary.sql`.
+- Đối chiếu 127 tên với `communes-open-api.json`: 125 khớp chính xác NFC, 2 khớp
+  không dấu (`Tuấn Đáo` → `Xã Tuấn Đạo`; `Thuận Hòa` → `Xã Thuận Hoà`), 0 thiếu.
+  `Xã Thạnh An` (HCMC) khớp chính xác, không nhầm `Xã Thanh An`. Tên gốc giữ ở
+  `source_name`; không sửa tên `geo_units`.
+- `db/schema-geo.sql` đã có DDL `geo_reform_summaries`; file seed vẫn tự tạo bảng
+  (`if not exists`) để chạy độc lập và idempotent.
+- Bảng có unique `(dataset_id, province_name)` vì mã `43` xuất hiện cho cả Điện Biên
+  và Đồng Nai. `total_units_after` và `communes_delta` là generated column.
+- Seed upsert 34 dòng summary (metadata có `not_applied_units`), 204
+  `geo_unit_metrics`, cập nhật metadata 34 `geo_events`, và đánh dấu 127 `geo_units`
+  với `reform_status=not_applied`, `changed=false`, `before_names`, `source_name`,
+  `source_resolution`.
+- Fallback `assets/data/admin-communes.json` cũng được cập nhật 127 đơn vị để giao diện
+  hiện “Giữ nguyên” và tên trước 01/07/2025 khi chưa nạp Supabase.
+- Tổng dùng theo 34 dòng: `xa_truoc=2621`, `xa_sau=2499`, `phuong_sau=682`,
+  `dac_ku_sau=13`, `khong_thuc_hien=127`, `unit_count_after=3321`.
+  Nguồn có `tong_quan.tong_xa_truoc=3233` mâu thuẫn; giữ ghi chú trong metadata,
+  không tự sửa số liệu.
+- Đã test SQL hai lần bằng PGlite: idempotent, 34 summary, 34 dòng mỗi metric code,
+  34 event được enrich, 127/127 `geo_units` được đánh dấu, 2 name variant.
+  **Chưa chạy trên Supabase production** vì chưa có service-role/PAT trong môi trường
+  làm việc.
+
+## Admin local (2026-10-22)
+- `admin/` là công cụ Node thuần, chạy local, không nằm trong build tĩnh/deploy.
+- `admin/server.mjs` bind `127.0.0.1:8787` mặc định, đọc `admin/supabase.txt`
+  (đã ignore), proxy CRUD qua PostgREST bằng service_role/secret key.
+- Key/token không gửi xuống browser; API yêu cầu `X-Admin-Request`, kiểm tra
+  same-origin và Host loopback. `npm run admin` hoặc `admin/start.cmd`.
+- SQL/import dùng Supabase Management API với PAT `sbp_...`, hoặc `DATABASE_URL` +
+  `psql`; chỉ service_role key thì SQL bị tắt. Endpoint SQL yêu cầu
+  `confirm: "RUN_SQL"`.
+- Đã test UI/API với mock PostgREST: xem bảng, tìm kiếm, insert/update/delete,
+  modal, nạp file SQL, trạng thái SQL tắt. Chưa test với project thật.
+
 ## Điểm cần kiểm chứng (đừng tự tin tuyệt đối)
 - File crawl ghi Đồng Nai lên thành phố 29/04/2026, Quảng Ninh 01/09/2026, Bắc Ninh 20/09/2026.
   Dữ liệu vẫn để `type` như file gốc + `note` cảnh báo. **Không tự sửa nếu chưa có văn bản gốc.**
@@ -178,23 +228,33 @@ trả **cùng shape** dù dữ liệu từ Supabase hay JSON, nên render không
 ## Lệnh
 ```bash
 npm run dev          # http://localhost:5173 (không cần npm install)
+npm run admin        # http://127.0.0.1:8787 (cần admin/supabase.txt)
 npm run build:data   # sinh lại JSON + seed SQL legacy từ file crawl
 npm run build:geo    # sinh lại db/seed-geo.sql từ db/source/*.json
+npm run build:reform # chuẩn hoá 127 tên + sinh seed-commune-reform-summary.sql
 node scripts/check-links.mjs
 ```
 
 ## Việc tiếp theo (gợi ý)
 1. Đã chạy 5 file SQL trên Supabase. Kiểm tra Vercel có `SUPABASE_URL` +
    `SUPABASE_ANON_KEY`, redeploy, rồi xác nhận badge trang tra cứu hiện "Supabase".
-2. Hoàn thiện công cụ địa giới: bổ sung cấp xã/phường nếu có nguồn dữ liệu;
-   dùng `geo_units.parent_id` + type `xa`/`phuong`/`dac_ku`.
+2. Hoàn thiện công cụ địa giới: dùng `geo_units.parent_id` + type
+   `xa`/`phuong`/`dac_ku`; đã có tên 127 đơn vị giữ nguyên, còn thiếu tên trước
+   sắp xếp của 3.194 đơn vị.
 3. Cân nhắc bản đồ (cần GeoJSON) — hiện chưa có dữ liệu hình học.
 4. Chỉ thêm công cụ mới khi đã hoàn thiện công cụ hiện tại.
+5. Khi có quyền: chạy `db/seed-commune-reform-summary.sql` trên project hiện hữu
+   (file mới, idempotent; không chạy lại các seed cũ) rồi kiểm tra
+   `select count(*) from public.geo_reform_summaries` = 34, tổng `communes_before` = 2621,
+   và `select count(*) from public.geo_units where metadata->>'reform_status'='not_applied'` = 127.
 
 ## Yêu cầu sản phẩm cho công cụ tra cứu
 - Người dùng muốn tra cứu địa chỉ theo cả hai chiều trước ↔ sau sáp nhập, nhưng giữ nguyên giao diện chung của trang; các bảng dài cần nằm trong vùng cuộn giới hạn.
 **Why:** Cách tra cứu hiện tại bị rời rạc và bảng dài làm trang quá dài.
 **How to apply:** Giới hạn thay đổi giao diện ở công cụ địa giới; không chỉnh sửa các công cụ khác hoặc cấu hình kết nối Supabase khi không được yêu cầu.
+- Đã đổi tab “34 đơn vị hiện tại” từ lưới thẻ sang bảng có vùng cuộn; tab “Tra cứu trước ↔ sau” có thêm chế độ cấp xã.
+  Dữ liệu cũ cấp xã chưa có, giao diện đọc sẵn `beforeNames` / `before_names` / `before.names`
+  (trong `geo_units.metadata` hoặc JSON) để tự điền cột “Trước 01/07/2025” khi bổ sung dữ liệu.
 
 ## Supabase và các file SQL địa giới
 - Người dùng xác nhận các file SQL hiện có trong `db/` đã được nạp vào Supabase; không chạy lại seed/reset hoặc tạo kết nối Supabase mới.

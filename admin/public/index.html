@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>NotDore Admin — Supabase</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark">ND</div>
+        <div class="brand-text">
+          <strong>NotDore Admin</strong>
+          <span>Supabase console</span>
+        </div>
+      </div>
+
+      <div id="statusCard" class="status-card">
+        <div class="status-row">
+          <span class="dot dot-pending"></span>
+          <span>Đang kiểm tra cấu hình...</span>
+        </div>
+      </div>
+
+      <div class="sidebar-tools">
+        <div class="section-heading">
+          <span>Bảng dữ liệu</span>
+          <button id="btnRefreshTables" class="icon-btn" type="button" title="Tải lại danh sách bảng">↻</button>
+        </div>
+        <select id="schemaFilter" class="select" aria-label="Lọc theo schema">
+          <option value="">Tất cả schema</option>
+        </select>
+        <input id="tableSearch" class="input" type="search" placeholder="Tìm bảng..." aria-label="Tìm bảng">
+      </div>
+
+      <div id="tableList" class="table-list">
+        <div class="empty-small">Chưa tải danh sách bảng.</div>
+      </div>
+
+      <div class="sidebar-footer">
+        <button id="btnReloadConfig" class="btn btn-ghost btn-block" type="button">Tải lại cấu hình</button>
+        <p>Chỉ chạy local. Key nằm trong <code>admin/supabase.txt</code> và không được gửi xuống trình duyệt.</p>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div class="topbar-title">
+          <div id="breadcrumb" class="breadcrumb">Chọn một bảng để bắt đầu</div>
+          <div id="tableSubtitle" class="subtitle"></div>
+        </div>
+        <nav class="tabs" aria-label="Chế độ">
+          <button id="tabData" class="tab active" type="button" data-view="data">Dữ liệu</button>
+          <button id="tabSql" class="tab" type="button" data-view="sql">SQL &amp; Import</button>
+        </nav>
+      </header>
+
+      <div id="globalNotice" class="notice hidden"></div>
+
+      <section id="viewData" class="view">
+        <div class="toolbar">
+          <div class="toolbar-left">
+            <button id="btnInsert" class="btn btn-primary" type="button" disabled>+ Thêm dòng</button>
+            <button id="btnRefreshRows" class="btn" type="button" disabled>↻ Tải lại</button>
+          </div>
+          <div class="toolbar-right">
+            <input id="searchInput" class="input search" type="search" placeholder="Tìm trong các cột text..." disabled aria-label="Tìm dữ liệu">
+            <select id="pageSize" class="select" disabled aria-label="Số dòng mỗi trang">
+              <option value="25">25 dòng</option>
+              <option value="50" selected>50 dòng</option>
+              <option value="100">100 dòng</option>
+              <option value="200">200 dòng</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="dataNotice" class="notice hidden"></div>
+
+        <div class="table-shell">
+          <table id="dataTable" class="data-table">
+            <thead id="dataHead"></thead>
+            <tbody id="dataBody"></tbody>
+          </table>
+          <div id="dataEmpty" class="empty hidden">
+            <strong>Chưa có dữ liệu</strong>
+            <span>Chọn bảng khác hoặc thử xoá bộ lọc.</span>
+          </div>
+        </div>
+
+        <div class="pager">
+          <div id="rowInfo" class="muted">Chưa có dữ liệu</div>
+          <div class="pager-actions">
+            <button id="btnPrev" class="btn" type="button" disabled>← Trước</button>
+            <span id="pageInfo" class="muted">Trang 1</span>
+            <button id="btnNext" class="btn" type="button" disabled>Sau →</button>
+          </div>
+        </div>
+      </section>
+
+      <section id="viewSql" class="view hidden">
+        <div class="sql-layout">
+          <div class="panel">
+            <div class="panel-head">
+              <div>
+                <h2>SQL &amp; Import</h2>
+                <p class="muted">Chạy script, dán SQL hoặc nạp file <code>.sql</code>.</p>
+              </div>
+              <div class="panel-actions">
+                <label class="btn" for="sqlFile">Nạp file .sql</label>
+                <input id="sqlFile" type="file" accept=".sql,text/plain" hidden>
+                <button id="btnCopySql" class="btn" type="button">Sao chép</button>
+                <button id="btnClearSql" class="btn" type="button">Xoá</button>
+              </div>
+            </div>
+
+            <div id="sqlModeNotice" class="notice hidden"></div>
+            <div class="warning-box">
+              <strong>Lưu ý:</strong> SQL chạy bằng quyền quản trị, có thể thay đổi hoặc xoá dữ liệu và không thể hoàn tác.
+              Hãy sao lưu trước khi import file lớn.
+            </div>
+
+            <div id="sqlEditorWrap" class="editor-wrap">
+              <textarea id="sqlEditor" class="editor" spellcheck="false" placeholder="-- Dán SQL vào đây...&#10;-- Ví dụ: select * from public.geo_units limit 20;"></textarea>
+              <div id="sqlFileInfo" class="editor-info"></div>
+            </div>
+
+            <div class="sql-actions">
+              <label class="check">
+                <input id="sqlReadOnly" type="checkbox">
+                Chỉ đọc (nếu backend hỗ trợ)
+              </label>
+              <div class="sql-actions-right">
+                <button id="btnExample" class="btn" type="button">Ví dụ</button>
+                <button id="btnRunSql" class="btn btn-primary" type="button">Chạy SQL (Ctrl+Enter)</button>
+              </div>
+            </div>
+
+            <div class="examples" aria-label="Ví dụ SQL">
+              <button class="chip" type="button" data-example="provinces">34 tỉnh/thành</button>
+              <button class="chip" type="button" data-example="summary">Bảng tổng hợp 2025</button>
+              <button class="chip" type="button" data-example="counts">Đếm theo cấp</button>
+              <button class="chip" type="button" data-example="tables">Liệt kê bảng</button>
+            </div>
+          </div>
+
+          <div class="panel result-panel">
+            <div class="panel-head">
+              <div>
+                <h2>Kết quả</h2>
+                <p id="sqlResultMeta" class="muted">Chưa chạy SQL.</p>
+              </div>
+              <button id="btnDownloadResult" class="btn" type="button" disabled>Tải JSON</button>
+            </div>
+            <div id="sqlError" class="error-box hidden"></div>
+            <div id="sqlResult" class="result-box muted">Kết quả sẽ hiển thị ở đây.</div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div id="modalRoot"></div>
+  <div id="toastRoot" class="toast-root"></div>
+  <script type="module" src="/app.js"></script>
+</body>
+</html>

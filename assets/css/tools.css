@@ -773,7 +773,7 @@
 }
 
 .nd-table-wrap--scroll {
-  max-height: min(72vh, 42rem);
+  max-height: min(62vh, 36rem);
   overflow: auto;
   overscroll-behavior: contain;
   scrollbar-gutter: stable;
@@ -816,7 +816,13 @@
 .nd-link:hover { color: var(--accent-purple-light); text-decoration-color: currentColor; }
 
 .nd-note { color: var(--text-secondary); font-size: .82rem; display: block; margin-top: .2rem; }
+.nd-muted { color: var(--text-secondary); font-size: .82rem; }
 .nd-empty-cell { text-align: center; padding: 2.5rem 1rem !important; color: var(--text-secondary); }
+
+/* Bảng 34 đơn vị cấp tỉnh: giữ cột tên đủ rộng, cho phép cuộn ngang trên màn hình hẹp. */
+.nd-table--units { min-width: 760px; }
+.nd-table--units td:first-child { white-space: nowrap; }
+.nd-table--units .nd-pill { white-space: nowrap; }
 
 /* Thẻ đơn vị hiện tại */
 .nd-unit-card {
@@ -953,6 +959,7 @@
 }
 
 @media (max-width: 720px) {
+  .nd-table--units { min-width: 0; }
   .nd-table thead { display: none; }
   .nd-table tr { display: block; border-bottom: 1px solid var(--border); padding: .5rem 0; }
   .nd-table td { display: flex; gap: .75rem; border: none; padding: .3rem .9rem; }

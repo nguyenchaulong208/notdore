@@ -6,8 +6,9 @@
  *   - NotDoreDB.getCommunes():       3.321 xã / phường / đặc khu
  *
  * Ba chế độ xem:
- *   - history:  63 đơn vị cũ -> 34 đơn vị hiện tại
- *   - units:    34 đơn vị hiện tại (kèm các đơn vị cũ hợp thành)
+ *   - history:  63 đơn vị cũ -> 34 đơn vị hiện tại; chuyển được sang cấp xã
+ *               (đã có tên trước 01/07/2025 cho 127 đơn vị giữ nguyên)
+ *   - units:    34 đơn vị hiện tại dạng bảng cuộn (kèm đơn vị cũ hợp thành)
  *   - communes: tra cứu xã / phường / đặc khu (không có cấp huyện từ 01/07/2025)
  */
 (function () {
@@ -28,6 +29,7 @@
     onlyChanged: false,
     communeProvince: 'all',
     communeType: 'all',
+    historyLevel: 'province',
     direction: 'before-to-current',
   };
 
@@ -165,6 +167,25 @@
   );
 
   const renderHistory = () => {
+    const isCommune = state.historyLevel === 'commune';
+    const provinceWrap = $('dg-history-province-wrap');
+    const communeWrap = $('dg-history-commune-wrap');
+    if (provinceWrap) provinceWrap.hidden = isCommune;
+    if (communeWrap) communeWrap.hidden = !isCommune;
+    document.querySelectorAll('[data-dg-history-commune-filter]').forEach((el) => {
+      el.hidden = !isCommune;
+    });
+    const communeNote = $('dg-history-commune-note');
+    if (communeNote) communeNote.hidden = !isCommune;
+    const communeCount = $('dg-history-commune-count');
+    if (communeCount) communeCount.hidden = !isCommune;
+
+    if (isCommune) {
+      loadCommunes();
+      renderHistoryCommunes();
+      return;
+    }
+
     const rows = filterHistory();
     const body = $('dg-history-body');
     if (!body) return;
@@ -240,7 +261,7 @@
       </tr>`).join('');
   };
 
-  /* ── Thẻ 34 đơn vị hiện tại ──────────────────────────────────────── */
+  /* ── Bảng 34 đơn vị hiện tại ─────────────────────────────────────── */
 
   const filterUnits = () => (state.data.provinces || []).filter((p) => {
     if (state.region !== 'all' && p.region !== state.region) return false;
@@ -264,39 +285,82 @@
       return;
     }
 
-    host.innerHTML = `<div class="nd-grid">${list.map((p) => `
-      <button type="button" class="nd-unit-card" data-code="${esc(p.code)}">
-        <span class="nd-unit-top">
-          <span class="nd-unit-code">${esc(p.code)}</span>
-          <span class="nd-pill ${p.changed ? 'nd-pill--merge' : 'nd-pill--keep'}">
-            ${p.changed ? `${p.mergedFrom.length} đơn vị hợp thành` : 'Giữ nguyên'}
-          </span>
-        </span>
-        <span class="nd-unit-name">${esc(p.name)}</span>
-        <span class="nd-unit-meta">${typeLabel(p.type)} · ${esc(p.region || '—')}</span>
-        ${p.changed
-          ? `<span class="nd-unit-from">${p.mergedFrom.map((m) => `<span>${esc(m)}</span>`).join('')}</span>`
-          : ''}
-      </button>`).join('')}</div>`;
+    host.innerHTML = `<div class="nd-table-wrap nd-table-wrap--scroll">
+      <table class="nd-table nd-table--units">
+        <caption class="visually-hidden">34 đơn vị hành chính cấp tỉnh hiện tại</caption>
+        <thead>
+          <tr>
+            <th scope="col">Mã</th>
+            <th scope="col">Tỉnh / Thành phố</th>
+            <th scope="col">Loại</th>
+            <th scope="col">Vùng</th>
+            <th scope="col">Trạng thái</th>
+            <th scope="col">Đơn vị hợp thành</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${list.map((p) => {
+            const mergedFrom = p.mergedFrom || [];
+            const status = p.changed
+              ? 'Có sáp nhập'
+              : p.renamedFrom ? 'Đổi tên' : 'Giữ nguyên';
+            return `
+              <tr>
+                <td data-label="Mã">${esc(p.code)}</td>
+                <td data-label="Tỉnh / Thành phố">
+                  <button type="button" class="nd-link" data-code="${esc(p.code)}">${esc(p.name)}</button>
+                  ${p.renamedFrom ? `<small class="nd-note">Tên cũ: ${esc(p.renamedFrom)}</small>` : ''}
+                </td>
+                <td data-label="Loại">${typeLabel(p.type)}</td>
+                <td data-label="Vùng">${esc(p.region || '—')}</td>
+                <td data-label="Trạng thái">
+                  <span class="nd-pill ${p.changed ? 'nd-pill--merge' : 'nd-pill--keep'}">${esc(status)}</span>
+                </td>
+                <td data-label="Đơn vị hợp thành">
+                  ${p.changed
+                    ? mergedFrom.map((m) => `<span class="nd-pill nd-pill--soft">${esc(m)}</span>`).join(' ')
+                    : '<span class="nd-muted">—</span>'}
+                </td>
+              </tr>`;
+          }).join('')}
+        </tbody>
+      </table>
+    </div>`;
   };
 
   /* ── Bảng xã / phường / đặc khu ──────────────────────────────────── */
 
   const populateCommuneProvinceFilter = () => {
-    const select = $('dg-commune-province');
-    if (!select) return;
+    const selects = ['dg-commune-province', 'dg-history-commune-province']
+      .map((id) => $(id))
+      .filter(Boolean);
+    if (!selects.length) return;
+
     const current = state.communeProvince;
     const provinces = [...(state.data?.provinces || [])]
       .sort((a, b) => a.name.localeCompare(b.name, 'vi'));
-
-    select.innerHTML = '<option value="all">Tất cả</option>' + provinces.map((p) =>
+    const options = '<option value="all">Tất cả</option>' + provinces.map((p) =>
       `<option value="${esc(p.code)}">${esc(p.name)}</option>`
     ).join('');
 
-    select.value = current && [...select.options].some((o) => o.value === current)
-      ? current
-      : 'all';
-    state.communeProvince = select.value;
+    selects.forEach((select) => {
+      select.innerHTML = options;
+      select.value = current && [...select.options].some((o) => o.value === current)
+        ? current
+        : 'all';
+    });
+    state.communeProvince = selects[0].value;
+  };
+
+  const syncCommuneFilters = () => {
+    ['dg-commune-province', 'dg-history-commune-province'].forEach((id) => {
+      const select = $(id);
+      if (select) select.value = state.communeProvince;
+    });
+    ['dg-commune-type', 'dg-history-commune-type'].forEach((id) => {
+      const select = $(id);
+      if (select) select.value = state.communeType;
+    });
   };
 
   const filterCommunes = () => {
@@ -312,16 +376,20 @@
       : []);
     const matchedCommuneCodes = new Set(query
       ? all.filter((c) => {
-        const fullName = normalize(c.name);
-        const exactCurrentName = fullName.length > 3 && normalizedQuery.includes(fullName);
+        const names = [
+          c.name,
+          c.shortCodename?.replace(/_/g, ' '),
+          ...(c.beforeNames || []),
+        ].filter(Boolean);
+        const exactCurrentName = names.some((name) => {
+          const fullName = normalize(name);
+          return fullName.length > 3 && normalizedQuery.includes(fullName);
+        });
         if (exactCurrentName) {
           return !containsDistrict || state.direction === 'current-to-before';
         }
 
-        const shortNameMatch = [
-          c.name,
-          c.shortCodename?.replace(/_/g, ' '),
-        ].some((name) => addressContains(query, name));
+        const shortNameMatch = names.some((name) => addressContains(query, name));
         return shortNameMatch &&
           (state.direction === 'current-to-before' || oldProvinceCodes.size === 0);
       }).map((c) => c.code)
@@ -346,7 +414,15 @@
       }
       if (matchedProvinceCodes.size) return matchedProvinceCodes.has(c.provinceCode);
       return matches(
-        [c.name, c.typeLabel, c.provinceName, c.code, c.shortCodename].join(' '),
+        [
+          c.name,
+          c.typeLabel,
+          c.provinceName,
+          c.code,
+          c.shortCodename,
+          ...(c.beforeNames || []),
+          c.beforeProvinceName,
+        ].join(' '),
         query,
       );
     }).sort((a, b) =>
@@ -419,9 +495,108 @@
       const label = state.communes.source === 'none'
         ? 'chưa có dữ liệu'
         : sourceLabel(state.communes);
+      const withHistory = all.filter((commune) => commune.beforeNames?.length).length;
       source.innerHTML = `Nguồn cấp xã: <strong>${esc(label)}</strong> ` +
         `· ${esc(state.communes.meta?.effectiveFrom || '01/07/2025')} ` +
-        `· Danh sách hiện hành; chưa có đối chiếu lịch sử cấp xã. Cấp huyện không còn từ 01/07/2025.`;
+        `· Đã đối chiếu ${withHistory}/${all.length} đơn vị giữ nguyên; ` +
+        `các đơn vị còn lại chưa có tên trước sắp xếp. ` +
+        `Cấp huyện không còn từ 01/07/2025.`;
+    }
+  };
+
+  const beforeNamesHtml = (commune) => {
+    if (!commune.beforeNames?.length) {
+      return '<span class="nd-muted">Chưa có dữ liệu</span>';
+    }
+    return commune.beforeNames
+      .map((name) => `<span class="nd-pill nd-pill--soft">${esc(name)}</span>`)
+      .join(' ');
+  };
+
+  const communeStatus = (commune) => {
+    if (commune.changed === false) return { label: 'Giữ nguyên', cls: 'nd-pill--keep' };
+    if (commune.beforeNames?.length) return { label: 'Sáp nhập / đổi tên', cls: 'nd-pill--merge' };
+    return { label: 'Chưa đối chiếu', cls: 'nd-pill--soft' };
+  };
+
+  const renderHistoryCommunes = () => {
+    const body = $('dg-history-commune-body');
+    if (!body) return;
+
+    const count = $('dg-history-commune-count');
+    const note = $('dg-history-commune-note');
+    const reverse = state.direction === 'current-to-before';
+    const beforeHeading = $('dg-history-commune-before-heading');
+    const currentHeading = $('dg-history-commune-current-heading');
+    if (beforeHeading) beforeHeading.textContent = reverse ? 'Hiện tại' : 'Trước 01/07/2025';
+    if (currentHeading) currentHeading.textContent = reverse ? 'Trước 01/07/2025' : 'Hiện tại';
+
+    if (state.communesError) {
+      if (count) count.textContent = '0 đơn vị';
+      body.innerHTML = `<tr><td colspan="5" class="nd-empty-cell">
+        <i class="fas fa-triangle-exclamation me-2"></i>Không tải được dữ liệu cấp xã.
+      </td></tr>`;
+      if (note) note.hidden = false;
+      return;
+    }
+
+    if (!state.communes) {
+      if (count) count.textContent = 'Đang tải…';
+      body.innerHTML = `<tr><td colspan="5" class="nd-empty-cell">
+        <i class="fas fa-spinner fa-spin me-2"></i>Đang tải dữ liệu cấp xã.
+      </td></tr>`;
+      return;
+    }
+
+    const all = state.communes.communes || [];
+    const rows = filterCommunes();
+
+    if (count) {
+      count.textContent = rows.length === all.length
+        ? `${all.length} xã, phường, đặc khu`
+        : `${rows.length} kết quả`;
+    }
+
+    if (!rows.length) {
+      body.innerHTML = `<tr><td colspan="5" class="nd-empty-cell">
+        <i class="fas fa-magnifying-glass me-2"></i>Không tìm thấy xã/phường phù hợp.
+      </td></tr>`;
+    } else {
+      body.innerHTML = rows.map((commune) => {
+        const before = beforeNamesHtml(commune);
+        const current = `<strong>${esc(commune.name)}</strong>
+          <small class="nd-note">${esc(commune.typeLabel || commune.type || '')} · ${esc(commune.code)}</small>`;
+        const province = commune.provinceCode
+          ? `<button type="button" class="nd-link" data-code="${esc(commune.provinceCode)}">${esc(commune.provinceName || '—')}</button>`
+          : esc(commune.provinceName || '—');
+        const status = communeStatus(commune);
+        const beforeLabel = reverse ? 'Hiện tại' : 'Trước 01/07/2025';
+        const currentLabel = reverse ? 'Trước 01/07/2025' : 'Hiện tại';
+
+        return `
+          <tr>
+            <td data-label="${beforeLabel}">${reverse ? current : before}</td>
+            <td class="nd-arrow" aria-hidden="true"><i class="fas fa-arrow-right"></i></td>
+            <td data-label="${currentLabel}">${reverse ? before : current}</td>
+            <td data-label="Tỉnh / Thành phố">${province}</td>
+            <td data-label="Trạng thái">
+              <span class="nd-pill ${status.cls}">${esc(status.label)}</span>
+              ${commune.note ? `<small class="nd-note">${esc(commune.note)}</small>` : ''}
+            </td>
+          </tr>`;
+      }).join('');
+    }
+
+    if (note) {
+      note.hidden = false;
+      const withHistory = all.filter((commune) => commune.beforeNames?.length).length;
+      const label = state.communes.source === 'none' ? 'chưa có dữ liệu' : sourceLabel(state.communes);
+      note.innerHTML = withHistory
+        ? `Đã có dữ liệu trước sáp nhập cho <strong>${withHistory}/${all.length}</strong> đơn vị cấp xã.
+           Nguồn: <strong>${esc(label)}</strong> · Hiệu lực ${esc(state.communes.meta?.effectiveFrom || '01/07/2025')}.`
+        : `Dữ liệu đối chiếu lịch sử cấp xã chưa có. Bảng hiển thị ${all.length.toLocaleString('vi-VN')} đơn vị
+           hiện hành và sẽ tự điền cột “Trước 01/07/2025” khi dữ liệu cũ được bổ sung.
+           Nguồn hiện tại: <strong>${esc(label)}</strong>.`;
     }
   };
 
@@ -439,7 +614,11 @@
     } finally {
       state.communesLoading = false;
       if (state.communes) renderStats();
-      renderCommunes();
+      if (state.tab === 'history' && state.historyLevel === 'commune') {
+        renderHistoryCommunes();
+      } else {
+        renderCommunes();
+      }
     }
   };
 
@@ -514,6 +693,7 @@
         const select = $('dg-commune-province');
         if (select) select.value = p.code;
         state.communeProvince = select?.value || p.code;
+        syncCommuneFilters();
         setTab('communes');
       });
     }
@@ -580,9 +760,13 @@
     $('dg-panel-communes').hidden = tab !== 'communes';
     $('dg-panel-meta').hidden = tab !== 'meta';
 
+    const historyLevel = $('dg-history-level');
+    if (historyLevel) historyLevel.value = state.historyLevel;
+
     // Các bộ lọc vùng/loại tỉnh không áp dụng cho bảng cấp xã.
+    const communeMode = tab === 'communes' || (tab === 'history' && state.historyLevel === 'commune');
     document.querySelectorAll('[data-dg-province-only]').forEach((el) => {
-      el.hidden = tab === 'communes';
+      el.hidden = communeMode;
     });
     updateSearchPlaceholder();
 
@@ -601,6 +785,8 @@
     if (!search) return;
     if (state.tab === 'communes') {
       search.placeholder = 'Tỉnh cũ để lọc xã/phường hiện hành, hoặc tìm địa chỉ mới…';
+    } else if (state.tab === 'history' && state.historyLevel === 'commune') {
+      search.placeholder = 'Tên xã/phường hiện tại hoặc tỉnh cũ; thêm cũ: / mới: nếu cần…';
     } else {
       search.placeholder = 'Địa chỉ cũ hoặc mới; thêm cũ: / mới: nếu cần…';
     }
@@ -608,6 +794,7 @@
 
   const bind = () => {
     populateCommuneProvinceFilter();
+    syncCommuneFilters();
 
     document.querySelectorAll('[data-dg-tab]').forEach((btn) => {
       btn.addEventListener('click', () => setTab(btn.dataset.dgTab));
@@ -640,14 +827,28 @@
       renderCurrent();
     });
 
-    $('dg-commune-province').addEventListener('change', (e) => {
-      state.communeProvince = e.target.value;
-      renderCurrent();
+    $('dg-history-level').addEventListener('change', (e) => {
+      state.historyLevel = e.target.value;
+      setTab('history');
     });
 
-    $('dg-commune-type').addEventListener('change', (e) => {
-      state.communeType = e.target.value;
+    const handleCommuneProvince = (e) => {
+      state.communeProvince = e.target.value;
+      syncCommuneFilters();
       renderCurrent();
+    };
+    const handleCommuneType = (e) => {
+      state.communeType = e.target.value;
+      syncCommuneFilters();
+      renderCurrent();
+    };
+    ['dg-commune-province', 'dg-history-commune-province'].forEach((id) => {
+      const select = $(id);
+      if (select) select.addEventListener('change', handleCommuneProvince);
+    });
+    ['dg-commune-type', 'dg-history-commune-type'].forEach((id) => {
+      const select = $(id);
+      if (select) select.addEventListener('change', handleCommuneType);
     });
 
     // Mở modal khi bấm vào đơn vị (bảng hoặc thẻ)
@@ -666,6 +867,7 @@
       renderMeta();
       bind();
       populateCommuneProvinceFilter();
+      syncCommuneFilters();
 
       const params = new URLSearchParams(location.search);
       const q = params.get('q') || '';
@@ -675,6 +877,7 @@
         state.direction = parsed.direction;
         $('dg-search').value = q;
       }
+      if (params.get('level') === 'commune') state.historyLevel = 'commune';
       const tabParam = params.get('tab');
       setTab(['units', 'communes', 'meta'].includes(tabParam) ? tabParam : 'history');
 

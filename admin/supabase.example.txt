@@ -1,0 +1,31 @@
+# =============================================================================
+# NotDore Admin — cấu hình Supabase
+#
+# Cách dùng:
+#   1. Sao chép file này thành: admin/supabase.txt
+#   2. Điền URL + service_role key (hoặc secret key mới của Supabase).
+#   3. Nếu muốn chạy SQL/import file .sql ngay trong admin, thêm PAT dạng sbp_...
+#   4. Chạy: npm run admin
+#
+# KHÔNG commit file admin/supabase.txt. File đã được thêm vào .gitignore.
+# =============================================================================
+
+# Bắt buộc — URL project Supabase
+SUPABASE_URL=https://thmvaufuaxfoflyndrcq.supabase.co
+
+# Bắt buộc để xem/sửa/xoá bảng — service_role key (không dùng anon key)
+# Lấy tại: Supabase Dashboard → Project Settings → API → service_role
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key-here
+
+# Tùy chọn — Personal Access Token để chạy SQL/import file .sql
+# Lấy tại: https://supabase.com/dashboard/account/tokens
+# Nếu không có PAT, admin vẫn xem/sửa/xoá bảng được nhưng nút chạy SQL sẽ tắt.
+# Bỏ dấu # ở dòng dưới và thay bằng token thật nếu muốn bật SQL.
+# SUPABASE_ACCESS_TOKEN=sbp_your_personal_access_token_here
+
+# Tùy chọn — chỉ dùng khi không có PAT và máy đã cài psql trong PATH.
+# Có thể lấy connection string tại: Project Settings → Database → Connection string.
+# DATABASE_URL=postgresql://postgres:your-password@db.thmvaufuaxfoflyndrcq.supabase.co:5432/postgres
+
+# Tùy chọn — nếu URL không có sẵn, có thể khai báo project ref:
+# SUPABASE_PROJECT_REF=thmvaufuaxfoflyndrcq
