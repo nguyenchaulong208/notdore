@@ -15,6 +15,7 @@
 --   geo_event_units   liên kết nhiều-nhiều giữa sự kiện và đơn vị
 --   geo_sources       nguồn tham chiếu của từng dataset
 --   geo_unit_aliases  tên cũ / tên viết tắt / tên không dấu để tìm kiếm
+--   geo_reform_summaries  số liệu tổng hợp xã/phường trước–sau sắp xếp 2025
 --
 -- Chỉ đọc công khai (RLS select). Ghi dữ liệu bằng SQL Editor hoặc service role.
 -- =============================================================================
@@ -292,6 +293,44 @@ create index if not exists idx_geo_sources_dataset
   on public.geo_sources (dataset_id, sort_order);
 
 -- ─────────────────────────────────────────────────────────────────────────────
+-- 6b. Tổng hợp xã/phường/đặc khu trước và sau sắp xếp 2025
+--     Mỗi dòng là số liệu tổng hợp theo tỉnh/thành. metadata.not_applied_units
+--     chỉ chứa tên 127 đơn vị không thực hiện sắp xếp, không phải toàn bộ tên cũ.
+-- ─────────────────────────────────────────────────────────────────────────────
+create table if not exists public.geo_reform_summaries (
+  id                  bigserial primary key,
+  dataset_id          uuid not null references public.geo_datasets(id) on delete cascade,
+  unit_id             uuid references public.geo_units(id) on delete set null,
+  province_slug       text not null,
+  province_code       text not null,
+  province_name       text not null,
+  resolution_number   text not null,
+  status              text not null default 'Sắp xếp',
+  communes_before     integer not null check (communes_before >= 0),
+  communes_after      integer not null check (communes_after >= 0),
+  wards_after         integer not null check (wards_after >= 0),
+  special_zones_after integer not null check (special_zones_after >= 0),
+  not_applied         integer not null check (not_applied >= 0),
+  total_units_after   integer generated always as
+    (communes_after + wards_after + special_zones_after + not_applied) stored,
+  communes_delta      integer generated always as
+    (communes_after - communes_before) stored,
+  source_document_id  uuid references public.geo_documents(id) on delete set null,
+  metadata            jsonb not null default '{}'::jsonb,
+  created_at          timestamptz not null default now(),
+  updated_at          timestamptz not null default now()
+);
+
+create unique index if not exists geo_reform_summaries_dataset_name_uq
+  on public.geo_reform_summaries (dataset_id, province_name);
+
+create index if not exists idx_geo_reform_summaries_dataset
+  on public.geo_reform_summaries (dataset_id);
+
+create index if not exists idx_geo_reform_summaries_unit
+  on public.geo_reform_summaries (unit_id);
+
+-- ─────────────────────────────────────────────────────────────────────────────
 -- 7. View tiện dụng
 -- ─────────────────────────────────────────────────────────────────────────────
 create or replace view public.geo_current_units
@@ -404,6 +443,11 @@ create trigger trg_geo_events_updated_at
   before update on public.geo_events
   for each row execute function public.set_updated_at();
 
+drop trigger if exists trg_geo_reform_summaries_updated_at on public.geo_reform_summaries;
+create trigger trg_geo_reform_summaries_updated_at
+  before update on public.geo_reform_summaries
+  for each row execute function public.set_updated_at();
+
 -- ─────────────────────────────────────────────────────────────────────────────
 -- 9. RLS: chỉ đọc công khai
 -- ─────────────────────────────────────────────────────────────────────────────
@@ -419,6 +463,7 @@ alter table public.geo_event_types     enable row level security;
 alter table public.geo_events          enable row level security;
 alter table public.geo_event_units     enable row level security;
 alter table public.geo_sources         enable row level security;
+alter table public.geo_reform_summaries enable row level security;
 
 drop policy if exists "public read" on public.geo_datasets;
 drop policy if exists "public read" on public.geo_levels;
@@ -432,6 +477,7 @@ drop policy if exists "public read" on public.geo_event_types;
 drop policy if exists "public read" on public.geo_events;
 drop policy if exists "public read" on public.geo_event_units;
 drop policy if exists "public read" on public.geo_sources;
+drop policy if exists "public read" on public.geo_reform_summaries;
 
 create policy "public read" on public.geo_datasets     for select to anon, authenticated using (true);
 create policy "public read" on public.geo_levels       for select to anon, authenticated using (true);
@@ -445,12 +491,14 @@ create policy "public read" on public.geo_event_types  for select to anon, authe
 create policy "public read" on public.geo_events       for select to anon, authenticated using (true);
 create policy "public read" on public.geo_event_units  for select to anon, authenticated using (true);
 create policy "public read" on public.geo_sources      for select to anon, authenticated using (true);
+create policy "public read" on public.geo_reform_summaries for select to anon, authenticated using (true);
 
 -- Cấp quyền đọc cho PostgREST; RLS vẫn là lớp kiểm soát cuối.
 grant select on public.geo_datasets, public.geo_levels, public.geo_unit_types,
   public.geo_documents, public.geo_units, public.geo_unit_aliases,
   public.geo_metric_defs, public.geo_unit_metrics, public.geo_event_types,
-  public.geo_events, public.geo_event_units, public.geo_sources
+  public.geo_events, public.geo_event_units, public.geo_sources,
+  public.geo_reform_summaries
 to anon, authenticated;
 
 grant select on public.geo_current_units, public.geo_unit_summary,

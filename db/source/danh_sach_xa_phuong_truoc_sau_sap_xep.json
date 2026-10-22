@@ -1,0 +1,686 @@
+{
+  "meta": {
+    "file": "danh_sach_xa_phuong_truoc_sau_sap_xep.json",
+    "source": [
+      "Nghị quyết 202/2025/QH15 (12/6/2025)",
+      "34 Nghị quyết UBTVQH (1654–1687/NQ-UBTVQH15, 16/6/2025)",
+      "Chính Phủ (xaydungchinhsach.chinhphu.vn)",
+      "Toàn văn 34 nghị quyết cấp xã: https://xaydungchinhsach.chinhphu.vn"
+    ],
+    "effective_date": "01/07/2025",
+    "generated_by": "Legal Text Database - 2026-10-22",
+    "note": "Dữ liệu tên đúng từng đơn vị hành chính cấp xã/phường/thể khu dựa trên toàn văn 34 nghị quyết UBTVQH công bố trên xaydungchinhsach.chinhphu.vn. Chỉ ghi nhận đơn vị 'không thực hiện sắp xếp' (các đơn vị chưa đổi tên/quy định nhưng vẫn tồn tại). Đơn vị hình thành sau sắp xếp được suy ra từ số liệu thống kê tổng hợp."
+  },
+  "provinces": [
+    {
+      "ma_tinh": "31",
+      "ten_tinh": "An Giang",
+      "stt_nx": "1654/NQ-UBTVQH15",
+      "tinh_trang": "Sắp xếp",
+      "tong_don_vi": 102,
+      "xa_sau": 79,
+      "phuong_sau": 14,
+      "dac_ku_sau": 3,
+      "khong_thuc_hien": {
+        "so_don_vi": 6,
+        "loai": "xã",
+        "danh_sach": [
+          "Mỹ Hòa Hưng",
+          "Bình Giang",
+          "Bình Sơn",
+          "Hòn Nghệ",
+          "Sơn Hải",
+          "Tiên Hải"
+        ]
+      }
+    },
+    {
+      "ma_tinh": "32",
+      "ten_tinh": "Bắc Ninh",
+      "stt_nx": "1658/NQ-UBTVQH15",
+      "tinh_trang": "Sắp xếp",
+      "tong_don_vi": 99,
+      "xa_sau": 65,
+      "phuong_sau": 33,
+      "dac_ku_sau": 0,
+      "khong_thuc_hien": {
+        "so_don_vi": 1,
+        "loai": "xã",
+        "danh_sach": [
+          "Tuấn Đáo"
+        ]
+      }
+    },
+    {
+      "ma_tinh": "34",
+      "ten_tinh": "Cà Mau",
+      "stt_nx": "1655/NQ-UBTVQH15",
+      "tinh_trạng": "Sắp xếp",
+      "tong_don_vi": 64,
+      "xa_sau": 54,
+      "phuong_sau": 9,
+      "dac_ku_sau": 0,
+      "khong_thuc_hien": {
+        "so_don_vi": 1,
+        "loai": "xã",
+        "danh_sach": [
+          "Hồ Thị Kỷ"
+        ]
+      }
+    },
+    {
+      "ma_tinh": "36",
+      "ten_tinh": "Cần Thơ",
+      "stt_nx": "1668/NQ-UBTVQH15",
+      "tinh_trạng": "Sắp xếp",
+      "tong_don_vi": 103,
+      "xa_sau": 65,
+      "phuong_sau": 30,
+      "dac_ku_sau": 0,
+      "khong_thuc_hien": {
+        "so_don_vi": 8,
+        "loai": "xã/phường",
+        "danh_sach": [
+          "phường Tân Lộc",
+          "xã Trường Long",
+          "xã Thạnh Phú",
+          "xã Thới Hưng",
+          "xã Phong Nẫm",
+          "xã Mỹ Phước",
+          "xã Lai Hòa",
+          "xã Vĩnh Hải"
+        ]
+      }
+    },
+    {
+      "ma_tinh": "39",
+      "ten_tinh": "Cao Bằng",
+      "stt_nx": "1657/NQ-UBTVQH15",
+      "tinh_trạng": "Sắp xếp",
+      "tong_don_vi": 56,
+      "xa_sau": 53,
+      "phuong_sau": 3,
+      "dac_ku_sau": 0,
+      "khong_thuc_hien": {
+        "so_don_vi": 0,
+        "loai": "xã",
+        "danh_sach": []
+      }
+    },
+    {
+      "ma_tinh": "40",
+      "ten_tinh": "Đà Nẵng",
+      "stt_nx": "1659/NQ-UBTVQH15",
+      "tinh_trạng": "Sắp xếp",
+      "tong_don_vi": 94,
+      "xa_sau": 68,
+      "phuong_sau": 23,
+      "dac_ku_sau": 1,
+      "khong_thuc_hien": {
+        "so_don_vi": 2,
+        "loai": "xã",
+        "danh_sach": [
+          "Tam Hải",
+          "Tân Hiệp"
+        ]
+      }
+    },
+    {
+      "ma_tinh": "41",
+      "ten_tinh": "Đắk Lắk",
+      "stt_nx": "1660/NQ-UBTVQH15",
+      "tinh_trạng": "Sắp xếp",
+      "tong_don_vi": 102,
+      "xa_sau": 82,
+      "phuong_sau": 14,
+      "dac_ku_sau": 0,
+      "khong_thuc_hien": {
+        "so_don_vi": 6,
+        "loai": "xã",
+        "danh_sach": [
+          "Ea H'Leo",
+          "Ea Trang",
+          "Ia Lốp",
+          "Ia Rvê",
+          "Krông Nô",
+          "Vụ Bổn"
+        ]
+      }
+    },
+    {
+      "ma_tinh": "43",
+      "ten_tinh": "Điện Biên",
+      "stt_nx": "1661/NQ-UBTVQH15",
+      "tinh_trạng": "Sắp xếp",
+      "tong_don_vi": 45,
+      "xa_sau": 42,
+      "phuong_sau": 3,
+      "dac_ku_sau": 0,
+      "khong_thuc_hien": {
+        "so_don_vi": 0,
+        "loai": "xã",
+        "danh_sach": []
+      }
+    },
+    {
+      "ma_tinh": "43",
+      "ten_tinh": "Đồng Nai",
+      "stt_nx": "1662/NQ-UBTVQH15",
+      "tinh_trạng": "Sắp xếp",
+      "tong_don_vi": 95,
+      "xa_sau": 67,
+      "phuong_sau": 21,
+      "dac_ku_sau": 0,
+      "khong_thuc_hien": {
+        "so_don_vi": 7,
+        "loai": "xã/phường",
+        "danh_sach": [
+          "phường Phước Tân",
+          "phường Tam Phước",
+          "xã Thanh Sơn (huyện Định Quán)",
+          "xã Đak Lua",
+          "xã Phú Lý",
+          "xã Bù Gia Mập",
+          "xã Đăk Ơ"
+        ]
+      }
+    },
+    {
+      "ma_tinh": "44",
+      "ten_tinh": "Đồng Tháp",
+      "stt_nx": "1663/NQ-UBTVQH15",
+      "tinh_trạng": "Sắp xếp",
+      "tong_don_vi": 102,
+      "xa_sau": 82,
+      "phuong_sau": 20,
+      "dac_ku_sau": 0,
+      "khong_thuc_hien": {
+        "so_don_vi": 0,
+        "loai": "xã",
+        "danh_sach": []
+      }
+    },
+    {
+      "ma_tinh": "45",
+      "ten_tinh": "Gia Lai",
+      "stt_nx": "1664/NQ-UBTVQH15",
+      "tinh_trạng": "Sắp xếp",
+      "tong_don_vi": 135,
+      "xa_sau": 101,
+      "phuong_sau": 25,
+      "dac_ku_sau": 0,
+      "khong_thuc_hien": {
+        "so_don_vi": 9,
+        "loai": "xã",
+        "danh_sach": [
+          "xã Ia O (huyện Ia Grai)",
+          "xã Nhơn Châu",
+          "xã Ia Púch",
+          "xã Ia Mơ",
+          "xã Ia Pnôn",
+          "xã Ia Nan",
+          "xã Ia Dom",
+          "xã Ia Chia",
+          "xã Krong"
+        ]
+      }
+    },
+    {
+      "ma_tinh": "46",
+      "ten_tinh": "Hà Nội",
+      "stt_nx": "1656/NQ-UBTVQH15",
+      "tinh_trạng": "Sắp xếp",
+      "tong_don_vi": 126,
+      "xa_sau": 75,
+      "phuong_sau": 51,
+      "dac_ku_sau": 0,
+      "khong_thuc_hien": {
+        "so_don_vi": 0,
+        "loai": "xã",
+        "danh_sach": []
+      }
+    },
+    {
+      "ma_tinh": "47",
+      "ten_tinh": "Hà Tĩnh",
+      "stt_nx": "1665/NQ-UBTVQH15",
+      "tinh_trạng": "Sắp xếp",
+      "tong_don_vi": 69,
+      "xa_sau": 58,
+      "phuong_sau": 9,
+      "dac_ku_sau": 0,
+      "khong_thuc_hien": {
+        "so_don_vi": 2,
+        "loai": "xã",
+        "danh_sach": [
+          "xã Sơn Kim 1",
+          "xã Sơn Kim 2"
+        ]
+      }
+    },
+    {
+      "ma_tinh": "48",
+      "ten_tinh": "Hải Phòng",
+      "stt_nx": "1669/NQ-UBTVQH15",
+      "tinh_trạng": "Sắp xếp",
+      "tong_don_vi": 114,
+      "xa_sau": 67,
+      "phuong_sau": 45,
+      "dac_ku_sau": 2,
+      "khong_thuc_hien": {
+        "so_don_vi": 0,
+        "loai": "xã",
+        "danh_sach": []
+      }
+    },
+    {
+      "ma_tinh": "49",
+      "ten_tinh": "Hưng Yên",
+      "stt_nx": "1666/NQ-UBTVQH15",
+      "tinh_trạng": "Sắp xếp",
+      "tong_don_vi": 104,
+      "xa_sau": 93,
+      "phuong_sau": 11,
+      "dac_ku_sau": 0,
+      "khong_thuc_hien": {
+        "so_don_vi": 0,
+        "loai": "xã",
+        "danh_sach": []
+      }
+    },
+    {
+      "ma_tinh": "51",
+      "ten_tinh": "Thành phố Huế",
+      "stt_nx": "1675/NQ-UBTVQH15",
+      "tinh_trạng": "Sắp xếp",
+      "tong_don_vi": 40,
+      "xa_sau": 19,
+      "phuong_sau": 20,
+      "dac_ku_sau": 0,
+      "khong_thuc_hien": {
+        "so_don_vi": 1,
+        "loai": "phường",
+        "danh_sach": [
+          "phường Dương Nỗ"
+        ]
+      }
+    },
+    {
+      "ma_tinh": "52",
+      "ten_tinh": "Khánh Hòa",
+      "stt_nx": "1667/NQ-UBTVQH15",
+      "tinh_trạng": "Sắp xếp",
+      "tong_don_vi": 65,
+      "xa_sau": 48,
+      "phuong_sau": 16,
+      "dac_ku_sau": 1,
+      "khong_thuc_hien": {
+        "so_don_vi": 0,
+        "loai": "xã",
+        "danh_sach": []
+      }
+    },
+    {
+      "ma_tinh": "53",
+      "ten_tinh": "Lai Châu",
+      "stt_nx": "1670/NQ-UBTVQH15",
+      "tinh_trạng": "Sắp xếp",
+      "tong_don_vi": 38,
+      "xa_sau": 34,
+      "phuong_sau": 2,
+      "dac_ku_sau": 0,
+      "khong_thuc_hien": {
+        "so_don_vi": 2,
+        "loai": "xã",
+        "danh_sach": [
+          "xã Mù Cả",
+          "xã Tà Tổng"
+        ]
+      }
+    },
+    {
+      "ma_tinh": "54",
+      "ten_tinh": "Lâm Đồng",
+      "stt_nx": "1671/NQ-UBTVQH15",
+      "tinh_trạng": "Sắp xếp",
+      "tong_don_vi": 124,
+      "xa_sau": 99,
+      "phuong_sau": 20,
+      "dac_ku_sau": 1,
+      "khong_thuc_hien": {
+        "so_don_vi": 4,
+        "loai": "xã",
+        "danh_sach": [
+          "xã Quảng Hòa",
+          "xã Quảng Sơn",
+          "xã Quảng Trực",
+          "xã Ninh Gia"
+        ]
+      }
+    },
+    {
+      "ma_tinh": "55",
+      "ten_tinh": "Lạng Sơn",
+      "stt_nx": "1672/NQ-UBTVQH15",
+      "tinh_trạng": "Sắp xếp",
+      "tong_don_vi": 65,
+      "xa_sau": 61,
+      "phuong_sau": 4,
+      "dac_ku_sau": 0,
+      "khong_thuc_hien": {
+        "so_don_vi": 0,
+        "loai": "xã",
+        "danh_sach": []
+      }
+    },
+    {
+      "ma_tinh": "56",
+      "ten_tinh": "Lào Cai",
+      "stt_nx": "1673/NQ-UBTVQH15",
+      "tinh_trạng": "Sắp xếp",
+      "tong_don_vi": 99,
+      "xa_sau": 81,
+      "phuong_sau": 10,
+      "dac_ku_sau": 0,
+      "khong_thuc_hien": {
+        "so_don_vi": 8,
+        "loai": "xã",
+        "danh_sach": [
+          "xã Nậm Xé",
+          "xã Ngũ Chỉ Sơn",
+          "xã Chế Tạo",
+          "xã Lao Chải",
+          "xã Nậm Có",
+          "xã Tà Xi Láng",
+          "xã Cát Thịnh",
+          "xã Phong Dụ Thượng"
+        ]
+      }
+    },
+    {
+      "ma_tinh": "57",
+      "ten_tinh": "Nghệ An",
+      "stt_nx": "1678/NQ-UBTVQH15",
+      "tinh_trạng": "Sắp xếp",
+      "tong_don_vi": 130,
+      "xa_sau": 110,
+      "phuong_sau": 11,
+      "dac_ku_sau": 0,
+      "khong_thuc_hien": {
+        "so_don_vi": 9,
+        "loai": "xã",
+        "danh_sach": [
+          "xã Keng Đu",
+          "xã Mỹ Lý",
+          "xã Bắc Lý",
+          "xã Huồi Tụ",
+          "xã Mường Lống",
+          "xã Bình Chuẩn",
+          "xã Hữu Khuông",
+          "xã Lượng Minh",
+          "xã Châu Bình"
+        ]
+      }
+    },
+    {
+      "ma_tinh": "58",
+      "ten_tinh": "Ninh Bình",
+      "stt_nx": "1674/NQ-UBTVQH15",
+      "tinh_trạng": "Sắp xếp",
+      "tong_don_vi": 129,
+      "xa_sau": 97,
+      "phuong_sau": 32,
+      "dac_ku_sau": 0,
+      "khong_thuc_hien": {
+        "so_don_vi": 0,
+        "loai": "xã",
+        "danh_sach": []
+      }
+    },
+    {
+      "ma_tinh": "59",
+      "ten_tinh": "Phú Thọ",
+      "stt_nx": "1676/NQ-UBTVQH15",
+      "tinh_trạng": "Sắp xếp",
+      "tong_don_vi": 148,
+      "xa_sau": 131,
+      "phuong_sau": 15,
+      "dac_ku_sau": 0,
+      "khong_thuc_hien": {
+        "so_don_vi": 2,
+        "loai": "xã",
+        "danh_sach": [
+          "xã Thu Cúc",
+          "xã Trung Sơn"
+        ]
+      }
+    },
+    {
+      "ma_tinh": "60",
+      "ten_tinh": "Quảng Ngãi",
+      "stt_nx": "1677/NQ-UBTVQH15",
+      "tinh_trạng": "Sắp xếp",
+      "tong_don_vi": 96,
+      "xa_sau": 81,
+      "phuong_sau": 9,
+      "dac_ku_sau": 1,
+      "khong_thuc_hien": {
+        "so_don_vi": 5,
+        "loai": "xã",
+        "danh_sach": [
+          "xã Đăk Long (huyện Đăk Glei)",
+          "xã Ba Xa",
+          "xã Rờ Kơi",
+          "xã Mô Rai",
+          "xã Ia Đal"
+        ]
+      }
+    },
+    {
+      "ma_tinh": "61",
+      "ten_tinh": "Quảng Ninh",
+      "stt_nx": "1679/NQ-UBTVQH15",
+      "tinh_trạng": "Sắp xếp",
+      "tong_don_vi": 54,
+      "xa_sau": 21,
+      "phuong_sau": 30,
+      "dac_ku_sau": 2,
+      "khong_thuc_hien": {
+        "so_don_vi": 1,
+        "loai": "xã",
+        "danh_sach": [
+          "xã Cái Chiên"
+        ]
+      }
+    },
+    {
+      "ma_tinh": "62",
+      "ten_tinh": "Quảng Trị",
+      "stt_nx": "1680/NQ-UBTVQH15",
+      "tinh_trạng": "Sắp xếp",
+      "tong_don_vi": 78,
+      "xa_sau": 68,
+      "phuong_sau": 8,
+      "dac_ku_sau": 1,
+      "khong_thuc_hien": {
+        "so_don_vi": 1,
+        "loai": "xã",
+        "danh_sach": [
+          "xã Tân Thành (huyện Minh Hóa)"
+        ]
+      }
+    },
+    {
+      "ma_tinh": "63",
+      "ten_tinh": "Sơn La",
+      "stt_nx": "1681/NQ-UBTVQH15",
+      "tinh_trạng": "Sắp xếp",
+      "tong_don_vi": 75,
+      "xa_sau": 60,
+      "phuong_sau": 8,
+      "dac_ku_sau": 0,
+      "khong_thuc_hien": {
+        "so_don_vi": 7,
+        "loai": "xã",
+        "danh_sach": [
+          "xã Mường Lạn",
+          "xã Phiêng Khoài",
+          "xã Suối Tọ",
+          "xã Ngọc Chiến",
+          "xã Tân Yên",
+          "xã Mường Bám",
+          "xã Mường Lèo"
+        ]
+      }
+    },
+    {
+      "ma_tinh": "64",
+      "ten_tinh": "Tây Ninh",
+      "stt_nx": "1682/NQ-UBTVQH15",
+      "tinh_trạng": "Sắp xếp",
+      "tong_don_vi": 96,
+      "xa_sau": 82,
+      "phuong_sau": 14,
+      "dac_ku_sau": 0,
+      "khong_thuc_hien": {
+        "so_don_vi": 0,
+        "loai": "xã",
+        "danh_sach": []
+      }
+    },
+    {
+      "ma_tinh": "65",
+      "ten_tinh": "Thái Nguyên",
+      "stt_nx": "1683/NQ-UBTVQH15",
+      "tinh_trạng": "Sắp xếp",
+      "tong_don_vi": 92,
+      "xa_sau": 75,
+      "phuong_sau": 15,
+      "dac_ku_sau": 0,
+      "khong_thuc_hien": {
+        "so_don_vi": 2,
+        "loai": "xã",
+        "danh_sach": [
+          "xã Sảng Mộc",
+          "xã Thượng Quan"
+        ]
+      }
+    },
+    {
+      "ma_tinh": "66",
+      "ten_tinh": "Thanh Hóa",
+      "stt_nx": "1686/NQ-UBTVQH15",
+      "tinh_trạng": "Sắp xếp",
+      "tong_don_vi": 166,
+      "xa_sau": 126,
+      "phuong_sau": 19,
+      "dac_ku_sau": 0,
+      "khong_thuc_hien": {
+        "so_don_vi": 21,
+        "loai": "xã",
+        "danh_sach": [
+          "xã Phú Xuân (huyện Quan Hóa)",
+          "xã Mường Chanh",
+          "xã Quang Chiểu",
+          "xã Tam Chung",
+          "xã Pù Nhi",
+          "xã Nhi Sơn",
+          "xã Mường Lý",
+          "xã Trung Lý",
+          "xã Trung Sơn",
+          "xã Na Mèo",
+          "xã Sơn Thủy",
+          "xã Sơn Điện",
+          "xã Mường Mìn",
+          "xã Tam Thanh",
+          "xã Yên Khương",
+          "xã Yên Thắng",
+          "xã Xuân Thái",
+          "xã Bát Mọt",
+          "xã Yên Nhân",
+          "xã Lương Sơn",
+          "xã Vạn Xuân"
+        ]
+      }
+    },
+    {
+      "ma_tinh": "67",
+      "ten_tinh": "Thành phố Hồ Chí Minh",
+      "stt_nx": "1685/NQ-UBTVQH15",
+      "tinh_trạng": "Sắp xếp",
+      "tong_don_vi": 168,
+      "xa_sau": 50,
+      "phuong_sau": 112,
+      "dac_ku_sau": 1,
+      "khong_thuc_hien": {
+        "so_don_vi": 5,
+        "loai": "xã/phường",
+        "danh_sach": [
+          "phường Thới Hòa",
+          "xã Long Sơn",
+          "xã Hòa Hiệp",
+          "xã Bình Châu",
+          "xã Thạnh An"
+        ]
+      }
+    },
+    {
+      "ma_tinh": "68",
+      "ten_tinh": "Tuyên Quang",
+      "stt_nx": "1684/NQ-UBTVQH15",
+      "tinh_trạng": "Sắp xếp",
+      "tong_don_vi": 124,
+      "xa_sau": 104,
+      "phuong_sau": 7,
+      "dac_ku_sau": 0,
+      "khong_thuc_hien": {
+        "so_don_vi": 13,
+        "loai": "xã",
+        "danh_sach": [
+          "xã Trung Hà",
+          "xã Kiến Thiết",
+          "xã Hùng Đức",
+          "xã Minh Sơn",
+          "xã Minh Tân",
+          "xã Thuận Hòa",
+          "xã Tùng Bá",
+          "xã Thượng Sơn",
+          "xã Cao Bồ",
+          "xã Ngọc Long",
+          "xã Giáp Trung",
+          "xã Tiên Nguyên",
+          "xã Quảng Nguyên"
+        ]
+      }
+    },
+    {
+      "ma_tinh": "70",
+      "ten_tinh": "Vĩnh Long",
+      "stt_nx": "1687/NQ-UBTVQH15",
+      "tinh_trạng": "Sắp xếp",
+      "tong_don_vi": 124,
+      "xa_sau": 101,
+      "phuong_sau": 19,
+      "dac_ku_sau": 0,
+      "khong_thuc_hien": {
+        "so_don_vi": 4,
+        "loai": "xã",
+        "danh_sach": [
+          "xã Long Hòa (huyện Châu Thành)",
+          "xã Đông Hải",
+          "xã Long Vĩnh",
+          "xã Hòa Minh"
+        ]
+      }
+    }
+  ],
+  "tong_quan": {
+    "tong_tinh_thanh": 34,
+    "tong_don_vi_sau": 3321,
+    "tong_xa_sau": 2499,
+    "tong_phuong_sau": 682,
+    "tong_dac_ku_sau": 13,
+    "tong_khong_thuc_hien": 127,
+    "ghi_chu": "Tổng hợp từ 34 Nghị quyết UBTVQH (1654–1687/NQ-UBTVQH15, 16/6/2025). Dữ liệu tên chính thức từ trang xaydungchinhsach.chinhphu.vn."
+  }
+}

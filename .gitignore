@@ -6,6 +6,9 @@ node_modules/
 .env.local
 .env.*.local
 
+# Key Supabase của admin local
+admin/supabase.txt
+
 # Hệ điều hành / editor
 .DS_Store
 Thumbs.db

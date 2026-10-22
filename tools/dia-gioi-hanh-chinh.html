@@ -58,7 +58,8 @@
 
             <p class="nd-data-note">
                 <i class="fas fa-circle-info" aria-hidden="true"></i>
-                Đối chiếu lịch sử hiện có ở cấp tỉnh; danh sách xã/phường là hiện hành. Cấp huyện không còn từ 01/07/2025.
+                Đối chiếu lịch sử hiện có ở cấp tỉnh; cấp xã đã có giao diện đối chiếu nhưng chưa có dữ liệu
+                trước sáp nhập. Danh sách xã/phường đang hiển thị là hiện hành. Cấp huyện không còn từ 01/07/2025.
                 Xem tab Nguồn &amp; ghi chú trước khi dùng cho hồ sơ chính thức.
             </p>
 
@@ -120,9 +121,35 @@
             </div>
 
             <section id="dg-panel-history" role="tabpanel">
-                <div class="nd-table-wrap nd-table-wrap--scroll">
+                <div class="nd-toolbar nd-toolbar--nested">
+                    <div class="nd-field">
+                        <label for="dg-history-level">Cấp tra cứu</label>
+                        <select id="dg-history-level" class="nd-select">
+                            <option value="province">Cấp tỉnh / thành phố</option>
+                            <option value="commune">Cấp xã / phường / đặc khu</option>
+                        </select>
+                    </div>
+                    <div class="nd-field" data-dg-history-commune-filter hidden>
+                        <label for="dg-history-commune-province">Tỉnh / Thành phố</label>
+                        <select id="dg-history-commune-province" class="nd-select">
+                            <option value="all">Tất cả</option>
+                        </select>
+                    </div>
+                    <div class="nd-field" data-dg-history-commune-filter hidden>
+                        <label for="dg-history-commune-type">Loại đơn vị</label>
+                        <select id="dg-history-commune-type" class="nd-select">
+                            <option value="all">Tất cả</option>
+                            <option value="xa">Xã</option>
+                            <option value="phuong">Phường</option>
+                            <option value="dac_ku">Đặc khu</option>
+                        </select>
+                    </div>
+                    <span class="nd-count" id="dg-history-commune-count" hidden aria-live="polite"></span>
+                </div>
+
+                <div class="nd-table-wrap nd-table-wrap--scroll" id="dg-history-province-wrap">
                     <table class="nd-table">
-                        <caption class="visually-hidden">Đối chiếu đơn vị hành chính trước và sau sáp nhập</caption>
+                        <caption class="visually-hidden">Đối chiếu đơn vị hành chính cấp tỉnh trước và sau sáp nhập</caption>
                         <thead>
                             <tr>
                                 <th scope="col" id="dg-history-before-heading">Trước 01/07/2025</th>
@@ -139,6 +166,31 @@
                         </tbody>
                     </table>
                 </div>
+
+                <div class="nd-table-wrap nd-table-wrap--scroll" id="dg-history-commune-wrap" hidden>
+                    <table class="nd-table">
+                        <caption class="visually-hidden">Đối chiếu xã, phường, đặc khu trước và sau sáp nhập</caption>
+                        <thead>
+                            <tr>
+                                <th scope="col" id="dg-history-commune-before-heading">Trước 01/07/2025</th>
+                                <th scope="col" aria-label="Chuyển sang"></th>
+                                <th scope="col" id="dg-history-commune-current-heading">Hiện tại</th>
+                                <th scope="col">Tỉnh / Thành phố</th>
+                                <th scope="col">Trạng thái</th>
+                            </tr>
+                        </thead>
+                        <tbody id="dg-history-commune-body">
+                            <tr><td colspan="5" class="nd-empty-cell">
+                                <i class="fas fa-spinner fa-spin me-2"></i>Đang tải dữ liệu cấp xã…
+                            </td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <p class="nd-note mt-3" id="dg-history-commune-note" hidden>
+                    Đang tải đối chiếu cấp xã. Đã có tên trước 01/07/2025 cho 127 đơn vị không thực hiện
+                    sắp xếp; các đơn vị còn lại chưa có dữ liệu tên cũ.
+                </p>
             </section>
 
             <section id="dg-panel-units" role="tabpanel" hidden>
@@ -185,7 +237,8 @@
                 </div>
 
                 <p class="nd-note mt-3" id="dg-commune-source">
-                    Danh sách xã/phường là hiện hành; chưa có dữ liệu đối chiếu lịch sử cấp xã. Cấp huyện không còn từ 01/07/2025.
+                    Danh sách xã/phường hiện hành; đã đối chiếu tên trước 01/07/2025 cho 127 đơn vị giữ nguyên.
+                    Cấp huyện không còn từ 01/07/2025.
                 </p>
             </section>
 

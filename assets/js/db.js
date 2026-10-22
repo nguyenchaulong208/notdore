@@ -80,12 +80,51 @@
     dac_ku: 'Đặc khu',
   };
 
+  /**
+   * Chuẩn hoá record cấp xã từ Supabase hoặc JSON.
+   *
+   * Dữ liệu trước sáp nhập cấp xã hiện có tên 127 đơn vị không thực hiện sắp xếp;
+   * 3.194 đơn vị còn lại chưa có tên cũ. Giao diện đọc sẵn các trường tuỳ chọn sau:
+   *   - beforeNames / before_names / before.names: tên xã/phường cũ
+   *   - beforeProvinceName / before.province_name: tỉnh cũ (nếu khác tỉnh hiện tại)
+   *   - changed: true/false nếu đã xác định được trạng thái
+   */
+  const normalizeCommune = (commune) => {
+    const before = commune.before && typeof commune.before === 'object'
+      ? commune.before
+      : {};
+    const rawBefore = commune.beforeNames
+      ?? commune.before_names
+      ?? before.names
+      ?? before.name
+      ?? [];
+    const beforeNames = (Array.isArray(rawBefore) ? rawBefore : [rawBefore])
+      .filter(Boolean)
+      .map((name) => String(name));
+
+    let changed = commune.changed;
+    if (changed === 'true') changed = true;
+    if (changed === 'false') changed = false;
+
+    return {
+      ...commune,
+      typeLabel: commune.typeLabel || COMMUNE_TYPE_LABELS[commune.type] || commune.type || null,
+      beforeNames,
+      beforeProvinceName: commune.beforeProvinceName
+        || commune.before_province_name
+        || before.province_name
+        || before.provinceName
+        || null,
+      changed: changed ?? (beforeNames.length ? true : null),
+    };
+  };
+
   const mapCommune = (row) => {
     let metadata = row.metadata || {};
     if (typeof metadata === 'string') {
       try { metadata = JSON.parse(metadata); } catch { metadata = {}; }
     }
-    return {
+    return normalizeCommune({
       code: row.code,
       name: row.name,
       type: row.type_code,
@@ -94,7 +133,12 @@
       provinceName: metadata.province_name || null,
       parentId: row.parent_id,
       shortCodename: metadata.short_codename || null,
-    };
+      beforeNames: metadata.before_names,
+      beforeProvinceName: metadata.before_province_name,
+      before: metadata.before,
+      changed: metadata.changed,
+      note: metadata.note || metadata.before_note || null,
+    });
   };
 
   const computeCommuneStats = (rows) => ({
@@ -255,7 +299,12 @@
 
     try {
       const local = await fetchJSON('assets/data/admin-communes.json');
-      return { ...local, source: 'local', degraded: isSupabaseReady() };
+      return {
+        ...local,
+        communes: (local.communes || []).map(normalizeCommune),
+        source: 'local',
+        degraded: isSupabaseReady(),
+      };
     } catch (err) {
       console.warn('[db] Không tải được dữ liệu cấp xã:', err.message || err);
       return {

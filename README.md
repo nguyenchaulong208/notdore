@@ -36,7 +36,7 @@ assets/js/library.js           Render thư viện theo nhóm; cuộn tới ancho
 assets/js/dia-gioi.js          Logic công cụ địa giới
 assets/data/*.json             Dữ liệu tĩnh (fallback + nguồn seed)
 db/schema.sql                  Bảng + RLS (catalog, admin_units legacy)
-db/schema-geo.sql              Schema geo_* mở rộng: dataset, cây đơn vị, sự kiện
+db/schema-geo.sql              Schema geo_* mở rộng: dataset, cây đơn vị, sự kiện, tổng hợp sắp xếp
 db/seed-tools.sql              Seed danh mục công cụ
 db/reset-tools.sql             Sao lưu + xoá tools cũ nếu khác schema v3
 db/fix-grants.sql              Cấp SELECT cho anon khi gặp lỗi 401 permission denied
@@ -46,11 +46,19 @@ db/seed-geo-1-core.sql         Seed phần 1/3: dataset, cấp/loại, văn bả
 db/seed-geo-2-communes/        Seed phần 2/3: 34 file xã/phường theo tỉnh (mỗi file ≤34KB)
 db/seed-geo-2-communes-all.sql Seed phần 2/3 gộp (psql/CLI; quá lớn cho SQL Editor)
 db/seed-geo-3-relations.sql    Seed phần 3/3: chỉ số, sự kiện, liên kết, nguồn
+db/seed-commune-reform-summary.sql  Seed tổng hợp 2025 + đánh dấu 127 đơn vị giữ nguyên
+db/data/commune-reform-summary.json Nguồn tổng hợp đã chuẩn hoá + 127 tên giữ nguyên
 db/source/database_vietnam_merger.json  Nguồn JSON cấp tỉnh của lớp geo_*
 db/source/communes-open-api.json        Nguồn chuẩn hoá 3.321 xã/phường/đặc khu
+db/source/danh_sach_xa_phuong_truoc_sau_sap_xep.json  Nguồn 34 tỉnh + 127 tên không sắp xếp
 assets/data/admin-communes.json        Fallback tĩnh cho cấp xã/phường/đặc khu
+admin/                        Công cụ admin local (Node, key chỉ ở server)
+admin/server.mjs              Server admin: proxy PostgREST CRUD + chạy SQL
+admin/public/                 Giao diện admin
 scripts/build-admin-data.mjs   Chuẩn hoá dữ liệu crawl → JSON + SQL legacy
 scripts/build-geo-sql.mjs      Chuẩn hoá JSON → db/seed-geo.sql + file theo tỉnh
+scripts/build-reform-summary-data.mjs Chuẩn hoá 127 tên giữ nguyên vào JSON + fallback
+scripts/build-reform-summary-sql.mjs  Sinh SQL tổng hợp sắp xếp 2025 từ JSON
 scripts/split-geo-seed.mjs     Cắt seed-geo.sql thành 3 phần
 scripts/fetch-communes.mjs     Tải cấp xã từ provinces.open-api.vn + đối chiếu số liệu
 scripts/dev-server.mjs         Server tĩnh local
@@ -89,6 +97,25 @@ npm run dev          # http://localhost:5173
 
 Không cần `npm install` — dự án không có dependency runtime.
 
+## Admin local
+
+Công cụ admin chạy local để xem/sửa/xoá dữ liệu tất cả bảng Supabase và import file
+`.sql`, không đưa key xuống trình duyệt:
+
+```powershell
+Copy-Item admin/supabase.example.txt admin/supabase.txt
+# điền SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY (và PAT nếu muốn chạy SQL)
+npm run admin
+```
+
+Mở <http://127.0.0.1:8787>. Admin bind `127.0.0.1` và đọc key từ `admin/supabase.txt`
+(đã có trong `.gitignore`). Chạy SQL/import cần thêm `SUPABASE_ACCESS_TOKEN=sbp_...`
+hoặc `DATABASE_URL` + `psql`; chỉ service_role key thì CRUD vẫn chạy nhưng SQL bị tắt.
+Chi tiết: [`admin/README.md`](admin/README.md).
+
+> `service_role`/secret key và PAT chỉ dùng ở server admin. Không đặt các key này trong
+> `assets/js/config.js`, `/api/config` hay bất kỳ file tĩnh nào.
+
 ## Cấu hình Supabase
 
 1. Tạo project tại <https://supabase.com>.
@@ -100,10 +127,16 @@ Không cần `npm install` — dự án không có dependency runtime.
    - `db/seed-geo-1-core.sql`
    - `db/seed-geo-2-communes/*.sql` (34 file theo tỉnh, chạy theo thứ tự bất kỳ)
    - `db/seed-geo-3-relations.sql`
+   - `db/seed-commune-reform-summary.sql` (34 dòng tổng hợp + đánh dấu 127 đơn vị giữ nguyên)
 
 > `db/seed-geo.sql` là bản gộp cho `psql`/CLI; **không dùng trong SQL Editor** vì quá lớn.
-> Nếu project đã có `geo_*` từ trước, chỉ cần chạy lại 3 file trên để nạp thêm 3.321 đơn vị
-> cấp xã; frontend vẫn hiển thị ngay qua `assets/data/admin-communes.json` nếu chưa seed.
+> Nếu project đã có `geo_*` từ trước, chỉ cần chạy lại các file seed `geo_*` (và
+> `db/seed-commune-reform-summary.sql` nếu muốn bổ sung số liệu tổng hợp) để nạp thêm
+> 3.321 đơn vị cấp xã; frontend vẫn hiển thị ngay qua `assets/data/admin-communes.json`
+> nếu chưa seed.
+>
+> Để tái tạo dữ liệu tổng hợp và SQL sau khi thay nguồn:
+> `npm run build:reform` (chuẩn hoá JSON + cập nhật fallback, sau đó sinh SQL).
 
 3. Cấu hình frontend — chọn **một** trong hai cách:
 
@@ -228,6 +261,12 @@ Công cụ tra cứu cấp tỉnh vẫn dùng **legacy** vì cần bảng đối
 `region`, `capital`, `population`, `area_km2`. Cấp xã/phường/đặc khu đã được nạp vào
 `geo_units` (34 tỉnh + 3.321 đơn vị cấp xã) và frontend đọc qua `getCommunes()`.
 
+Tab **Tra cứu trước ↔ sau sáp nhập** có thêm chế độ cấp xã. Dữ liệu lịch sử cấp xã chưa có,
+nên bảng hiển thị đơn vị hiện hành và cột “Trước 01/07/2025” để trống. Khi bổ sung dữ liệu,
+thêm một trong các trường sau vào `geo_units.metadata` (hoặc record JSON):
+`beforeNames`, `before_names`, `before.names`, `before.name`; tuỳ chọn thêm
+`before_province_name` và `changed`. Giao diện sẽ tự điền mà không cần sửa code.
+
 ### Lớp legacy
 
 ```bash
@@ -272,6 +311,8 @@ Seed hiện tại:
 - 34 đơn vị cấp tỉnh
 - 3.321 đơn vị cấp xã: 2.621 xã, 687 phường, 13 đặc khu
 - 204 chỉ số (tổng đơn vị, xã trước/sau, phường, đặc khu, chưa áp dụng)
+- 34 dòng `geo_reform_summaries`: số xã trước/sau, phường, đặc khu, không áp dụng
+  và chênh lệch theo từng tỉnh/thành
 - 34 sự kiện, 36 văn bản, 5 nguồn tham chiếu
 
 Mô hình chính:
@@ -280,6 +321,8 @@ Mô hình chính:
 - `geo_units`: cây đơn vị; đã có 34 tỉnh + 3.321 xã/phường/đặc khu;
   FK ghép `(type_code, level_code)` bảo đảm loại đơn vị đúng cấp
 - `geo_unit_metrics`: chỉ số long-format, thêm chỉ số mới không cần đổi schema
+- `geo_reform_summaries`: số liệu tổng hợp trước–sau sắp xếp theo tỉnh; một dòng
+  cho mỗi `(dataset_id, province_name)` vì mã `43` dùng cho cả Điện Biên và Đồng Nai
 - `geo_events` + `geo_event_units`: sự kiện và liên kết nguồn/đích
 - `geo_documents`, `geo_sources`, `geo_unit_aliases`: văn bản, nguồn, tên thay thế
 - View: `geo_current_units`, `geo_unit_summary`, `geo_data_quality`
@@ -287,6 +330,22 @@ Mô hình chính:
 Không dùng `code` làm khoá duy nhất: nguồn 2025 dùng mã `43` cho cả Điện Biên và
 Đồng Nai. Khoá ổn định là `id` (UUID) và `slug` trong từng dataset; view
 `geo_data_quality` liệt kê mã trùng.
+
+`db/seed-commune-reform-summary.sql` nạp **số liệu tổng hợp theo 34 tỉnh/thành** và
+**tên 127 đơn vị không thực hiện sắp xếp**. 3.194 đơn vị hình thành sau sắp xếp vẫn
+chưa có danh sách tên trước sắp xếp; không suy đoán hoặc tạo tên từ số liệu tổng hợp.
+
+Mỗi dòng `geo_reform_summaries.metadata` có `not_applied_units`,
+`not_applied_unit_details` và số lượng tương ứng. 127 `geo_units` cấp xã được đối chiếu
+theo slug và cập nhật metadata: `reform_status=not_applied`, `not_applied=true`,
+`changed=false`, `before_names`, `source_name`, `source_resolution`. Hai trường hợp
+nguồn ghi khác chính tả (`Tuấn Đáo` / `Tuấn Đạo`, `Thuận Hòa` / `Thuận Hoà`) được giữ
+tên gốc trong `source_name` và ghi chú, không sửa tên `geo_units`.
+
+File JSON nguồn có `tong_quan.tong_xa_truoc = 3233`, nhưng tổng 34 dòng `xa_truoc`
+là `2621`; seed dùng tổng theo 34 dòng và giữ ghi chú sai lệch trong metadata. Các
+tổng chính: `xa_truoc=2621`, `xa_sau=2499`, `phuong_sau=682`, `dac_ku_sau=13`,
+`khong_thuc_hien=127`, `unit_count_after=3321`.
 
 Ví dụ:
 
@@ -306,6 +365,28 @@ join public.geo_event_units eu on eu.event_id = e.id
 left join public.geo_units u on u.id = eu.unit_id
 where e.dataset_id = (select id from public.geo_datasets where is_current)
 order by e.title, eu.role;
+```
+
+```sql
+select province_name, resolution_number,
+       communes_before, communes_after, wards_after,
+       special_zones_after, not_applied, total_units_after, communes_delta
+from public.geo_reform_summaries
+where dataset_id = (select id from public.geo_datasets where is_current)
+order by province_name;
+```
+
+```sql
+-- 127 đơn vị không thực hiện sắp xếp và tên trước 01/07/2025
+select u.code, u.name, u.metadata->'before_names' as before_names,
+       u.metadata->>'source_resolution' as resolution_number,
+       u.metadata->>'source_name' as source_name
+from public.geo_units u
+join public.geo_datasets d on d.id = u.dataset_id
+where d.code = 'vn-admin-2025-07-01'
+  and u.level_code = 'commune'
+  and u.metadata->>'reform_status' = 'not_applied'
+order by u.name;
 ```
 
 Lớp `geo_*` đã được nối vào frontend qua `NotDoreDB.getCommunes()`: ưu tiên đọc
@@ -353,7 +434,8 @@ không trộn nhãn danh mục vào từng block.
 - Dữ liệu `geo_*` sinh bằng script, không sửa tay `db/seed-geo.sql`.
 - Class CSS mới dùng tiền tố `nd-`.
 - Chú thích trong code và nội dung hiển thị bằng tiếng Việt.
-- Không commit key bí mật; `config.js` chỉ chứa thông tin công khai.
+- Không commit key bí mật; `config.js` chỉ chứa thông tin công khai. Key admin nằm trong
+  `admin/supabase.txt` (đã ignore) và chỉ được đọc ở server local.
 
 ## Giấy phép & ghi công
 
