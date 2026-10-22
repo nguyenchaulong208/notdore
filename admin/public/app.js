@@ -28,6 +28,8 @@ const els = {};
 let modalState = null;
 let searchTimer = 0;
 
+const MAX_CONFIG_BYTES = 256 * 1024;
+
 const SQL_EXAMPLES = {
   provinces: `select code, name, slug, type_code
 from public.geo_units
@@ -191,19 +193,28 @@ function toast(message, type = "info", timeout = 4200) {
   }, timeout);
 }
 
-async function api(path, { method = "GET", body } = {}) {
+async function api(path, { method = "GET", body, rawBody } = {}) {
   const headers = {
     Accept: "application/json",
     "X-Admin-Request": "1",
   };
-  if (body !== undefined) headers["Content-Type"] = "application/json";
+
+  let payload;
+  if (rawBody !== undefined) {
+    // Gửi nguyên File/Blob lên server local, không đọc nội dung trong JS.
+    headers["Content-Type"] = rawBody?.type || "text/plain; charset=utf-8";
+    payload = rawBody;
+  } else if (body !== undefined) {
+    headers["Content-Type"] = "application/json";
+    payload = JSON.stringify(body);
+  }
 
   let response;
   try {
     response = await fetch(path, {
       method,
       headers,
-      body: body === undefined ? undefined : JSON.stringify(body),
+      body: payload,
     });
   } catch (err) {
     throw new Error(`Không kết nối được server admin: ${err.message}`);
@@ -237,6 +248,8 @@ function cacheElements() {
     "schemaFilter",
     "tableSearch",
     "tableList",
+    "btnChooseConfig",
+    "configFile",
     "btnReloadConfig",
     "breadcrumb",
     "tableSubtitle",
@@ -323,6 +336,49 @@ async function loadMeta() {
   }
 }
 
+async function loadConfigFile(file) {
+  if (!file) return;
+  if (file.size > MAX_CONFIG_BYTES) {
+    toast("File cấu hình quá lớn (tối đa 256 KB).", "error", 6000);
+    return;
+  }
+
+  try {
+    toast(`Đang nạp ${file.name}...`, "info", 1800);
+    const data = await api("/api/config", { method: "POST", rawBody: file });
+    state.meta = data.config;
+    state.version = data.version || state.version;
+
+    renderStatus();
+    renderGlobalNotice();
+    renderSqlModeNotice();
+
+    if (state.meta?.tablesEnabled) {
+      await loadTables(true);
+    } else {
+      state.currentTable = null;
+      state.tables = [];
+      state.schemas = [];
+      state.tableError = null;
+      state.tableWarnings = [];
+      populateSchemaFilter();
+      renderTableList();
+      resetDataView(
+        "Chưa bật trình duyệt bảng",
+        "Cần SUPABASE_SERVICE_ROLE_KEY trong file cấu hình để xem/sửa bảng."
+      );
+    }
+
+    toast(
+      `Đã nạp ${file.name} vào ${data.config?.configFile || "file cấu hình"}.`,
+      "success",
+      6000
+    );
+  } catch (err) {
+    toast(`Không nạp được file cấu hình: ${formatError(err)}`, "error", 8000);
+  }
+}
+
 function statusLine(label, value, { code = false } = {}) {
   const valueNode = code
     ? el("code", { text: value })
@@ -354,7 +410,7 @@ function renderStatus() {
         el("span", { class: "dot dot-error" }),
         el("strong", { text: "Chưa cấu hình" }),
       ]),
-      el("div", { class: "status-row status-detail", text: "Tạo admin/supabase.txt từ file ví dụ." }),
+      el("div", { class: "status-row status-detail", text: "Bấm Chọn file key .txt hoặc tạo admin/supabase.txt từ file ví dụ." }),
       statusLine("File", meta.configFile, { code: true })
     );
     return;
@@ -418,7 +474,7 @@ function renderGlobalNotice() {
         "Muốn chạy SQL/import ngay trong admin, thêm:",
         "SUPABASE_ACCESS_TOKEN=sbp_...",
         "",
-        'Sau đó bấm "Tải lại cấu hình".',
+        'Bấm "Chọn file key .txt" để nạp file, hoặc tạo file thủ công rồi bấm "Tải lại cấu hình".',
       ].join("\n"),
       "error"
     );
@@ -1613,6 +1669,16 @@ function bindEvents() {
   for (const tab of $$(".tab")) {
     tab.addEventListener("click", () => switchView(tab.dataset.view || "data"));
   }
+
+  els.btnChooseConfig.addEventListener("click", () => {
+    els.configFile.click();
+  });
+
+  els.configFile.addEventListener("change", () => {
+    const file = els.configFile.files?.[0];
+    els.configFile.value = "";
+    if (file) void loadConfigFile(file);
+  });
 
   els.btnReloadConfig.addEventListener("click", async () => {
     await loadMeta();

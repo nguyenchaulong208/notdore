@@ -109,9 +109,10 @@ npm run admin
 ```
 
 Mở <http://127.0.0.1:8787>. Admin bind `127.0.0.1` và đọc key từ `admin/supabase.txt`
-(đã có trong `.gitignore`). Chạy SQL/import cần thêm `SUPABASE_ACCESS_TOKEN=sbp_...`
-hoặc `DATABASE_URL` + `psql`; chỉ service_role key thì CRUD vẫn chạy nhưng SQL bị tắt.
-Chi tiết: [`admin/README.md`](admin/README.md).
+(đã có trong `.gitignore`). Có thể bấm **Chọn file key .txt** trong admin để nạp file cấu
+hình qua hộp chọn file; server local sẽ ghi vào `admin/supabase.txt`. Chạy SQL/import cần
+thêm `SUPABASE_ACCESS_TOKEN=sbp_...` hoặc `DATABASE_URL` + `psql`; chỉ service_role key
+thì CRUD vẫn chạy nhưng SQL bị tắt. Chi tiết: [`admin/README.md`](admin/README.md).
 
 > `service_role`/secret key và PAT chỉ dùng ở server admin. Không đặt các key này trong
 > `assets/js/config.js`, `/api/config` hay bất kỳ file tĩnh nào.

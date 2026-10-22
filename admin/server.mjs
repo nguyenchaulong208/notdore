@@ -11,7 +11,7 @@
  * được gửi xuống trình duyệt.
  */
 import { createServer } from "node:http";
-import { readFile, stat } from "node:fs/promises";
+import { readFile, stat, writeFile } from "node:fs/promises";
 import { extname, join, normalize, resolve, sep } from "node:path";
 import { spawn } from "node:child_process";
 
@@ -21,7 +21,8 @@ const CONFIG_PATH = resolve(process.env.ADMIN_CONFIG || join(ADMIN_ROOT, "supaba
 const HOST = process.env.ADMIN_HOST || "127.0.0.1";
 const PORT = Number(process.env.ADMIN_PORT || process.env.PORT || 8787);
 const MAX_BODY = 10 * 1024 * 1024;
-const VERSION = "1.0.0";
+const MAX_CONFIG_TEXT = 256 * 1024;
+const VERSION = "1.1.0";
 const SCHEMA_CACHE_MS = 30_000;
 
 const SYSTEM_SCHEMAS = new Set([
@@ -317,6 +318,42 @@ const readConfig = async () => {
     if (err.code !== "ENOENT") throw err;
   }
   return parseConfigText(text);
+};
+
+/**
+ * Ghi file cấu hình do người dùng chọn từ giao diện admin.
+ *
+ * Nội dung file chỉ đi từ trình duyệt tới server local, không được trả ngược
+ * lại trong response. Chỉ các cờ đã chuẩn hoá (có URL/key/PAT...) được công
+ * khai qua publicConfig().
+ */
+const saveConfigText = async (text) => {
+  const normalized = String(text ?? "")
+    .replace(/^\uFEFF/, "")
+    .replace(/\r\n/g, "\n")
+    .trimEnd();
+
+  if (!normalized.trim()) {
+    throw new HttpError(400, "File cấu hình đang trống.");
+  }
+  if (Buffer.byteLength(normalized, "utf8") > MAX_CONFIG_TEXT) {
+    throw new HttpError(413, "File cấu hình quá lớn (tối đa 256 KB).");
+  }
+
+  const parsed = parseConfigText(normalized);
+  if (!parsed.configured) {
+    const missing = parsed.missing.length
+      ? parsed.missing.join(", ")
+      : "SUPABASE_URL + service key, hoặc PAT, hoặc DATABASE_URL";
+    throw new HttpError(400, `File cấu hình chưa đủ thông tin: ${missing}.`, parsed.warnings.length ? parsed.warnings.join("\n") : null);
+  }
+
+  await writeFile(CONFIG_PATH, `${normalized}\n`, {
+    encoding: "utf8",
+    mode: 0o600,
+  });
+  schemaCache = { key: "", at: 0, value: null };
+  return parseConfigText(normalized);
 };
 
 const publicConfig = (config) => ({
@@ -1312,6 +1349,18 @@ const server = createServer(async (req, res) => {
         ok: true,
         version: VERSION,
         config: publicConfig(config),
+      });
+      return;
+    }
+
+    if (pathname === "/api/config" && req.method === "POST") {
+      const text = await readBody(req);
+      const nextConfig = await saveConfigText(text);
+      json(res, 200, {
+        ok: true,
+        saved: true,
+        version: VERSION,
+        config: publicConfig(nextConfig),
       });
       return;
     }

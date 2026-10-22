@@ -2,7 +2,7 @@
 
 Công cụ admin chạy **local** để xem, thêm, sửa, xoá dữ liệu Supabase và chạy SQL/import file `.sql` cho tất cả bảng mà project cho phép.
 
-Toàn bộ công cụ nằm trong thư mục `admin/`. Key Supabase chỉ được đọc ở server Node và **không bao giờ gửi xuống trình duyệt**.
+Toàn bộ công cụ nằm trong thư mục `admin/`. Key Supabase được xử lý ở server Node và **không được trả về trình duyệt**. Khi nạp file key, trình duyệt chỉ chuyển nguyên file tới server local; JS không đọc nội dung file.
 
 ## 1. Cài đặt
 
@@ -56,6 +56,11 @@ Admin cũng chấp nhận các tên biến phổ biến khác như `SUPABASE_KEY
 
 Sau khi sửa file, bấm **Tải lại cấu hình** trong giao diện.
 
+Cũng có thể bấm **Chọn file key .txt** ở chân trang admin để mở hộp chọn file.
+File được gửi nguyên khối tới server local, ghi vào `admin/supabase.txt` (hoặc
+`ADMIN_CONFIG`), rồi cấu hình được nạp lại ngay. Giới hạn 256 KB; nội dung key
+không được trả ngược xuống trình duyệt.
+
 ## 3. Chức năng
 
 ### Duyệt và sửa dữ liệu
@@ -88,6 +93,9 @@ Sau khi sửa file, bấm **Tải lại cấu hình** trong giao diện.
   Nếu đổi `ADMIN_HOST`, hostname tương ứng cũng phải được dùng để mở admin.
 - Không bật CORS.
 - Không trả key/token về client.
+- Endpoint nạp file cấu hình chỉ nhận `POST` same-origin có header `X-Admin-Request`;
+  trình duyệt gửi nguyên file `.txt` lên server local, JS không đọc nội dung file.
+  Server kiểm tra cú pháp rồi mới ghi đè file cấu hình.
 - SQL chạy với quyền quản trị, có thể thay đổi hoặc xoá dữ liệu. Hãy sao lưu trước khi import file lớn.
 
 Không deploy thư mục này lên Internet. Đây là công cụ local.

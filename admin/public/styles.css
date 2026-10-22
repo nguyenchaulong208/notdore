@@ -343,6 +343,16 @@ code {
   border-top: 1px solid var(--sidebar-line);
 }
 
+.sidebar-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sidebar-actions .btn {
+  cursor: pointer;
+}
+
 .sidebar-footer p {
   margin: 10px 2px 0;
   color: #64748b;
