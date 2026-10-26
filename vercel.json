@@ -5,7 +5,13 @@
     {
       "source": "/(.*)",
       "destination": "https://www.notdore.io.vn/$1",
-      "permanent": true
+      "permanent": true,
+      "has": [
+        {
+          "type": "host",
+          "value": "notdore.io.vn"
+        }
+      ]
     }
   ],
   "headers": [
