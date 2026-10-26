@@ -169,6 +169,11 @@ trả **cùng shape** dù dữ liệu từ Supabase hay JSON, nên render không
   (đã ignore), proxy CRUD qua PostgREST bằng service_role/secret key.
 - Key/token không gửi xuống browser; API yêu cầu `X-Admin-Request`, kiểm tra
   same-origin và Host loopback. `npm run admin` hoặc `admin/start.cmd`.
+- Giao diện có nút **Chọn file key .txt**: file được gửi nguyên khối tới
+  `POST /api/config`, server kiểm tra rồi ghi vào `admin/supabase.txt` (hoặc
+  `ADMIN_CONFIG`). JS không đọc nội dung file, response chỉ trả cờ cấu hình.
+- Đã test nạp file key trên cổng tạm 8790: file hợp lệ ghi đè cấu hình, file sai
+  trả HTTP 400 và giữ nguyên cấu hình; response không chứa key/token.
 - SQL/import dùng Supabase Management API với PAT `sbp_...`, hoặc `DATABASE_URL` +
   `psql`; chỉ service_role key thì SQL bị tắt. Endpoint SQL yêu cầu
   `confirm: "RUN_SQL"`.

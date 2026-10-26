@@ -2,7 +2,7 @@
 # NotDore Admin — cấu hình Supabase
 #
 # Cách dùng:
-#   1. Sao chép file này thành: admin/supabase.txt
+#   1. Sao chép file này thành: admin/supabase.txt (hoặc nạp trong admin bằng "Chọn file key .txt")
 #   2. Điền URL + service_role key (hoặc secret key mới của Supabase).
 #   3. Nếu muốn chạy SQL/import file .sql ngay trong admin, thêm PAT dạng sbp_...
 #   4. Chạy: npm run admin

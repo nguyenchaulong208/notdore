@@ -41,8 +41,12 @@
       </div>
 
       <div class="sidebar-footer">
-        <button id="btnReloadConfig" class="btn btn-ghost btn-block" type="button">Tải lại cấu hình</button>
-        <p>Chỉ chạy local. Key nằm trong <code>admin/supabase.txt</code> và không được gửi xuống trình duyệt.</p>
+        <div class="sidebar-actions">
+          <button id="btnChooseConfig" class="btn btn-ghost btn-block" type="button">Chọn file key .txt</button>
+          <input id="configFile" type="file" accept=".txt,text/plain" hidden>
+          <button id="btnReloadConfig" class="btn btn-ghost btn-block" type="button">Tải lại cấu hình</button>
+        </div>
+        <p>Chỉ chạy local. File key được gửi tới server admin và ghi vào file cấu hình (mặc định <code>admin/supabase.txt</code>); nội dung key không được trả xuống trình duyệt.</p>
       </div>
     </aside>
 
