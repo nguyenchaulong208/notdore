@@ -5,14 +5,16 @@
     "generated": "2026-10-21",
     "effectiveFrom": "2025-07-01",
     "level": "commune",
-    "source": "provinces.open-api.vn (v2, depth=2)",
-    "sourceUrl": "https://provinces.open-api.vn/api/v2/?depth=2",
+    "source": "provinces.open-api.vn (v2, depth=2) + 34 Nghị quyết UBTVQH15 (xaydungchinhsach.chinhphu.vn)",
+    "sourceUrl": "https://provinces.open-api.vn/api/v2/?depth=2; https://xaydungchinhsach.chinhphu.vn",
     "stats": {
       "provinces": 34,
       "total": 3321,
       "xa": 2621,
       "phuong": 687,
-      "dac_ku": 13
+      "dac_ku": 13,
+      "beforeNames_available": 128,
+      "beforeNames_missing": 3193
     },
     "validation": {
       "perProvinceTotalsMatch": true,
@@ -30,7 +32,8 @@
       "Cấp huyện không còn trong bộ máy hành chính 2 cấp từ 01/07/2025.",
       "Dữ liệu gồm xã, phường và đặc khu; không có thị trấn sau sắp xếp.",
       "Mã xã/phường lấy theo API; mã tỉnh trong geo_* có thể khác mã trong admin_units legacy.",
-      "Đối chiếu tổng số và số lượng từng tỉnh với 34 Nghị quyết UBTVQH15 trước khi dùng cho hồ sơ chính thức."
+      "Đối chiếu tổng số và số lượng từng tỉnh với 34 Nghị quyết UBTVQH15 trước khi dùng cho hồ sơ chính thức.",
+      "128/3321 đơn vị có beforeNames từ văn bản pháp lý; 3193/3321 đơn vị còn lại chỉ có số liệu tổng hợp, chưa bổ sung tên cũ."
     ],
     "sources": [
       "provinces.open-api.vn — API v2, depth=2",
