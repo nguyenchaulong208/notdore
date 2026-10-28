@@ -41392,7 +41392,15 @@
       "apiProvinceCode": "82",
       "shortCodename": "thanh_phu",
       "sortOrder": 24,
-      "effectiveFrom": "2025-07-01"
+      "effectiveFrom": "2025-07-01",
+      "beforeNames": [
+        "Xã Thạnh Phú"
+      ],
+      "beforeProvinceName": "Tỉnh Cà Mau",
+      "changed": false,
+      "reformStatus": "not_applied",
+      "note": "Không thực hiện sắp xếp theo Nghị quyết 1655/NQ-UBTVQH15",
+      "source": "Nghị quyết 1655/NQ-UBTVQH15"
     },
     {
       "code": "28456",
@@ -41420,7 +41428,15 @@
       "apiProvinceCode": "82",
       "shortCodename": "tan_phu",
       "sortOrder": 26,
-      "effectiveFrom": "2025-07-01"
+      "effectiveFrom": "2025-07-01",
+      "beforeNames": [
+        "Xã Tân Phú"
+      ],
+      "beforeProvinceName": "Tỉnh Cà Mau",
+      "changed": false,
+      "reformStatus": "not_applied",
+      "note": "Không thực hiện sắp xếp theo Nghị quyết 1655/NQ-UBTVQH15",
+      "source": "Nghị quyết 1655/NQ-UBTVQH15"
     },
     {
       "code": "28471",
@@ -41686,7 +41702,15 @@
       "apiProvinceCode": "82",
       "shortCodename": "vinh_binh",
       "sortOrder": 45,
-      "effectiveFrom": "2025-07-01"
+      "effectiveFrom": "2025-07-01",
+      "beforeNames": [
+        "Xã Vĩnh Bình"
+      ],
+      "beforeProvinceName": "Tỉnh Cà Mau",
+      "changed": false,
+      "reformStatus": "not_applied",
+      "note": "Không thực hiện sắp xếp theo Nghị quyết 1655/NQ-UBTVQH15",
+      "source": "Nghị quyết 1655/NQ-UBTVQH15"
     },
     {
       "code": "28660",
@@ -41952,7 +41976,15 @@
       "apiProvinceCode": "82",
       "shortCodename": "tan_thanh",
       "sortOrder": 64,
-      "effectiveFrom": "2025-07-01"
+      "effectiveFrom": "2025-07-01",
+      "beforeNames": [
+        "Xã Tân Thành"
+      ],
+      "beforeProvinceName": "Tỉnh Cà Mau",
+      "changed": false,
+      "reformStatus": "not_applied",
+      "note": "Không thực hiện sắp xếp theo Nghị quyết 1655/NQ-UBTVQH15",
+      "source": "Nghị quyết 1655/NQ-UBTVQH15"
     },
     {
       "code": "29944",
@@ -42330,7 +42362,15 @@
       "apiProvinceCode": "82",
       "shortCodename": "tan_thanh",
       "sortOrder": 91,
-      "effectiveFrom": "2025-07-01"
+      "effectiveFrom": "2025-07-01",
+      "beforeNames": [
+        "Xã Tân Thạnh"
+      ],
+      "beforeProvinceName": "Tỉnh Cà Mau",
+      "changed": false,
+      "reformStatus": "not_applied",
+      "note": "Không thực hiện sắp xếp theo Nghị quyết 1655/NQ-UBTVQH15",
+      "source": "Nghị quyết 1655/NQ-UBTVQH15"
     },
     {
       "code": "30163",
@@ -47266,7 +47306,19 @@
       "apiProvinceCode": "96",
       "shortCodename": "bac_lieu",
       "sortOrder": 1,
-      "effectiveFrom": "2025-07-01"
+      "effectiveFrom": "2025-07-01",
+      "beforeNames": [
+        "Phường 1",
+        "Phường 2",
+        "Phường 7",
+        "Phường 8 (thành phố Bạc Liêu)",
+        "Phường 3"
+      ],
+      "beforeProvinceName": "Tỉnh Cà Mau",
+      "changed": true,
+      "reformStatus": "merged",
+      "note": "Đơn vị sau sắp xếp của Phường 1, Phường 2, Phường 7 (cũ)",
+      "source": "Nghị quyết 1655/NQ-UBTVQH15, Nghị quyết 202/2025/QH15"
     },
     {
       "code": "31834",
@@ -47280,7 +47332,16 @@
       "apiProvinceCode": "96",
       "shortCodename": "vinh_trach",
       "sortOrder": 2,
-      "effectiveFrom": "2025-07-01"
+      "effectiveFrom": "2025-07-01",
+      "beforeNames": [
+        "Phường 5 (thành phố Bạc Liêu)",
+        "xã Vĩnh Trạch"
+      ],
+      "beforeProvinceName": "Tỉnh Cà Mau",
+      "changed": true,
+      "reformStatus": "merged",
+      "note": "Đơn vị sau sắp xếp của Phường 5 (thành phố Bạc Liêu), xã Vĩnh Trạch (cũ)",
+      "source": "Nghị quyết 1655/NQ-UBTVQH15, Nghị quyết 202/2025/QH15"
     },
     {
       "code": "31840",
@@ -47294,7 +47355,17 @@
       "apiProvinceCode": "96",
       "shortCodename": "hiep_thanh",
       "sortOrder": 3,
-      "effectiveFrom": "2025-07-01"
+      "effectiveFrom": "2025-07-01",
+      "beforeNames": [
+        "phường Nhà Mát",
+        "xã Vĩnh Trạch Đông",
+        "xã Hiệp Thành"
+      ],
+      "beforeProvinceName": "Tỉnh Cà Mau",
+      "changed": true,
+      "reformStatus": "merged",
+      "note": "Đơn vị sau sắp xếp của phường Nhà Mát, xã Vĩnh Trạch Đông, xã Hiệp Thành (cũ)",
+      "source": "Nghị quyết 1655/NQ-UBTVQH15, Nghị quyết 202/2025/QH15"
     },
     {
       "code": "31843",
@@ -47308,7 +47379,17 @@
       "apiProvinceCode": "96",
       "shortCodename": "hong_dan",
       "sortOrder": 4,
-      "effectiveFrom": "2025-07-01"
+      "effectiveFrom": "2025-07-01",
+      "beforeNames": [
+        "thị trấn Ngan Dừa",
+        "xã Lộc Ninh",
+        "xã Ninh Hòa"
+      ],
+      "beforeProvinceName": "Tỉnh Cà Mau",
+      "changed": true,
+      "reformStatus": "merged",
+      "note": "Đơn vị sau sắp xếp của thị trấn Ngan Dừa, xã Lộc Ninh, xã Ninh Hòa (cũ)",
+      "source": "Nghị quyết 1655/NQ-UBTVQH15, Nghị quyết 202/2025/QH15"
     },
     {
       "code": "31849",
@@ -47322,7 +47403,16 @@
       "apiProvinceCode": "96",
       "shortCodename": "ninh_quoi",
       "sortOrder": 5,
-      "effectiveFrom": "2025-07-01"
+      "effectiveFrom": "2025-07-01",
+      "beforeNames": [
+        "xã Ninh Quới A",
+        "xã Ninh Quới"
+      ],
+      "beforeProvinceName": "Tỉnh Cà Mau",
+      "changed": true,
+      "reformStatus": "merged",
+      "note": "Đơn vị sau sắp xếp của xã Ninh Quới A, xã Ninh Quới (cũ)",
+      "source": "Nghị quyết 1655/NQ-UBTVQH15, Nghị quyết 202/2025/QH15"
     },
     {
       "code": "31858",
@@ -47336,7 +47426,16 @@
       "apiProvinceCode": "96",
       "shortCodename": "vinh_loc",
       "sortOrder": 6,
-      "effectiveFrom": "2025-07-01"
+      "effectiveFrom": "2025-07-01",
+      "beforeNames": [
+        "xã Vĩnh Lộc A",
+        "xã Vĩnh Lộc"
+      ],
+      "beforeProvinceName": "Tỉnh Cà Mau",
+      "changed": true,
+      "reformStatus": "merged",
+      "note": "Đơn vị sau sắp xếp của xã Vĩnh Lộc A, xã Vĩnh Lộc (cũ)",
+      "source": "Nghị quyết 1655/NQ-UBTVQH15, Nghị quyết 202/2025/QH15"
     },
     {
       "code": "31864",
@@ -47350,7 +47449,16 @@
       "apiProvinceCode": "96",
       "shortCodename": "ninh_thanh_loi",
       "sortOrder": 7,
-      "effectiveFrom": "2025-07-01"
+      "effectiveFrom": "2025-07-01",
+      "beforeNames": [
+        "xã Ninh Thạnh Lợi A",
+        "xã Ninh Thạnh Lợi"
+      ],
+      "beforeProvinceName": "Tỉnh Cà Mau",
+      "changed": true,
+      "reformStatus": "merged",
+      "note": "Đơn vị sau sắp xếp của xã Ninh Thạnh Lợi A, xã Ninh Thạnh Lợi (cũ)",
+      "source": "Nghị quyết 1655/NQ-UBTVQH15, Nghị quyết 202/2025/QH15"
     },
     {
       "code": "31867",
@@ -47364,7 +47472,16 @@
       "apiProvinceCode": "96",
       "shortCodename": "phuoc_long",
       "sortOrder": 8,
-      "effectiveFrom": "2025-07-01"
+      "effectiveFrom": "2025-07-01",
+      "beforeNames": [
+        "thị trấn Phước Long",
+        "xã Vĩnh Phú Đông"
+      ],
+      "beforeProvinceName": "Tỉnh Cà Mau",
+      "changed": true,
+      "reformStatus": "merged",
+      "note": "Đơn vị sau sắp xếp của thị trấn Phước Long, xã Vĩnh Phú Đông (cũ)",
+      "source": "Nghị quyết 1655/NQ-UBTVQH15, Nghị quyết 202/2025/QH15"
     },
     {
       "code": "31876",
@@ -47378,7 +47495,16 @@
       "apiProvinceCode": "96",
       "shortCodename": "vinh_phuoc",
       "sortOrder": 9,
-      "effectiveFrom": "2025-07-01"
+      "effectiveFrom": "2025-07-01",
+      "beforeNames": [
+        "xã Phước Long",
+        "xã Vĩnh Phú Tây"
+      ],
+      "beforeProvinceName": "Tỉnh Cà Mau",
+      "changed": true,
+      "reformStatus": "merged",
+      "note": "Đơn vị sau sắp xếp của xã Phước Long, xã Vĩnh Phú Tây (cũ)",
+      "source": "Nghị quyết 1655/NQ-UBTVQH15, Nghị quyết 202/2025/QH15"
     },
     {
       "code": "31882",
@@ -47392,7 +47518,16 @@
       "apiProvinceCode": "96",
       "shortCodename": "vinh_thanh",
       "sortOrder": 10,
-      "effectiveFrom": "2025-07-01"
+      "effectiveFrom": "2025-07-01",
+      "beforeNames": [
+        "xã Hưng Phú",
+        "xã Vĩnh Thanh"
+      ],
+      "beforeProvinceName": "Tỉnh Cà Mau",
+      "changed": true,
+      "reformStatus": "merged",
+      "note": "Đơn vị sau sắp xếp của xã Hưng Phú, xã Vĩnh Thanh (cũ)",
+      "source": "Nghị quyết 1655/NQ-UBTVQH15, Nghị quyết 202/2025/QH15"
     },
     {
       "code": "31885",
@@ -47406,7 +47541,16 @@
       "apiProvinceCode": "96",
       "shortCodename": "phong_hiep",
       "sortOrder": 11,
-      "effectiveFrom": "2025-07-01"
+      "effectiveFrom": "2025-07-01",
+      "beforeNames": [
+        "xã Phong Thạnh Tây A",
+        "xã Phong Thạnh Tây B"
+      ],
+      "beforeProvinceName": "Tỉnh Cà Mau",
+      "changed": true,
+      "reformStatus": "merged",
+      "note": "Đơn vị sau sắp xếp của xã Phong Thạnh Tây A, xã Phong Thạnh Tây B (cũ)",
+      "source": "Nghị quyết 1655/NQ-UBTVQH15, Nghị quyết 202/2025/QH15"
     },
     {
       "code": "31891",
@@ -47420,7 +47564,17 @@
       "apiProvinceCode": "96",
       "shortCodename": "hoa_binh",
       "sortOrder": 12,
-      "effectiveFrom": "2025-07-01"
+      "effectiveFrom": "2025-07-01",
+      "beforeNames": [
+        "thị trấn Hòa Bình",
+        "xã Vĩnh Mỹ A",
+        "xã Long Thạnh"
+      ],
+      "beforeProvinceName": "Tỉnh Cà Mau",
+      "changed": true,
+      "reformStatus": "merged",
+      "note": "Đơn vị sau sắp xếp của thị trấn Hòa Bình, xã Vĩnh Mỹ A, xã Long Thạnh (cũ)",
+      "source": "Nghị quyết 1655/NQ-UBTVQH15, Nghị quyết 202/2025/QH15"
     },
     {
       "code": "31894",
@@ -47434,7 +47588,17 @@
       "apiProvinceCode": "96",
       "shortCodename": "chau_thoi",
       "sortOrder": 13,
-      "effectiveFrom": "2025-07-01"
+      "effectiveFrom": "2025-07-01",
+      "beforeNames": [
+        "xã Vĩnh Hưng",
+        "xã Vĩnh Hưng A",
+        "xã Châu Thới"
+      ],
+      "beforeProvinceName": "Tỉnh Cà Mau",
+      "changed": true,
+      "reformStatus": "merged",
+      "note": "Đơn vị sau sắp xếp của xã Vĩnh Hưng, xã Vĩnh Hưng A, xã Châu Thới (cũ)",
+      "source": "Nghị quyết 1655/NQ-UBTVQH15, Nghị quyết 202/2025/QH15"
     },
     {
       "code": "31900",
@@ -47448,7 +47612,16 @@
       "apiProvinceCode": "96",
       "shortCodename": "vinh_loi",
       "sortOrder": 14,
-      "effectiveFrom": "2025-07-01"
+      "effectiveFrom": "2025-07-01",
+      "beforeNames": [
+        "thị trấn Châu Hưng",
+        "xã Châu Hưng A"
+      ],
+      "beforeProvinceName": "Tỉnh Cà Mau",
+      "changed": true,
+      "reformStatus": "merged",
+      "note": "Đơn vị sau sắp xếp của thị trấn Châu Hưng, xã Châu Hưng A (cũ)",
+      "source": "Nghị quyết 1655/NQ-UBTVQH15, Nghị quyết 202/2025/QH15"
     },
     {
       "code": "31906",
@@ -47462,7 +47635,16 @@
       "apiProvinceCode": "96",
       "shortCodename": "hung_hoi",
       "sortOrder": 15,
-      "effectiveFrom": "2025-07-01"
+      "effectiveFrom": "2025-07-01",
+      "beforeNames": [
+        "xã Hưng Thành",
+        "xã Hưng Hội"
+      ],
+      "beforeProvinceName": "Tỉnh Cà Mau",
+      "changed": true,
+      "reformStatus": "merged",
+      "note": "Đơn vị sau sắp xếp của xã Hưng Thành, xã Hưng Hội (cũ)",
+      "source": "Nghị quyết 1655/NQ-UBTVQH15, Nghị quyết 202/2025/QH15"
     },
     {
       "code": "31918",
@@ -47476,7 +47658,17 @@
       "apiProvinceCode": "96",
       "shortCodename": "vinh_my",
       "sortOrder": 16,
-      "effectiveFrom": "2025-07-01"
+      "effectiveFrom": "2025-07-01",
+      "beforeNames": [
+        "xã Minh Diệu",
+        "xã Vĩnh Bình",
+        "xã Vĩnh Mỹ B"
+      ],
+      "beforeProvinceName": "Tỉnh Cà Mau",
+      "changed": true,
+      "reformStatus": "merged",
+      "note": "Đơn vị sau sắp xếp của xã Minh Diệu, xã Vĩnh Bình, xã Vĩnh Mỹ B (cũ)",
+      "source": "Nghị quyết 1655/NQ-UBTVQH15, Nghị quyết 202/2025/QH15"
     },
     {
       "code": "31927",
@@ -47490,7 +47682,17 @@
       "apiProvinceCode": "96",
       "shortCodename": "vinh_hau",
       "sortOrder": 17,
-      "effectiveFrom": "2025-07-01"
+      "effectiveFrom": "2025-07-01",
+      "beforeNames": [
+        "xã Vĩnh Thịnh",
+        "xã Vĩnh Hậu A",
+        "xã Vĩnh Hậu"
+      ],
+      "beforeProvinceName": "Tỉnh Cà Mau",
+      "changed": true,
+      "reformStatus": "merged",
+      "note": "Đơn vị sau sắp xếp của xã Vĩnh Thịnh, xã Vĩnh Hậu A, xã Vĩnh Hậu (cũ)",
+      "source": "Nghị quyết 1655/NQ-UBTVQH15, Nghị quyết 202/2025/QH15"
     },
     {
       "code": "31942",
@@ -47504,7 +47706,18 @@
       "apiProvinceCode": "96",
       "shortCodename": "gia_rai",
       "sortOrder": 18,
-      "effectiveFrom": "2025-07-01"
+      "effectiveFrom": "2025-07-01",
+      "beforeNames": [
+        "Phước 1 (thị xã Giá Rai)",
+        "phường Hộ Phòng",
+        "xã Phong Thạnh",
+        "xã Phong Thạnh A"
+      ],
+      "beforeProvinceName": "Tỉnh Cà Mau",
+      "changed": true,
+      "reformStatus": "merged",
+      "note": "Đơn vị sau sắp xếp của Phước 1 (thị xã Giá Rai), phường Hộ Phòng, xã Phong Thạnh (cũ)",
+      "source": "Nghị quyết 1655/NQ-UBTVQH15, Nghị quyết 202/2025/QH15"
     },
     {
       "code": "31951",
@@ -47518,7 +47731,17 @@
       "apiProvinceCode": "96",
       "shortCodename": "lang_tron",
       "sortOrder": 19,
-      "effectiveFrom": "2025-07-01"
+      "effectiveFrom": "2025-07-01",
+      "beforeNames": [
+        "phường Láng Tròn",
+        "xã Phong Tân",
+        "xã Phong Thạnh Đông"
+      ],
+      "beforeProvinceName": "Tỉnh Cà Mau",
+      "changed": true,
+      "reformStatus": "merged",
+      "note": "Đơn vị sau sắp xếp của phường Láng Tròn, xã Phong Tân, xã Phong Thạnh Đông (cũ)",
+      "source": "Nghị quyết 1655/NQ-UBTVQH15, Nghị quyết 202/2025/QH15"
     },
     {
       "code": "31957",
@@ -47532,7 +47755,17 @@
       "apiProvinceCode": "96",
       "shortCodename": "phong_thanh",
       "sortOrder": 20,
-      "effectiveFrom": "2025-07-01"
+      "effectiveFrom": "2025-07-01",
+      "beforeNames": [
+        "xã Tân Thạnh",
+        "xã Phong Thạnh Tây",
+        "xã Tân Phong"
+      ],
+      "beforeProvinceName": "Tỉnh Cà Mau",
+      "changed": true,
+      "reformStatus": "merged",
+      "note": "Đơn vị sau sắp xếp của xã Tân Thạnh, xã Phong Thạnh Tây, xã Tân Phong (cũ)",
+      "source": "Nghị quyết 1655/NQ-UBTVQH15, Nghị quyết 202/2025/QH15"
     },
     {
       "code": "31972",
@@ -47546,7 +47779,16 @@
       "apiProvinceCode": "96",
       "shortCodename": "ganh_hao",
       "sortOrder": 21,
-      "effectiveFrom": "2025-07-01"
+      "effectiveFrom": "2025-07-01",
+      "beforeNames": [
+        "thị trấn Gành Hào",
+        "xã Long Điền Tây"
+      ],
+      "beforeProvinceName": "Tỉnh Cà Mau",
+      "changed": true,
+      "reformStatus": "merged",
+      "note": "Đơn vị sau sắp xếp của thị trấn Gành Hào, xã Long Điền Tây (cũ)",
+      "source": "Nghị quyết 1655/NQ-UBTVQH15, Nghị quyết 202/2025/QH15"
     },
     {
       "code": "31975",
@@ -47560,7 +47802,16 @@
       "apiProvinceCode": "96",
       "shortCodename": "dong_hai",
       "sortOrder": 22,
-      "effectiveFrom": "2025-07-01"
+      "effectiveFrom": "2025-07-01",
+      "beforeNames": [
+        "xã Long Điền Đông",
+        "xã Long Điền Đông A"
+      ],
+      "beforeProvinceName": "Tỉnh Cà Mau",
+      "changed": true,
+      "reformStatus": "merged",
+      "note": "Đơn vị sau sắp xếp của xã Long Điền Đông, xã Long Điền Đông A (cũ)",
+      "source": "Nghị quyết 1655/NQ-UBTVQH15, Nghị quyết 202/2025/QH15"
     },
     {
       "code": "31985",
@@ -47574,7 +47825,16 @@
       "apiProvinceCode": "96",
       "shortCodename": "long_dien",
       "sortOrder": 23,
-      "effectiveFrom": "2025-07-01"
+      "effectiveFrom": "2025-07-01",
+      "beforeNames": [
+        "xã Điền Hải",
+        "xã Long Điền"
+      ],
+      "beforeProvinceName": "Tỉnh Cà Mau",
+      "changed": true,
+      "reformStatus": "merged",
+      "note": "Đơn vị sau sắp xếp của xã Điền Hải, xã Long Điền (cũ)",
+      "source": "Nghị quyết 1655/NQ-UBTVQH15, Nghị quyết 202/2025/QH15"
     },
     {
       "code": "31988",
@@ -47588,7 +47848,16 @@
       "apiProvinceCode": "96",
       "shortCodename": "an_trach",
       "sortOrder": 24,
-      "effectiveFrom": "2025-07-01"
+      "effectiveFrom": "2025-07-01",
+      "beforeNames": [
+        "xã An Trạch A",
+        "xã An Trạch"
+      ],
+      "beforeProvinceName": "Tỉnh Cà Mau",
+      "changed": true,
+      "reformStatus": "merged",
+      "note": "Đơn vị sau sắp xếp của xã An Trạch A, xã An Trạch (cũ)",
+      "source": "Nghị quyết 1655/NQ-UBTVQH15, Nghị quyết 202/2025/QH15"
     },
     {
       "code": "31993",
@@ -47602,7 +47871,17 @@
       "apiProvinceCode": "96",
       "shortCodename": "dinh_thanh",
       "sortOrder": 25,
-      "effectiveFrom": "2025-07-01"
+      "effectiveFrom": "2025-07-01",
+      "beforeNames": [
+        "xã An Phúc",
+        "xã Định Thành A",
+        "xã Định Thành"
+      ],
+      "beforeProvinceName": "Tỉnh Cà Mau",
+      "changed": true,
+      "reformStatus": "merged",
+      "note": "Đơn vị sau sắp xếp của xã An Phúc, xã Định Thành A, xã Định Thành (cũ)",
+      "source": "Nghị quyết 1655/NQ-UBTVQH15, Nghị quyết 202/2025/QH15"
     },
     {
       "code": "32002",
@@ -47616,7 +47895,19 @@
       "apiProvinceCode": "96",
       "shortCodename": "an_xuyen",
       "sortOrder": 26,
-      "effectiveFrom": "2025-07-01"
+      "effectiveFrom": "2025-07-01",
+      "beforeNames": [
+        "Phường 1",
+        "Phường 2 (thành phố Cà Mau)",
+        "Phường 9",
+        "phường Tân Xuyên",
+        "xã An Xuyên"
+      ],
+      "beforeProvinceName": "Tỉnh Cà Mau",
+      "changed": true,
+      "reformStatus": "merged",
+      "note": "Đơn vị sau sắp xếp của Phường 1, Phường 2 (thành phố Cà Mau), Phường 9 (cũ)",
+      "source": "Nghị quyết 1655/NQ-UBTVQH15, Nghị quyết 202/2025/QH15"
     },
     {
       "code": "32014",
@@ -47630,7 +47921,17 @@
       "apiProvinceCode": "96",
       "shortCodename": "ly_van_lam",
       "sortOrder": 27,
-      "effectiveFrom": "2025-07-01"
+      "effectiveFrom": "2025-07-01",
+      "beforeNames": [
+        "Phường 8 (thành phố Cà Mau)",
+        "xã Lý Văn Lâm",
+        "phần còn lại của xã Lợi An"
+      ],
+      "beforeProvinceName": "Tỉnh Cà Mau",
+      "changed": true,
+      "reformStatus": "merged",
+      "note": "Đơn vị sau sắp xếp của Phường 8 (thành phố Cà Mau), xã Lý Văn Lâm, phần còn lại của xã Lợi An (cũ)",
+      "source": "Nghị quyết 1655/NQ-UBTVQH15, Nghị quyết 202/2025/QH15"
     },
     {
       "code": "32025",
@@ -47644,7 +47945,21 @@
       "apiProvinceCode": "96",
       "shortCodename": "tan_thanh",
       "sortOrder": 28,
-      "effectiveFrom": "2025-07-01"
+      "effectiveFrom": "2025-07-01",
+      "beforeNames": [
+        "Phường 5 (thành phố Cà Mau)",
+        "phường Tân Thành",
+        "xã Tân Thành",
+        "Phường 7 (thành phố Cà Mau)",
+        "Phường 6",
+        "xã Định Bình",
+        "xã Tắc Vân"
+      ],
+      "beforeProvinceName": "Tỉnh Cà Mau",
+      "changed": true,
+      "reformStatus": "merged",
+      "note": "Đơn vị sau sắp xếp của Phường 5 (thành phố Cà Mau), phường Tân Thành, xã Tân Thành (cũ)",
+      "source": "Nghị quyết 1655/NQ-UBTVQH15, Nghị quyết 202/2025/QH15"
     },
     {
       "code": "32041",
@@ -47658,7 +47973,20 @@
       "apiProvinceCode": "96",
       "shortCodename": "hoa_thanh",
       "sortOrder": 29,
-      "effectiveFrom": "2025-07-01"
+      "effectiveFrom": "2025-07-01",
+      "beforeNames": [
+        "xã Hòa Tân",
+        "xã Hòa Thành",
+        "phần còn lại của Phường 7 (thành phố Cà Mau)",
+        "Phường 6",
+        "xã Định Bình",
+        "xã Tắc Vân"
+      ],
+      "beforeProvinceName": "Tỉnh Cà Mau",
+      "changed": true,
+      "reformStatus": "merged",
+      "note": "Đơn vị sau sắp xếp của xã Hòa Tân, xã Hòa Thành, phần còn lại của Phường 7 (thành phố Cà Mau) (cũ)",
+      "source": "Nghị quyết 1655/NQ-UBTVQH15, Nghị quyết 202/2025/QH15"
     },
     {
       "code": "32044",
@@ -47672,7 +48000,17 @@
       "apiProvinceCode": "96",
       "shortCodename": "nguyen_phich",
       "sortOrder": 30,
-      "effectiveFrom": "2025-07-01"
+      "effectiveFrom": "2025-07-01",
+      "beforeNames": [
+        "thị trấn U Minh",
+        "xã Nguyễn Phích",
+        "phần còn lại của xã Khánh Thuận"
+      ],
+      "beforeProvinceName": "Tỉnh Cà Mau",
+      "changed": true,
+      "reformStatus": "merged",
+      "note": "Đơn vị sau sắp xếp của thị trấn U Minh, xã Nguyễn Phích, phần còn lại của xã Khánh Thuận (cũ)",
+      "source": "Nghị quyết 1655/NQ-UBTVQH15, Nghị quyết 202/2025/QH15"
     },
     {
       "code": "32047",
@@ -47686,7 +48024,18 @@
       "apiProvinceCode": "96",
       "shortCodename": "u_minh",
       "sortOrder": 31,
-      "effectiveFrom": "2025-07-01"
+      "effectiveFrom": "2025-07-01",
+      "beforeNames": [
+        "xã Khánh Tiến",
+        "xã Khánh Hòa",
+        "xã Khánh Thuận",
+        "xã Khánh Lâm"
+      ],
+      "beforeProvinceName": "Tỉnh Cà Mau",
+      "changed": true,
+      "reformStatus": "merged",
+      "note": "Đơn vị sau sắp xếp của xã Khánh Tiến, xã Khánh Hòa, xã Khánh Thuận (cũ)",
+      "source": "Nghị quyết 1655/NQ-UBTVQH15, Nghị quyết 202/2025/QH15"
     },
     {
       "code": "32059",
@@ -47700,7 +48049,16 @@
       "apiProvinceCode": "96",
       "shortCodename": "khanh_an",
       "sortOrder": 32,
-      "effectiveFrom": "2025-07-01"
+      "effectiveFrom": "2025-07-01",
+      "beforeNames": [
+        "xã Khánh An",
+        "phần còn lại của xã Nguyễn Phích"
+      ],
+      "beforeProvinceName": "Tỉnh Cà Mau",
+      "changed": true,
+      "reformStatus": "merged",
+      "note": "Đơn vị sau sắp xếp của xã Khánh An, phần còn lại của xã Nguyễn Phích (cũ)",
+      "source": "Nghị quyết 1655/NQ-UBTVQH15, Nghị quyết 202/2025/QH15"
     },
     {
       "code": "32062",
@@ -47714,7 +48072,17 @@
       "apiProvinceCode": "96",
       "shortCodename": "khanh_lam",
       "sortOrder": 33,
-      "effectiveFrom": "2025-07-01"
+      "effectiveFrom": "2025-07-01",
+      "beforeNames": [
+        "xã Khánh Hội",
+        "xã Nguyễn Phích",
+        "phần còn lại của xã Khánh Lâm"
+      ],
+      "beforeProvinceName": "Tỉnh Cà Mau",
+      "changed": true,
+      "reformStatus": "merged",
+      "note": "Đơn vị sau sắp xếp của xã Khánh Hội, xã Nguyễn Phích, phần còn lại của xã Khánh Lâm (cũ)",
+      "source": "Nghị quyết 1655/NQ-UBTVQH15, Nghị quyết 202/2025/QH15"
     },
     {
       "code": "32065",
@@ -47728,7 +48096,16 @@
       "apiProvinceCode": "96",
       "shortCodename": "thoi_binh",
       "sortOrder": 34,
-      "effectiveFrom": "2025-07-01"
+      "effectiveFrom": "2025-07-01",
+      "beforeNames": [
+        "thị trấn Thới Bình",
+        "xã Thới Bình"
+      ],
+      "beforeProvinceName": "Tỉnh Cà Mau",
+      "changed": true,
+      "reformStatus": "merged",
+      "note": "Đơn vị sau sắp xếp của thị trấn Thới Bình, xã Thới Bình (cũ)",
+      "source": "Nghị quyết 1655/NQ-UBTVQH15, Nghị quyết 202/2025/QH15"
     },
     {
       "code": "32069",
@@ -47742,7 +48119,17 @@
       "apiProvinceCode": "96",
       "shortCodename": "bien_bach",
       "sortOrder": 35,
-      "effectiveFrom": "2025-07-01"
+      "effectiveFrom": "2025-07-01",
+      "beforeNames": [
+        "xã Tân Bằng",
+        "xã Biển Bạch Đông",
+        "xã Biển Bạch"
+      ],
+      "beforeProvinceName": "Tỉnh Cà Mau",
+      "changed": true,
+      "reformStatus": "merged",
+      "note": "Đơn vị sau sắp xếp của xã Tân Bằng, xã Biển Bạch Đông, xã Biển Bạch (cũ)",
+      "source": "Nghị quyết 1655/NQ-UBTVQH15, Nghị quyết 202/2025/QH15"
     },
     {
       "code": "32071",
@@ -47756,7 +48143,17 @@
       "apiProvinceCode": "96",
       "shortCodename": "tri_phai",
       "sortOrder": 36,
-      "effectiveFrom": "2025-07-01"
+      "effectiveFrom": "2025-07-01",
+      "beforeNames": [
+        "xã Trí Lực",
+        "xã Tân Phú",
+        "xã Trí Phải"
+      ],
+      "beforeProvinceName": "Tỉnh Cà Mau",
+      "changed": true,
+      "reformStatus": "merged",
+      "note": "Đơn vị sau sắp xếp của xã Trí Lực, xã Tân Phú, xã Trí Phải (cũ)",
+      "source": "Nghị quyết 1655/NQ-UBTVQH15, Nghị quyết 202/2025/QH15"
     },
     {
       "code": "32083",
@@ -47770,7 +48167,17 @@
       "apiProvinceCode": "96",
       "shortCodename": "tan_loc",
       "sortOrder": 37,
-      "effectiveFrom": "2025-07-01"
+      "effectiveFrom": "2025-07-01",
+      "beforeNames": [
+        "xã Tân Lộc Bắc",
+        "xã Tân Lộc Đông",
+        "xã Tân Lộc"
+      ],
+      "beforeProvinceName": "Tỉnh Cà Mau",
+      "changed": true,
+      "reformStatus": "merged",
+      "note": "Đơn vị sau sắp xếp của xã Tân Lộc Bắc, xã Tân Lộc Đông, xã Tân Lộc (cũ)",
+      "source": "Nghị quyết 1655/NQ-UBTVQH15, Nghị quyết 202/2025/QH15"
     },
     {
       "code": "32092",
@@ -47786,14 +48193,16 @@
       "sortOrder": 38,
       "effectiveFrom": "2025-07-01",
       "beforeNames": [
-        "Hồ Thị Kỷ"
+        "Không thực hiện sắp xếp"
       ],
       "changed": false,
-      "note": "Không thực hiện sắp xếp theo 1655/NQ-UBTVQH15.",
+      "note": "Không thực hiện sắp xếp theo Nghị quyết 1655/NQ-UBTVQH15",
       "reformStatus": "not_applied",
       "notApplied": true,
       "sourceName": "Hồ Thị Kỷ",
-      "sourceResolution": "1655/NQ-UBTVQH15"
+      "sourceResolution": "1655/NQ-UBTVQH15",
+      "beforeProvinceName": "Tỉnh Cà Mau",
+      "source": "Nghị quyết 1655/NQ-UBTVQH15, Nghị quyết 202/2025/QH15"
     },
     {
       "code": "32095",
@@ -47807,7 +48216,20 @@
       "apiProvinceCode": "96",
       "shortCodename": "tran_van_thoi",
       "sortOrder": 39,
-      "effectiveFrom": "2025-07-01"
+      "effectiveFrom": "2025-07-01",
+      "beforeNames": [
+        "thị trấn Trần Văn Thời",
+        "xã Khánh Lộc",
+        "xã Phong Lạc",
+        "xã Lợi An",
+        "xã Trần Hợi",
+        "xã Phong Điền"
+      ],
+      "beforeProvinceName": "Tỉnh Cà Mau",
+      "changed": true,
+      "reformStatus": "merged",
+      "note": "Đơn vị sau sắp xếp của thị trấn Trần Văn Thời, xã Khánh Lộc, xã Phong Lạc (cũ)",
+      "source": "Nghị quyết 1655/NQ-UBTVQH15, Nghị quyết 202/2025/QH15"
     },
     {
       "code": "32098",
@@ -47821,7 +48243,16 @@
       "apiProvinceCode": "96",
       "shortCodename": "song_doc",
       "sortOrder": 40,
-      "effectiveFrom": "2025-07-01"
+      "effectiveFrom": "2025-07-01",
+      "beforeNames": [
+        "thị trấn Sông Đốc",
+        "xã Phong Điền"
+      ],
+      "beforeProvinceName": "Tỉnh Cà Mau",
+      "changed": true,
+      "reformStatus": "merged",
+      "note": "Đơn vị sau sắp xếp của thị trấn Sông Đốc, xã Phong Điền (cũ)",
+      "source": "Nghị quyết 1655/NQ-UBTVQH15, Nghị quyết 202/2025/QH15"
     },
     {
       "code": "32104",
@@ -47835,7 +48266,17 @@
       "apiProvinceCode": "96",
       "shortCodename": "da_bac",
       "sortOrder": 41,
-      "effectiveFrom": "2025-07-01"
+      "effectiveFrom": "2025-07-01",
+      "beforeNames": [
+        "xã Khánh Bình Tây (bao gồm Hòn Đá Bạc)",
+        "xã Khánh Bình Tây Bắc",
+        "xã Trần Hợi"
+      ],
+      "beforeProvinceName": "Tỉnh Cà Mau",
+      "changed": true,
+      "reformStatus": "merged",
+      "note": "Đơn vị sau sắp xếp của xã Khánh Bình Tây (bao gồm Hòn Đá Bạc), xã Khánh Bình Tây Bắc, xã Trần Hợi (cũ)",
+      "source": "Nghị quyết 1655/NQ-UBTVQH15, Nghị quyết 202/2025/QH15"
     },
     {
       "code": "32110",
@@ -47849,7 +48290,16 @@
       "apiProvinceCode": "96",
       "shortCodename": "khanh_binh",
       "sortOrder": 42,
-      "effectiveFrom": "2025-07-01"
+      "effectiveFrom": "2025-07-01",
+      "beforeNames": [
+        "xã Khánh Bình Đông",
+        "xã Khánh Bình"
+      ],
+      "beforeProvinceName": "Tỉnh Cà Mau",
+      "changed": true,
+      "reformStatus": "merged",
+      "note": "Đơn vị sau sắp xếp của xã Khánh Bình Đông, xã Khánh Bình (cũ)",
+      "source": "Nghị quyết 1655/NQ-UBTVQH15, Nghị quyết 202/2025/QH15"
     },
     {
       "code": "32119",
@@ -47863,7 +48313,16 @@
       "apiProvinceCode": "96",
       "shortCodename": "khanh_hung",
       "sortOrder": 43,
-      "effectiveFrom": "2025-07-01"
+      "effectiveFrom": "2025-07-01",
+      "beforeNames": [
+        "xã Khánh Hải",
+        "xã Khánh Hưng"
+      ],
+      "beforeProvinceName": "Tỉnh Cà Mau",
+      "changed": true,
+      "reformStatus": "merged",
+      "note": "Đơn vị sau sắp xếp của xã Khánh Hải, xã Khánh Hưng (cũ)",
+      "source": "Nghị quyết 1655/NQ-UBTVQH15, Nghị quyết 202/2025/QH15"
     },
     {
       "code": "32128",
@@ -47877,7 +48336,19 @@
       "apiProvinceCode": "96",
       "shortCodename": "cai_nuoc",
       "sortOrder": 44,
-      "effectiveFrom": "2025-07-01"
+      "effectiveFrom": "2025-07-01",
+      "beforeNames": [
+        "thị trấn Cái Nước",
+        "xã Trần Thới",
+        "xã Đông Hưng",
+        "xã Đông Thới",
+        "xã Tân Hưng Đông"
+      ],
+      "beforeProvinceName": "Tỉnh Cà Mau",
+      "changed": true,
+      "reformStatus": "merged",
+      "note": "Đơn vị sau sắp xếp của thị trấn Cái Nước, xã Trần Thới, xã Đông Hưng (cũ)",
+      "source": "Nghị quyết 1655/NQ-UBTVQH15, Nghị quyết 202/2025/QH15"
     },
     {
       "code": "32134",
@@ -47891,7 +48362,18 @@
       "apiProvinceCode": "96",
       "shortCodename": "luong_the_tran",
       "sortOrder": 45,
-      "effectiveFrom": "2025-07-01"
+      "effectiveFrom": "2025-07-01",
+      "beforeNames": [
+        "xã Thạnh Phú",
+        "xã Phú Hưng",
+        "xã Lương Thế Trân",
+        "xã Lợi An"
+      ],
+      "beforeProvinceName": "Tỉnh Cà Mau",
+      "changed": true,
+      "reformStatus": "merged",
+      "note": "Đơn vị sau sắp xếp của xã Thạnh Phú, xã Phú Hưng, xã Lương Thế Trân (cũ)",
+      "source": "Nghị quyết 1655/NQ-UBTVQH15, Nghị quyết 202/2025/QH15"
     },
     {
       "code": "32137",
@@ -47905,7 +48387,18 @@
       "apiProvinceCode": "96",
       "shortCodename": "tan_hung",
       "sortOrder": 46,
-      "effectiveFrom": "2025-07-01"
+      "effectiveFrom": "2025-07-01",
+      "beforeNames": [
+        "xã Tân Hưng",
+        "xã Đông Hưng",
+        "xã Đông Thới",
+        "xã Hòa Mỹ"
+      ],
+      "beforeProvinceName": "Tỉnh Cà Mau",
+      "changed": true,
+      "reformStatus": "merged",
+      "note": "Đơn vị sau sắp xếp của xã Tân Hưng, xã Đông Hưng, xã Đông Thới (cũ)",
+      "source": "Nghị quyết 1655/NQ-UBTVQH15, Nghị quyết 202/2025/QH15"
     },
     {
       "code": "32140",
@@ -47919,7 +48412,17 @@
       "apiProvinceCode": "96",
       "shortCodename": "hung_my",
       "sortOrder": 47,
-      "effectiveFrom": "2025-07-01"
+      "effectiveFrom": "2025-07-01",
+      "beforeNames": [
+        "xã Hưng Mỹ",
+        "xã Tân Hưng Đông",
+        "xã Hòa Mỹ"
+      ],
+      "beforeProvinceName": "Tỉnh Cà Mau",
+      "changed": true,
+      "reformStatus": "merged",
+      "note": "Đơn vị sau sắp xếp của xã Hưng Mỹ, xã Tân Hưng Đông, xã Hòa Mỹ (cũ)",
+      "source": "Nghị quyết 1655/NQ-UBTVQH15, Nghị quyết 202/2025/QH15"
     },
     {
       "code": "32152",
@@ -47935,11 +48438,16 @@
       "sortOrder": 48,
       "effectiveFrom": "2025-07-01",
       "beforeNames": [
-        "xã Đầm Dơi, huyện Đầm Dơi, tỉnh Cà Mau"
+        "thị trấn Đầm Dơi",
+        "xã Tân Duyệt",
+        "xã Tân Dân",
+        "phần còn lại của xã Tạ An Khương"
       ],
       "beforeProvinceName": "Tỉnh Cà Mau",
       "changed": true,
-      "note": "Đơn vị sau sáp nhập của huyện Đầm Dơi, tỉnh Cà Mau (cũ)"
+      "note": "Đơn vị sau sắp xếp của thị trấn Đầm Dơi, xã Tân Duyệt, xã Tân Dân (cũ)",
+      "reformStatus": "merged",
+      "source": "Nghị quyết 1655/NQ-UBTVQH15, Nghị quyết 202/2025/QH15"
     },
     {
       "code": "32155",
@@ -47953,7 +48461,17 @@
       "apiProvinceCode": "96",
       "shortCodename": "ta_an_khuong",
       "sortOrder": 49,
-      "effectiveFrom": "2025-07-01"
+      "effectiveFrom": "2025-07-01",
+      "beforeNames": [
+        "xã Tạ An Khương Đông",
+        "xã Tạ An Khương Nam",
+        "xã Tạ An Khương"
+      ],
+      "beforeProvinceName": "Tỉnh Cà Mau",
+      "changed": true,
+      "reformStatus": "merged",
+      "note": "Đơn vị sau sắp xếp của xã Tạ An Khương Đông, xã Tạ An Khương Nam, xã Tạ An Khương (cũ)",
+      "source": "Nghị quyết 1655/NQ-UBTVQH15, Nghị quyết 202/2025/QH15"
     },
     {
       "code": "32161",
@@ -47967,7 +48485,16 @@
       "apiProvinceCode": "96",
       "shortCodename": "tran_phan",
       "sortOrder": 50,
-      "effectiveFrom": "2025-07-01"
+      "effectiveFrom": "2025-07-01",
+      "beforeNames": [
+        "xã Tân Trung",
+        "xã Trần Phán"
+      ],
+      "beforeProvinceName": "Tỉnh Cà Mau",
+      "changed": true,
+      "reformStatus": "merged",
+      "note": "Đơn vị sau sắp xếp của xã Tân Trung, xã Trần Phán (cũ)",
+      "source": "Nghị quyết 1655/NQ-UBTVQH15, Nghị quyết 202/2025/QH15"
     },
     {
       "code": "32167",
@@ -47981,7 +48508,16 @@
       "apiProvinceCode": "96",
       "shortCodename": "tan_thuan",
       "sortOrder": 51,
-      "effectiveFrom": "2025-07-01"
+      "effectiveFrom": "2025-07-01",
+      "beforeNames": [
+        "xã Tân Đức",
+        "xã Tân Thuận"
+      ],
+      "beforeProvinceName": "Tỉnh Cà Mau",
+      "changed": true,
+      "reformStatus": "merged",
+      "note": "Đơn vị sau sắp xếp của xã Tân Đức, xã Tân Thuận (cũ)",
+      "source": "Nghị quyết 1655/NQ-UBTVQH15, Nghị quyết 202/2025/QH15"
     },
     {
       "code": "32182",
@@ -47995,7 +48531,16 @@
       "apiProvinceCode": "96",
       "shortCodename": "quach_pham",
       "sortOrder": 52,
-      "effectiveFrom": "2025-07-01"
+      "effectiveFrom": "2025-07-01",
+      "beforeNames": [
+        "xã Quách Phẩm Bắc",
+        "xã Quách Phẩm"
+      ],
+      "beforeProvinceName": "Tỉnh Cà Mau",
+      "changed": true,
+      "reformStatus": "merged",
+      "note": "Đơn vị sau sắp xếp của xã Quách Phẩm Bắc, xã Quách Phẩm (cũ)",
+      "source": "Nghị quyết 1655/NQ-UBTVQH15, Nghị quyết 202/2025/QH15"
     },
     {
       "code": "32185",
@@ -48009,7 +48554,16 @@
       "apiProvinceCode": "96",
       "shortCodename": "thanh_tung",
       "sortOrder": 53,
-      "effectiveFrom": "2025-07-01"
+      "effectiveFrom": "2025-07-01",
+      "beforeNames": [
+        "xã Ngọc Chánh",
+        "xã Thanh Tùng"
+      ],
+      "beforeProvinceName": "Tỉnh Cà Mau",
+      "changed": true,
+      "reformStatus": "merged",
+      "note": "Đơn vị sau sắp xếp của xã Ngọc Chánh, xã Thanh Tùng (cũ)",
+      "source": "Nghị quyết 1655/NQ-UBTVQH15, Nghị quyết 202/2025/QH15"
     },
     {
       "code": "32188",
@@ -48023,7 +48577,16 @@
       "apiProvinceCode": "96",
       "shortCodename": "tan_tien",
       "sortOrder": 54,
-      "effectiveFrom": "2025-07-01"
+      "effectiveFrom": "2025-07-01",
+      "beforeNames": [
+        "xã Nguyễn Huân",
+        "xã Tân Tiến"
+      ],
+      "beforeProvinceName": "Tỉnh Cà Mau",
+      "changed": true,
+      "reformStatus": "merged",
+      "note": "Đơn vị sau sắp xếp của xã Nguyễn Huân, xã Tân Tiến (cũ)",
+      "source": "Nghị quyết 1655/NQ-UBTVQH15, Nghị quyết 202/2025/QH15"
     },
     {
       "code": "32191",
@@ -48037,7 +48600,17 @@
       "apiProvinceCode": "96",
       "shortCodename": "nam_can",
       "sortOrder": 55,
-      "effectiveFrom": "2025-07-01"
+      "effectiveFrom": "2025-07-01",
+      "beforeNames": [
+        "xã Hàng Vịnh",
+        "thị trấn Năm Căn",
+        "xã Hàm Rồng"
+      ],
+      "beforeProvinceName": "Tỉnh Cà Mau",
+      "changed": true,
+      "reformStatus": "merged",
+      "note": "Đơn vị sau sắp xếp của xã Hàng Vịnh, thị trấn Năm Căn, xã Hàm Rồng (cũ)",
+      "source": "Nghị quyết 1655/NQ-UBTVQH15, Nghị quyết 202/2025/QH15"
     },
     {
       "code": "32201",
@@ -48051,7 +48624,19 @@
       "apiProvinceCode": "96",
       "shortCodename": "dat_moi",
       "sortOrder": 56,
-      "effectiveFrom": "2025-07-01"
+      "effectiveFrom": "2025-07-01",
+      "beforeNames": [
+        "xã Lâm Hải",
+        "xã Đất Mới",
+        "thị trấn Năm Căn",
+        "xã Hàm Rồng",
+        "phần còn lại của xã Viên An"
+      ],
+      "beforeProvinceName": "Tỉnh Cà Mau",
+      "changed": true,
+      "reformStatus": "merged",
+      "note": "Đơn vị sau sắp xếp của xã Lâm Hải, xã Đất Mới, thị trấn Năm Căn (cũ)",
+      "source": "Nghị quyết 1655/NQ-UBTVQH15, Nghị quyết 202/2025/QH15"
     },
     {
       "code": "32206",
@@ -48065,7 +48650,17 @@
       "apiProvinceCode": "96",
       "shortCodename": "tam_giang",
       "sortOrder": 57,
-      "effectiveFrom": "2025-07-01"
+      "effectiveFrom": "2025-07-01",
+      "beforeNames": [
+        "xã Hiệp Tùng",
+        "xã Tam Giang Đông",
+        "xã Tam Giang"
+      ],
+      "beforeProvinceName": "Tỉnh Cà Mau",
+      "changed": true,
+      "reformStatus": "merged",
+      "note": "Đơn vị sau sắp xếp của xã Hiệp Tùng, xã Tam Giang Đông, xã Tam Giang (cũ)",
+      "source": "Nghị quyết 1655/NQ-UBTVQH15, Nghị quyết 202/2025/QH15"
     },
     {
       "code": "32212",
@@ -48079,7 +48674,16 @@
       "apiProvinceCode": "96",
       "shortCodename": "cai_doi_vam",
       "sortOrder": 58,
-      "effectiveFrom": "2025-07-01"
+      "effectiveFrom": "2025-07-01",
+      "beforeNames": [
+        "thị trấn Cái Đôi Vàm",
+        "xã Nguyễn Việt Khái"
+      ],
+      "beforeProvinceName": "Tỉnh Cà Mau",
+      "changed": true,
+      "reformStatus": "merged",
+      "note": "Đơn vị sau sắp xếp của thị trấn Cái Đôi Vàm, xã Nguyễn Việt Khái (cũ)",
+      "source": "Nghị quyết 1655/NQ-UBTVQH15, Nghị quyết 202/2025/QH15"
     },
     {
       "code": "32214",
@@ -48093,7 +48697,17 @@
       "apiProvinceCode": "96",
       "shortCodename": "phu_my",
       "sortOrder": 59,
-      "effectiveFrom": "2025-07-01"
+      "effectiveFrom": "2025-07-01",
+      "beforeNames": [
+        "xã Phú Thuận",
+        "xã Phú Mỹ",
+        "xã Hòa Mỹ"
+      ],
+      "beforeProvinceName": "Tỉnh Cà Mau",
+      "changed": true,
+      "reformStatus": "merged",
+      "note": "Đơn vị sau sắp xếp của xã Phú Thuận, xã Phú Mỹ, xã Hòa Mỹ (cũ)",
+      "source": "Nghị quyết 1655/NQ-UBTVQH15, Nghị quyết 202/2025/QH15"
     },
     {
       "code": "32218",
@@ -48107,7 +48721,16 @@
       "apiProvinceCode": "96",
       "shortCodename": "phu_tan",
       "sortOrder": 60,
-      "effectiveFrom": "2025-07-01"
+      "effectiveFrom": "2025-07-01",
+      "beforeNames": [
+        "xã Tân Hải",
+        "xã Phú Tân"
+      ],
+      "beforeProvinceName": "Tỉnh Cà Mau",
+      "changed": true,
+      "reformStatus": "merged",
+      "note": "Đơn vị sau sắp xếp của xã Tân Hải, xã Phú Tân (cũ)",
+      "source": "Nghị quyết 1655/NQ-UBTVQH15, Nghị quyết 202/2025/QH15"
     },
     {
       "code": "32227",
@@ -48121,7 +48744,17 @@
       "apiProvinceCode": "96",
       "shortCodename": "nguyen_viet_khai",
       "sortOrder": 61,
-      "effectiveFrom": "2025-07-01"
+      "effectiveFrom": "2025-07-01",
+      "beforeNames": [
+        "xã Tân Hưng Tây",
+        "xã Rạch Chèo",
+        "xã Việt Thắng"
+      ],
+      "beforeProvinceName": "Tỉnh Cà Mau",
+      "changed": true,
+      "reformStatus": "merged",
+      "note": "Đơn vị sau sắp xếp của xã Tân Hưng Tây, xã Rạch Chèo, xã Việt Thắng (cũ)",
+      "source": "Nghị quyết 1655/NQ-UBTVQH15, Nghị quyết 202/2025/QH15"
     },
     {
       "code": "32236",
@@ -48135,7 +48768,16 @@
       "apiProvinceCode": "96",
       "shortCodename": "tan_an",
       "sortOrder": 62,
-      "effectiveFrom": "2025-07-01"
+      "effectiveFrom": "2025-07-01",
+      "beforeNames": [
+        "xã Tam Giang Tây",
+        "xã Tân Ân Tây"
+      ],
+      "beforeProvinceName": "Tỉnh Cà Mau",
+      "changed": true,
+      "reformStatus": "merged",
+      "note": "Đơn vị sau sắp xếp của xã Tam Giang Tây, xã Tân Ân Tây (cũ)",
+      "source": "Nghị quyết 1655/NQ-UBTVQH15, Nghị quyết 202/2025/QH15"
     },
     {
       "code": "32244",
@@ -48149,7 +48791,17 @@
       "apiProvinceCode": "96",
       "shortCodename": "phan_ngoc_hien",
       "sortOrder": 63,
-      "effectiveFrom": "2025-07-01"
+      "effectiveFrom": "2025-07-01",
+      "beforeNames": [
+        "thị trấn Rạch Gốc",
+        "xã Viên An Đông",
+        "xã Tân Ân"
+      ],
+      "beforeProvinceName": "Tỉnh Cà Mau",
+      "changed": true,
+      "reformStatus": "merged",
+      "note": "Đơn vị sau sắp xếp của thị trấn Rạch Gốc, xã Viên An Đông, xã Tân Ân (cũ)",
+      "source": "Nghị quyết 1655/NQ-UBTVQH15, Nghị quyết 202/2025/QH15"
     },
     {
       "code": "32248",
@@ -48163,7 +48815,17 @@
       "apiProvinceCode": "96",
       "shortCodename": "dat_mui",
       "sortOrder": 64,
-      "effectiveFrom": "2025-07-01"
+      "effectiveFrom": "2025-07-01",
+      "beforeNames": [
+        "xã Đất Mũi",
+        "xã Viên An",
+        "phần còn lại của xã Tân Ân"
+      ],
+      "beforeProvinceName": "Tỉnh Cà Mau",
+      "changed": true,
+      "reformStatus": "merged",
+      "note": "Đơn vị sau sắp xếp của xã Đất Mũi, xã Viên An, phần còn lại của xã Tân Ân (cũ)",
+      "source": "Nghị quyết 1655/NQ-UBTVQH15, Nghị quyết 202/2025/QH15"
     }
   ]
 }
