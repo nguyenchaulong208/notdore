@@ -824,7 +824,30 @@
 .nd-table--units td:first-child { white-space: nowrap; }
 .nd-table--units .nd-pill { white-space: nowrap; }
 
-/* Thẻ đơn vị hiện tại */
+/* Commune table improvements */
+.nd-table--communes { min-width: 640px; }
+.nd-table--communes td:first-child { font-weight: 500; }
+.nd-commune-link {
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--accent-purple);
+  font-weight: 600;
+  font-size: inherit;
+  cursor: pointer;
+  text-decoration: none;
+  transition: color .15s ease;
+}
+.nd-commune-link:hover { color: var(--accent-purple-light); text-decoration: underline; }
+.nd-code {
+  font-family: 'Consolas', 'Monaco', monospace;
+  font-size: .82rem;
+  background: var(--bg-card-hover);
+  padding: .1rem .4rem;
+  border-radius: 4px;
+  color: var(--text-secondary);
+}
+.nd-before-wrap { max-width: 420px; }
 .nd-unit-card {
   display: flex;
   flex-direction: column;
