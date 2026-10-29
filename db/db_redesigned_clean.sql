@@ -154,7 +154,7 @@ select
   array_agg(distinct uh.old_name) as old_names
 from public.admin_units au
 left join public.admin_unit_history uh
-  on ah.new_code = au.code
+  on uh.new_code = au.code
 group by au.code, au.name, au.type;
 
 -- ═══════════════════════════════════════════════════════════════════════════════
