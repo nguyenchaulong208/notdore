@@ -111,7 +111,7 @@ order by table_name;
 -- ✅ DROP COMPLETE
 -- Bây giờ import data theo kiến trúc mới:
 --   1. Chạy db_redesigned_clean.sql (tạo lại các bảng, view, RLS)
---   2. Import admin-communes.json → public.communes
+--   2. Import admin-communes data → public.communes
 --   3. Import admin_unit_history mappings → public.admin_unit_history
 --   4. Import documents, sources nếu cần
 -- ═══════════════════════════════════════════════════════════════════════════════

@@ -6,7 +6,7 @@
  *   2. Để trống và khai báo biến môi trường trên Vercel; /api/config sẽ trả về.
  *
  * Anon/publishable key là khóa công khai (chỉ đọc theo RLS) — KHÔNG dùng service_role.
- * Nếu cả hai trống => site dùng assets/data/*.json.
+ * Nếu cả hai trống => site sẽ không tải được dữ liệu (cần cấu hình Supabase).
  */
 window.NOTDORE_CONFIG = {
   supabaseUrl: "",

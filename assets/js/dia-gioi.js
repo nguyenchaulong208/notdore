@@ -797,16 +797,7 @@ return all.filter((c) => {
         Nguồn đang dùng: ${esc(sourceLabel(state.data))}.
       </p>
 
-      <div class="nd-meta-actions">
-        <a class="anime-btn anime-btn--outline anime-btn--sm"
-           href="${esc(new URL('assets/data/admin-merger.json', DB.ROOT).href)}" download>
-          <i class="fas fa-download me-1" aria-hidden="true"></i>Tải dữ liệu cấp tỉnh
-        </a>
-        <a class="anime-btn anime-btn--outline anime-btn--sm"
-           href="${esc(new URL('assets/data/admin-communes.json', DB.ROOT).href)}" download>
-          <i class="fas fa-download me-1" aria-hidden="true"></i>Tải dữ liệu cấp xã
-        </a>
-      </div>`;
+`;
   };
 
   /* ── Điều khiển ──────────────────────────────────────────────────── */

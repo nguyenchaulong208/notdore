@@ -1,7 +1,7 @@
 /**
  * tools.js — trang chủ: lưới công cụ + danh mục bên phải + câu nói hay.
  *
- * Dữ liệu: NotDoreDB.getCatalog() — Supabase hoặc assets/data/tools.json.
+ * Dữ liệu: NotDoreDB.getCatalog() — Supabase.
  * Giới hạn hiển thị: 4 cột, tối đa 20 block (4x5) — MAX_TILES.
  * Danh mục bên phải: nhóm công cụ nội bộ + nhóm link ngoài (trỏ về thư viện).
  * Câu nói hay: mảng tĩnh, đổi theo ngày hoặc bằng nút ↻; không phụ thuộc catalog.
