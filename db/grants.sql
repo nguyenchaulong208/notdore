@@ -1,24 +1,31 @@
--- ═════════════════════════════════════════════════════════════════════════════
--- Grant SELECT on communes, admin_unit_history tables
--- Fix: permission denied for table communes (42501)
--- TABLES: public.communes, public.admin_unit_history, public.admin_units
--- ═════════════════════════════════════════════════════════════════════════════
+-- Grant full permissions for service_role, anon, and authenticated
+-- Run this in Supabase SQL Editor (dashboard.supabase.com)
 
--- Grants on communes (main table)
--- communes.code is text - no sequence needed
-GRANT SELECT ON public.communes TO service_role;
-GRANT SELECT ON public.communes TO anon;
-GRANT SELECT ON public.communes TO authenticated;
+-- Grant USAGE on schema
+GRANT USAGE ON SCHEMA public TO service_role, anon, authenticated;
 
--- Grants on admin_unit_history
-GRANT SELECT ON public.admin_unit_history TO service_role;
-GRANT SELECT ON public.admin_unit_history TO anon;
-GRANT SELECT ON public.admin_unit_history TO authenticated;
+-- Grant full table permissions
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO service_role;
+GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO anon, authenticated;
 
--- Grants on admin_units (if exists)
-GRANT SELECT ON public.admin_units TO service_role;
-GRANT SELECT ON public.admin_units TO anon;
-GRANT SELECT ON public.admin_units TO authenticated;
+-- Grant sequence permissions (for bigserial columns)
+GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO service_role, anon, authenticated;
 
--- Note: admin_unit_history.id is bigserial -> auto-creates admin_unit_history_id_seq
--- No manual sequence grants needed
+-- Grant function permissions
+GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA public TO service_role, anon, authenticated;
+
+-- Set default privileges for future tables
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO service_role;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO anon, authenticated;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT USAGE, SELECT ON SEQUENCES TO service_role, anon, authenticated;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT EXECUTE ON FUNCTIONS TO service_role, anon, authenticated;
+
+-- Disable RLS on all tables (for admin access)
+DO $$
+DECLARE
+    r RECORD;
+BEGIN
+    FOR r IN (SELECT tablename FROM pg_tables WHERE schemaname = 'public') LOOP
+        EXECUTE 'ALTER TABLE public.' || quote_ident(r.tablename) || ' DISABLE ROW LEVEL SECURITY';
+    END LOOP;
+END $$;
