@@ -531,14 +531,18 @@ return all.filter((c) => {
         }
         return `
         <tr>
-          <td data-label="Xã / phường / đặc khu"><strong>${esc(c.name)}</strong></td>
+          <td data-label="Xã / phường / đặc khu">
+            <button type="button" class="nd-link nd-commune-link" data-commune="${esc(c.code)}">
+              <strong>${esc(c.name)}</strong>
+            </button>
+          </td>
           <td data-label="Loại"><span class="nd-pill nd-pill--soft">${esc(c.typeLabel || c.type || '—')}</span></td>
           <td data-label="Tỉnh / Thành phố">
             ${c.provinceCode
               ? `<button type="button" class="nd-link" data-code="${esc(c.provinceCode)}">${esc(c.provinceName || '—')}</button>`
               : esc(c.provinceName || '—')}
           </td>
-          <td data-label="Mã">${esc(c.code)}</td>
+          <td data-label="Mã"><code class="nd-code">${esc(c.code)}</code></td>
           <td class="nd-before-wrap">${beforeHtml}</td>
         </tr>`;
       }).join('');
@@ -764,6 +768,55 @@ return all.filter((c) => {
     bootstrap.Modal.getOrCreateInstance(modalEl).show();
   };
 
+  openCommune = (code) => {
+    const c = (state.communes?.communes || []).find((x) => x.code === code);
+    const modalEl = $('dg-modal');
+    if (!c || !modalEl) return;
+
+    const beforeHtml = c.beforeNames && c.beforeNames.length
+      ? c.beforeNames.map((n) => `<span class="nd-pill nd-pill--soft">${esc(n)}</span>`).join(' ')
+      : '<span class="nd-muted">Chưa có dữ liệu trước sáp nhập</span>';
+
+    $('dg-modal-title').textContent = c.name;
+    $('dg-modal-body').innerHTML = `
+      <dl class="nd-detail">
+        <div><dt>Mã đơn vị</dt><dd>${esc(c.code)}</dd></div>
+        <div><dt>Loại</dt><dd>${esc(c.typeLabel || c.type || '—')}</dd></div>
+        <div><dt>Tỉnh / Thành phố</dt><dd>${esc(c.provinceName || '—')}</dd></div>
+        <div><dt>Mã tỉnh</dt><dd>${esc(c.provinceCode || '—')}</dd></div>
+        <div><dt>Trạng thái</dt><dd>${c.status === 'merged' ? 'Đã sáp nhập' : c.status === 'unchanged' ? 'Giữ nguyên' : '—'}</dd></div>
+        ${c.source ? `<div><dt>Nguồn</dt><dd>${esc(c.source)}</dd></div>` : ''}
+      </dl>
+      <h6 class="nd-detail-heading">Tên trước 01/07/2025</h6>
+      <p class="nd-detail-from">${beforeHtml}</p>
+      ${c.note ? `<div class="nd-warn"><i class="fas fa-circle-info me-2"></i>${esc(c.note)}</div>` : ''}
+      <div class="nd-modal-actions">
+        <button type="button" class="anime-btn anime-btn--outline anime-btn--sm" id="dg-copy">
+          <i class="fas fa-link me-1" aria-hidden="true"></i><span id="dg-copy-label">Sao chép liên kết</span>
+        </button>
+      </div>
+    `;
+
+    const copyBtn = $('dg-copy');
+    if (copyBtn) {
+      copyBtn.addEventListener('click', async () => {
+        const url = new URL(location.href);
+        url.search = `?ma=${encodeURIComponent(c.code)}`;
+        url.hash = '';
+        const label = $('dg-copy-label');
+        try {
+          await navigator.clipboard.writeText(url.href);
+          label.textContent = 'Đã chép ✓';
+        } catch {
+          window.prompt('Sao chép liên kết:', url.href);
+        }
+        setTimeout(() => { label.textContent = 'Sao chép liên kết'; }, 1600);
+      });
+    }
+
+    bootstrap.Modal.getOrCreateInstance(modalEl).show();
+  };
+
   /* ── Nguồn & ghi chú ─────────────────────────────────────────────── */
 
   const renderMeta = () => {
@@ -909,6 +962,8 @@ return all.filter((c) => {
     document.addEventListener('click', (e) => {
       const target = e.target.closest('[data-code]');
       if (target && target.dataset.code) openUnit(target.dataset.code);
+      const communeTarget = e.target.closest('[data-commune]');
+      if (communeTarget && communeTarget.dataset.commune) openCommune(communeTarget.dataset.commune);
     });
   };
 
