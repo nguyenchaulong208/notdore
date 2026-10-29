@@ -973,3 +973,20 @@
   }
   .nd-table td.nd-arrow { display: none; }
 }
+
+/* ── Before names list compact display ──────────────────────────────── */
+.nd-before-list {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: .3rem;
+  align-items: center;
+  max-width: 100%;
+}
+.nd-before-wrap {
+  min-width: 0;
+  word-break: break-word;
+}
+.nd-before-wrap .nd-pill {
+  margin: 0;
+  line-height: 1.4;
+}
