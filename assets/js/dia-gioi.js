@@ -94,7 +94,7 @@
 
   const sourceLabel = (data) => data.source === 'supabase'
     ? 'Supabase'
-    : data.degraded ? 'JSON tĩnh (Supabase lỗi)' : 'JSON tĩnh';
+    : 'JSON tĩnh (dữ liệu đầy đủ)';
 
   /* ── Thống kê ────────────────────────────────────────────────────── */
 
