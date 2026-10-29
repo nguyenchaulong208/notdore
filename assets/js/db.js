@@ -126,10 +126,6 @@
   };
 
   const mapCommune = (row) => {
-    let metadata = row.metadata || {};
-    if (typeof metadata === 'string') {
-      try { metadata = JSON.parse(metadata); } catch { metadata = {}; }
-    }
     return normalizeCommune({
       code: row.code,
       name: row.name,
@@ -138,20 +134,20 @@
       provinceCode: row.province_code,
       provinceName: row.province_name,
       parentId: null,
-      shortCodename: metadata.short_codename || null,
-      beforeNames: metadata.before_names || row.before_names_str || null,
-      beforeProvinceName: metadata.before_province_name || row.before_names_str && null,
-      before: metadata.before || row.before_names,
-      changed: row.status === 'merged' || row.status === 'not_applied' ? true : (row.status === 'unchanged' ? false : null),
+      beforeNames: Array.isArray(row.before_names)
+        ? row.before_names
+        : (row.before_names_str ? row.before_names_str.split(', ').filter(Boolean) : null),
+      beforeProvinceName: null,
+      changed: row.status === 'merged' ? true : (row.status === 'unchanged' ? false : null),
       note: row.note || null,
     });
   };
 
   const computeCommuneStats = (rows) => ({
     total: rows.length,
-    xa: rows.filter((row) => row.type_code === 'xa').length,
-    phuong: rows.filter((row) => row.type_code === 'phuong').length,
-    dac_ku: rows.filter((row) => row.type_code === 'dac_ku').length,
+    xa: rows.filter((row) => row.level_code === 'xa').length,
+    phuong: rows.filter((row) => row.level_code === 'phuong').length,
+    dac_ku: rows.filter((row) => row.level_code === 'dac_ku').length,
   });
 
   const mapProvince = (row, changedCodes) => ({
