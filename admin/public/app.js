@@ -32,16 +32,16 @@ const MAX_CONFIG_BYTES = 256 * 1024;
 
 const SQL_EXAMPLES = {
   provinces: `select code, name, slug, type_code
-from public.geo_units
+from public.communes
 where level_code = 'province'
 order by name;`,
   summary: `select province_name, resolution_number,
        communes_before, communes_after, wards_after,
        special_zones_after, not_applied, total_units_after, communes_delta
-from public.geo_reform_summaries
+from public.communes
 order by province_name;`,
   counts: `select level_code, type_code, count(*) as total
-from public.geo_units
+from public.communes
 group by level_code, type_code
 order by level_code, type_code;`,
   tables: `select table_schema, table_name, table_type
@@ -562,7 +562,7 @@ async function loadTables(force = false) {
 
     if (!state.currentTable) {
       const preferred =
-        state.tables.find((table) => table.schema === "public" && table.name === "geo_units") ||
+        state.tables.find((table) => table.schema === "public" && table.name === "communes") ||
         state.tables.find((table) => table.schema === "public" && !table.isSystem) ||
         state.tables[0];
       if (preferred) {
@@ -1749,7 +1749,7 @@ function bindEvents() {
     const table = state.currentTable;
     els.sqlEditor.value = table
       ? `select *\nfrom ${quoteIdent(table.schema)}.${quoteIdent(table.name)}\nlimit 50;`
-      : "select *\nfrom public.geo_units\nlimit 50;";
+      : "select *\nfrom public.communes\nlimit 50;";
     switchView("sql");
     els.sqlEditor.focus();
   });

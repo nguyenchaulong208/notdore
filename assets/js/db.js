@@ -347,7 +347,7 @@
     /** Tiện ích dùng chung cho các trang */
     util: {
       escapeHtml: (v) => String(v ?? '').replace(/[&<>"']/g, (c) =>
-        ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', ''': '&#39;' }[c])),
+        ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])),
       /** Bỏ dấu tiếng Việt để tìm kiếm không phân biệt dấu */
       normalize: (s) => String(s ?? '')
         .normalize('NFD')
