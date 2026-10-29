@@ -15,7 +15,7 @@ Site: <https://www.notdore.io.vn>
 |---|---|---|
 | Tra cứu địa giới hành chính (63 → 34) | `tools/dia-gioi-hanh-chinh.html` | Hoạt động |
 
-Danh mục lưu ở `assets/data/tools.json` (fallback) và bảng `tools` trên Supabase.
+Danh mục lưu ở bảng `tools` trên Supabase.
 Các công cụ khác sẽ được thêm khi hoàn thiện, không đưa mục "sắp có" lên giao diện.
 
 ---

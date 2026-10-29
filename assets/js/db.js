@@ -3,9 +3,7 @@
  *
  * Thứ tự ưu tiên:
  *   1. Supabase (nếu config.js có supabaseUrl + supabaseAnonKey và đã nạp supabase-js)
- *   2. File JSON tĩnh trong assets/data/ (fallback, cũng là nguồn seed)
- *
- * Cơ sở dữ liệu mới (db_redesigned_clean.sql):
+ *   2. Supabase REST API (nguồn dữ liệu chính).
  *   - public.communes: 3,321 đơn vị (xã/phường/đặc khu)
  *   - public.admin_unit_history: 317 bản ghi beforeNames
  *   - public.admin_units: 34 đơn vị cấp tỉnh
@@ -126,10 +124,6 @@
   };
 
   const mapCommune = (row) => {
-    let metadata = row.metadata || {};
-    if (typeof metadata === 'string') {
-      try { metadata = JSON.parse(metadata); } catch { metadata = {}; }
-    }
     return normalizeCommune({
       code: row.code,
       name: row.name,
@@ -138,20 +132,20 @@
       provinceCode: row.province_code,
       provinceName: row.province_name,
       parentId: null,
-      shortCodename: metadata.short_codename || null,
-      beforeNames: metadata.before_names || row.before_names_str || null,
-      beforeProvinceName: metadata.before_province_name || row.before_names_str && null,
-      before: metadata.before || row.before_names,
-      changed: row.status === 'merged' || row.status === 'not_applied' ? true : (row.status === 'unchanged' ? false : null),
+      beforeNames: Array.isArray(row.before_names)
+        ? row.before_names
+        : (row.before_names_str ? row.before_names_str.split(', ').filter(Boolean) : null),
+      beforeProvinceName: null,
+      changed: row.status === 'merged' ? true : (row.status === 'unchanged' ? false : null),
       note: row.note || null,
     });
   };
 
   const computeCommuneStats = (rows) => ({
     total: rows.length,
-    xa: rows.filter((row) => row.type_code === 'xa').length,
-    phuong: rows.filter((row) => row.type_code === 'phuong').length,
-    dac_ku: rows.filter((row) => row.type_code === 'dac_ku').length,
+    xa: rows.filter((row) => row.level_code === 'xa').length,
+    phuong: rows.filter((row) => row.level_code === 'phuong').length,
+    dac_ku: rows.filter((row) => row.level_code === 'dac_ku').length,
   });
 
   const mapProvince = (row, changedCodes) => ({
@@ -174,93 +168,95 @@
   const getCatalog = () => memo('catalog', async () => {
     await ensureConfig();
 
-    if (isSupabaseReady()) {
-      try {
-        const sb = getClient();
-        const [cats, tools] = await Promise.all([
-          sb.from('tool_categories').select('*').order('sort_order'),
-          sb.from('tools').select('*').order('sort_order'),
-        ]);
-        if (cats.error) throw cats.error;
-        if (tools.error) throw tools.error;
-        if (!tools.data?.length) throw new Error('Bảng tools rỗng');
-
-        // JSON chỉ giữ metadata (version, external links) không có trong DB.
-        const local = await fetchJSON('assets/data/tools.json').catch(() => null);
-        return {
-          version: local?.version ?? 1,
-          categories: cats.data.map((c) => ({
-            id: c.id, name: c.name, description: c.description,
-            icon: c.icon, sortOrder: c.sort_order,
-          })),
-          tools: tools.data.map(mapTool),
-          external: local?.external ?? [],
-          source: 'supabase',
-        };
-      } catch (err) {
-        console.warn('[db] Supabase lỗi, dùng dữ liệu tĩnh:', err.message || err);
-      }
+    if (!isSupabaseReady()) {
+      throw new Error('Supabase chưa được cấu hình');
     }
 
-    const local = await fetchJSON('assets/data/tools.json');
-    return { ...local, source: 'local', degraded: isSupabaseReady() };
-  });
+    const sb = getClient();
+    const [cats, tools] = await Promise.all([
+      sb.from('tool_categories').select('*').order('sort_order'),
+      sb.from('tools').select('*').order('sort_order'),
+    ]);
+    if (cats.error) throw cats.error;
+    if (tools.error) throw tools.error;
+    if (!tools.data?.length) throw new Error('Bảng tools rỗng');
 
-  /* ── Địa giới hành chính ──────────────────────────────────────────── */
-  const getAdminDivisions = () => memo('admin', async () => {
+    return {
+      version: 1,
+      categories: cats.data.map((c) => ({
+        id: c.id, name: c.name, description: c.description,
+        icon: c.icon, sortOrder: c.sort_order,
+      })),
+      tools: tools.data.map(mapTool),
+      external: [
+        { name: 'Google Sheets', url: 'https://sheets.google.com', group: 'Bảng tính', note: 'Bảng tính cộng tác, có QUERY/IMPORTDATA mạnh.', icon: 'fa-table' },
+        { name: 'Excel Online', url: 'https://www.office.com/launch/excel', group: 'Bảng tính', note: 'Bản web của Excel, mở file lớn nhanh.', icon: 'fa-file-excel' },
+        { name: 'Power BI', url: 'https://app.powerbi.com', group: 'Bi & Báo cáo', note: 'Dashboard tương tác, xuất bản web.', icon: 'fa-chart-bar' },
+        { name: 'Supabase', url: 'https://supabase.com', group: 'Cơ sở dữ liệu', note: 'Backend-as-a-service, PostgreSQL + API.', icon: 'fa-database' },
+        { name: 'Vercel', url: 'https://vercel.com', group: 'Triển khai', note: 'Deploy static site nhanh.', icon: 'fa-cloud-upload-alt' },
+        { name: 'GitHub', url: 'https://github.com', group: 'Mã nguồn', note: 'Quản lý code, CI/CD.', icon: 'fa-code-branch' },
+      ],
+      source: 'supabase',
+    };
+  }),
+
+getAdminDivisions = () => memo('admin', async () => {
     await ensureConfig();
 
-    // Supabase là nguồn chính. Chỉ tải JSON khi chưa cấu hình Supabase
-    // hoặc khi truy vấn Supabase thất bại.
-    if (isSupabaseReady()) {
-      try {
-        const sb = getClient();
-        const [units, history] = await Promise.all([
-          sb.from('admin_units').select('*').order('name'),
-          sb.from('admin_unit_history').select('*').order('old_name'),
-        ]);
-        if (units.error) throw units.error;
-        if (history.error) throw history.error;
-        if (!units.data?.length) throw new Error('Bảng admin_units rỗng');
-        if (!history.data?.length) throw new Error('Bảng admin_unit_history rỗng');
+    if (!isSupabaseReady()) {
+      throw new Error('Supabase chưa được cấu hình');
+    }
 
-        const changedCodes = new Set(history.data.filter((h) => h.changed).map((h) => h.new_code));
-        const renamed = new Map(
-          history.data.filter((h) => !h.changed).map((h) => [h.new_code, h.old_name])
-        );
+    const sb = getClient();
+    const [units, history] = await Promise.all([
+      sb.from('admin_units').select('*'),
+      sb.from('admin_unit_history').select('*'),
+    ]);
+    if (units.error) throw units.error;
+    if (history.error) throw history.error;
 
-        const provinces = units.data.map((row) => {
-          const p = mapProvince(row, changedCodes);
-          const old = renamed.get(p.code);
-          // Chỉ coi là "đổi tên" khi tên cũ khác tên mới (bỏ tiền tố loại đơn vị)
-          p.renamedFrom = old && !p.name.toLowerCase().includes(old.toLowerCase()) ? old : null;
-          return p;
-        });
+    const provinces = (units.data || []).map((u) => ({
+      code: u.code,
+      name: u.name,
+      type: u.type_code,
+      region: u.region || '',
+      merged: u.changed || false,
+      renamedFrom: null,
+    }));
 
-        // Meta tĩnh chỉ dùng cho nguồn/ghi chú; không bắt buộc để hiển thị dữ liệu.
-        const local = await fetchJSON('assets/data/admin-merger.json').catch(() => null);
-
-        return {
-          meta: { ...(local?.meta ?? {}), stats: computeStats(provinces, history.data) },
-          provinces,
-          history: history.data.map((h) => ({
-            oldName: h.old_name, oldType: h.old_type, newCode: h.new_code,
-            newName: provinces.find((p) => p.code === h.new_code)?.name ?? null,
-            changed: Boolean(h.changed), note: h.note,
-          })),
-          source: 'supabase',
-        };
-      } catch (err) {
-        console.warn('[db] Supabase lỗi, dùng dữ liệu tĩnh:', err.message || err);
+    const renamed = new Map();
+    for (const h of history.data || []) {
+      if (h.old_name && h.old_name !== h.new_code) {
+        renamed.set(h.new_code, h.old_name);
       }
     }
 
-    const local = await fetchJSON('assets/data/admin-merger.json');
-    return { ...local, source: 'local', degraded: isSupabaseReady() };
-  });
+    const provincesWithRename = provinces.map((p) => {
+      const old = renamed.get(p.code);
+      p.renamedFrom = old && !p.name.toLowerCase().includes(old.toLowerCase()) ? old : null;
+      return p;
+    });
 
-  /* ── Cấp xã / phường / đặc khu ──────────────────────────────────────────── */
-  const getCommunes = () => memo('communes', async () => {
+    const computeStats = (provinces, history) => ({
+      before: history.length,
+      after: provinces.length,
+      merged: provinces.filter((p) => p.merged).length,
+      unchanged: provinces.filter((p) => !p.merged).length,
+    });
+
+    return {
+      meta: { stats: computeStats(provincesWithRename, history.data || []) },
+      provinces: provincesWithRename,
+      history: (history.data || []).map((h) => ({
+        oldName: h.old_name, oldType: h.old_type, newCode: h.new_code,
+        newName: provinces.find((p) => p.code === h.new_code)?.name ?? null,
+        changed: Boolean(h.changed), note: h.note,
+      })),
+      source: 'supabase',
+    };
+  }),
+
+getCommunes = () => memo('communes', async () => {
     await ensureConfig();
 
     // Supabase là nguồn chính. Chỉ tải JSON khi chưa cấu hình Supabase
@@ -289,45 +285,23 @@
 
         if (!rows.length) throw new Error('Bảng communes chưa có dữ liệu cấp xã');
 
-        const local = await fetchJSON('assets/data/admin-communes.json').catch(() => null);
         return {
-          meta: local?.meta ?? {
+          meta: {
             title: 'Danh sách xã, phường, đặc khu',
             effectiveFrom: '2025-07-01',
             stats: computeCommuneStats(rows),
           },
-          provinces: local?.provinces ?? [],
+          provinces: [],
           communes: rows.map(mapCommune),
           source: 'supabase',
         };
       } catch (err) {
-        console.warn('[db] Supabase lỗi khi tải cấp xã, dùng JSON tĩnh:', err.message || err);
+        console.error('[db] Supabase lỗi khi tải cấp xã:', err.message || err);
+        throw err;
       }
     }
 
-    try {
-      const local = await fetchJSON('assets/data/admin-communes.json');
-      return {
-        ...local,
-        communes: (local.communes || []).map(normalizeCommune),
-        source: 'local',
-        degraded: isSupabaseReady(),
-      };
-    } catch (err) {
-      console.warn('[db] Không tải được dữ liệu cấp xã:', err.message || err);
-      return {
-        meta: {
-          title: 'Chưa có dữ liệu cấp xã',
-          effectiveFrom: '2025-07-01',
-          stats: { total: 0, xa: 0, phuong: 0, dac_ku: 0 },
-        },
-        provinces: [],
-        communes: [],
-        source: 'none',
-        degraded: isSupabaseReady(),
-        error: err.message || String(err),
-      };
-    }
+    throw new Error('Supabase chưa được cấu hình');
   });
 
   const computeStats = (provinces, history) => ({

@@ -571,9 +571,9 @@ return all.filter((c) => {
     if (!commune.beforeNames?.length) {
       return '<span class="nd-muted">Chưa có dữ liệu</span>';
     }
-    return commune.beforeNames
+    return '<span class="nd-before-list">' + commune.beforeNames
       .map((name) => `<span class="nd-pill nd-pill--soft">${esc(name)}</span>`)
-      .join(' ');
+      .join(' ') + '</span>';
   };
 
   const communeStatus = (commune) => {
@@ -638,7 +638,7 @@ return all.filter((c) => {
 
         return `
           <tr>
-            <td data-label="${beforeLabel}">${reverse ? current : before}</td>
+            <td class="nd-before-wrap" data-label="${beforeLabel}">${reverse ? current : before}</td>
             <td class="nd-arrow" aria-hidden="true"><i class="fas fa-arrow-right"></i></td>
             <td data-label="${currentLabel}">${reverse ? before : current}</td>
             <td data-label="Tỉnh / Thành phố">${province}</td>
@@ -797,16 +797,7 @@ return all.filter((c) => {
         Nguồn đang dùng: ${esc(sourceLabel(state.data))}.
       </p>
 
-      <div class="nd-meta-actions">
-        <a class="anime-btn anime-btn--outline anime-btn--sm"
-           href="${esc(new URL('assets/data/admin-merger.json', DB.ROOT).href)}" download>
-          <i class="fas fa-download me-1" aria-hidden="true"></i>Tải dữ liệu cấp tỉnh
-        </a>
-        <a class="anime-btn anime-btn--outline anime-btn--sm"
-           href="${esc(new URL('assets/data/admin-communes.json', DB.ROOT).href)}" download>
-          <i class="fas fa-download me-1" aria-hidden="true"></i>Tải dữ liệu cấp xã
-        </a>
-      </div>`;
+`;
   };
 
   /* ── Điều khiển ──────────────────────────────────────────────────── */
