@@ -5,7 +5,10 @@
  *   1. Supabase (nếu config.js có supabaseUrl + supabaseAnonKey và đã nạp supabase-js)
  *   2. File JSON tĩnh trong assets/data/ (fallback, cũng là nguồn seed)
  *
- * Cấp tỉnh: admin_units / admin_unit_history. Cấp xã: geo_units (level_code='commune').
+ * Cơ sở dữ liệu mới (db_redesigned_clean.sql):
+ *   - public.communes: 3,321 đơn vị (xã/phường/đặc khu)
+ *   - public.admin_unit_history: 317 bản ghi beforeNames
+ *   - public.admin_units: 34 đơn vị cấp tỉnh
  *
  * Mọi hàm trả về CÙNG một cấu trúc dù dữ liệu đến từ đâu, nên phần render
  * không cần biết nguồn. Kết quả được cache trong bộ nhớ cho mỗi lần tải trang.
@@ -83,8 +86,11 @@
   /**
    * Chuẩn hoá record cấp xã từ Supabase hoặc JSON.
    *
-   * Dữ liệu trước sáp nhập cấp xã hiện có tên 127 đơn vị không thực hiện sắp xếp;
-   * 3.194 đơn vị còn lại chưa có tên cũ. Giao diện đọc sẵn các trường tuỳ chọn sau:
+   * Cơ sở dữ liệu mới: public.communes
+   * Cột: code, name, province_code, province_name, level_code,
+   *       before_names, before_names_str, status, source, note
+   *
+   * Giao diện đọc sẵn các trường tuỳ chọn sau:
    *   - beforeNames / before_names / before.names: tên xã/phường cũ
    *   - beforeProvinceName / before.province_name: tỉnh cũ (nếu khác tỉnh hiện tại)
    *   - changed: true/false nếu đã xác định được trạng thái
@@ -127,17 +133,17 @@
     return normalizeCommune({
       code: row.code,
       name: row.name,
-      type: row.type_code,
-      typeLabel: COMMUNE_TYPE_LABELS[row.type_code] || row.type_code,
-      provinceCode: metadata.province_code || null,
-      provinceName: metadata.province_name || null,
-      parentId: row.parent_id,
+      type: row.level_code,
+      typeLabel: COMMUNE_TYPE_LABELS[row.level_code] || row.level_code,
+      provinceCode: row.province_code,
+      provinceName: row.province_name,
+      parentId: null,
       shortCodename: metadata.short_codename || null,
-      beforeNames: metadata.before_names,
-      beforeProvinceName: metadata.before_province_name,
-      before: metadata.before,
-      changed: metadata.changed,
-      note: metadata.note || metadata.before_note || null,
+      beforeNames: metadata.before_names || row.before_names_str || null,
+      beforeProvinceName: metadata.before_province_name || row.before_names_str && null,
+      before: metadata.before || row.before_names,
+      changed: row.status === 'merged' || row.status === 'not_applied' ? true : (row.status === 'unchanged' ? false : null),
+      note: row.note || null,
     });
   };
 
@@ -257,20 +263,22 @@
   const getCommunes = () => memo('communes', async () => {
     await ensureConfig();
 
+    // Supabase là nguồn chính. Chỉ tải JSON khi chưa cấu hình Supabase
+    // hoặc khi truy vấn Supabase thất bại.
     if (isSupabaseReady()) {
       try {
         const sb = getClient();
         const pageSize = 1000;
         const rows = [];
 
-        // PostgREST giới hạn số dòng mỗi request (mặc định 1.000), nên phải
-        // phân trang để lấy đủ 3.321 đơn vị cấp xã.
+        // Cơ sở dữ liệu mới: public.communes (3,321 đơn vị)
+        // Cột: code, name, province_code, province_name, level_code,
+        //       before_names, before_names_str, status, source, note
         for (let from = 0; ; from += pageSize) {
           const { data, error } = await sb
-            .from('geo_units')
-            .select('code,name,type_code,parent_id,metadata')
-            .eq('level_code', 'commune')
-            .order('name')
+            .from('communes')
+            .select('code,name,province_code,province_name,level_code,before_names,before_names_str,status,source,note')
+            .order('province_code')
             .order('code')
             .range(from, from + pageSize - 1);
           if (error) throw error;
@@ -279,7 +287,7 @@
           if (data.length < pageSize) break;
         }
 
-        if (!rows.length) throw new Error('Bảng geo_units chưa có dữ liệu cấp xã');
+        if (!rows.length) throw new Error('Bảng communes chưa có dữ liệu cấp xã');
 
         const local = await fetchJSON('assets/data/admin-communes.json').catch(() => null);
         return {
@@ -339,11 +347,11 @@
     /** Tiện ích dùng chung cho các trang */
     util: {
       escapeHtml: (v) => String(v ?? '').replace(/[&<>"']/g, (c) =>
-        ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])),
+        ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', ''': '&#39;' }[c])),
       /** Bỏ dấu tiếng Việt để tìm kiếm không phân biệt dấu */
       normalize: (s) => String(s ?? '')
         .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[̀-ͯ]/g, '')
         .replace(/đ/gi, 'd')
         .toLowerCase()
         .replace(/\s+/g, ' ')
@@ -351,7 +359,7 @@
       /** Tách thành các từ đã bỏ dấu: "Hoá đơn VAT" -> ["hoa","don","vat"] */
       tokenize: (s) => String(s ?? '')
         .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[̀-ͯ]/g, '')
         .replace(/đ/gi, 'd')
         .toLowerCase()
         .split(/[^a-z0-9]+/)
