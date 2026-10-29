@@ -215,13 +215,22 @@ getAdminDivisions = () => memo('admin', async () => {
     if (units.error) throw units.error;
     if (history.error) throw history.error;
 
+    const changedCodes = new Set((history.data || []).map((h) => h.new_code));
+
     const provinces = (units.data || []).map((u) => ({
       code: u.code,
       name: u.name,
-      type: u.type_code,
+      type: u.type,
       region: u.region || '',
-      merged: u.changed || false,
+      centrallyRun: Boolean(u.centrally_run),
+      capital: u.capital || null,
+      population: u.population || null,
+      areaKm2: u.area_km2 || null,
+      changed: changedCodes.has(u.code),
+      merged: changedCodes.has(u.code),
+      mergedFrom: u.merged_from ? [u.merged_from] : [],
       renamedFrom: null,
+      note: u.note || null,
     }));
 
     const renamed = new Map();
