@@ -208,14 +208,14 @@ getAdminDivisions = () => memo('admin', async () => {
     }
 
     const sb = getClient();
-    const [units, history] = await Promise.all([
+    const [units] = await Promise.all([
       sb.from('admin_units').select('*'),
-      sb.from('admin_unit_history').select('old_name,old_type,new_code,changed,note'),
     ]);
     if (units.error) throw units.error;
-    if (history.error) throw history.error;
 
-    const changedCodes = new Set((history.data || []).map((h) => h.new_code));
+    const changedCodes = new Set();
+    // Fetch history count only for stats
+    const { count } = await sb.from('admin_unit_history').select('*', { count: 'exact', head: true });
 
     const provinces = (units.data || []).map((u) => ({
       code: u.code,
@@ -226,41 +226,17 @@ getAdminDivisions = () => memo('admin', async () => {
       capital: u.capital || null,
       population: u.population || null,
       areaKm2: u.area_km2 || null,
-      changed: changedCodes.has(u.code),
-      merged: changedCodes.has(u.code),
+      changed: false,
+      merged: false,
       mergedFrom: u.merged_from ? [u.merged_from] : [],
       renamedFrom: null,
       note: u.note || null,
     }));
 
-    const renamed = new Map();
-    for (const h of history.data || []) {
-      if (h.old_name && h.old_name !== h.new_code) {
-        renamed.set(h.new_code, h.old_name);
-      }
-    }
-
-    const provincesWithRename = provinces.map((p) => {
-      const old = renamed.get(p.code);
-      p.renamedFrom = old && !p.name.toLowerCase().includes(old.toLowerCase()) ? old : null;
-      return p;
-    });
-
-    const computeStats = (provinces, history) => ({
-      before: history.length,
-      after: provinces.length,
-      merged: provinces.filter((p) => p.merged).length,
-      unchanged: provinces.filter((p) => !p.merged).length,
-    });
-
     return {
-      meta: { stats: computeStats(provincesWithRename, history.data || []) },
-      provinces: provincesWithRename,
-      history: (history.data || []).map((h) => ({
-        oldName: h.old_name, oldType: h.old_type, newCode: h.new_code,
-        newName: provinces.find((p) => p.code === h.new_code)?.name ?? null,
-        changed: Boolean(h.changed), note: h.note,
-      })),
+      meta: { stats: { before: count || 0, after: provinces.length, merged: 0, unchanged: provinces.length } },
+      provinces: provinces,
+      history: [],
       source: 'supabase',
     };
   }),
