@@ -22,7 +22,13 @@
   let client = null;
 
   const memo = (key, producer) => {
-    if (!cache.has(key)) cache.set(key, Promise.resolve().then(producer));
+    if (!cache.has(key)) {
+      const promise = Promise.resolve().then(producer).catch((err) => {
+        cache.delete(key);
+        throw err;
+      });
+      cache.set(key, promise);
+    }
     return cache.get(key);
   };
 
@@ -208,16 +214,10 @@ getAdminDivisions = () => memo('admin', async () => {
     }
 
     const sb = getClient();
-    const [units] = await Promise.all([
-      sb.from('admin_units').select('*'),
-    ]);
-    if (units.error) throw units.error;
+    const { data: units, error: unitsError } = await sb.from('admin_units').select('*');
+    if (unitsError) throw unitsError;
 
-    const changedCodes = new Set();
-    // Fetch history count only for stats
-    const { count } = await sb.from('admin_unit_history').select('*', { count: 'exact', head: true });
-
-    const provinces = (units.data || []).map((u) => ({
+    const provinces = (units || []).map((u) => ({
       code: u.code,
       name: u.name,
       type: u.type,
@@ -234,7 +234,7 @@ getAdminDivisions = () => memo('admin', async () => {
     }));
 
     return {
-      meta: { stats: { before: count || 0, after: provinces.length, merged: 0, unchanged: provinces.length } },
+      meta: { stats: { before: 0, after: provinces.length, merged: 0, unchanged: provinces.length } },
       provinces: provinces,
       history: [],
       source: 'supabase',
