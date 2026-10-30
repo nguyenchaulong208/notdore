@@ -210,18 +210,27 @@ getAdminDivisions = () => memo('admin', async () => {
     const sb = getClient();
     const [units, history] = await Promise.all([
       sb.from('admin_units').select('*'),
-      sb.from('admin_unit_history').select('*'),
+      sb.from('admin_unit_history').select('old_name,old_type,new_code,changed,note'),
     ]);
     if (units.error) throw units.error;
     if (history.error) throw history.error;
 
+    const changedCodes = new Set((history.data || []).map((h) => h.new_code));
+
     const provinces = (units.data || []).map((u) => ({
       code: u.code,
       name: u.name,
-      type: u.type_code,
+      type: u.type,
       region: u.region || '',
-      merged: u.changed || false,
+      centrallyRun: Boolean(u.centrally_run),
+      capital: u.capital || null,
+      population: u.population || null,
+      areaKm2: u.area_km2 || null,
+      changed: changedCodes.has(u.code),
+      merged: changedCodes.has(u.code),
+      mergedFrom: u.merged_from ? [u.merged_from] : [],
       renamedFrom: null,
+      note: u.note || null,
     }));
 
     const renamed = new Map();
