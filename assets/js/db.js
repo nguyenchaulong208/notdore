@@ -210,7 +210,7 @@ getAdminDivisions = () => memo('admin', async () => {
     const sb = getClient();
     const [units, history] = await Promise.all([
       sb.from('admin_units').select('*'),
-      sb.from('admin_unit_history').select('*'),
+      sb.from('admin_unit_history').select('old_name,old_type,new_code,changed,note'),
     ]);
     if (units.error) throw units.error;
     if (history.error) throw history.error;
