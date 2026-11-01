@@ -221,7 +221,7 @@ getAdminDivisions = () => memo('admin', async () => {
     if (units.error) throw units.error;
     if (history.error) throw history.error;
 
-    const changedCodes = new Set((history.data || []).map((h) => h.new_code));
+    const changedCodes = new Set((history.data || []).map((h) => String(h.new_code).padStart(2, '0')));
 
     const provinces = (units.data || []).map((u) => ({
       code: u.code,
@@ -242,7 +242,7 @@ getAdminDivisions = () => memo('admin', async () => {
     const renamed = new Map();
     for (const h of history.data || []) {
       if (h.old_name && h.old_name !== h.new_code) {
-        renamed.set(h.new_code, h.old_name);
+        renamed.set(String(h.new_code).padStart(2, '0'), h.old_name);
       }
     }
 
@@ -263,8 +263,8 @@ getAdminDivisions = () => memo('admin', async () => {
       meta: { stats: computeStats(provincesWithRename, history.data || []) },
       provinces: provincesWithRename,
       history: (history.data || []).map((h) => ({
-        oldName: h.old_name, oldType: h.old_type, newCode: h.new_code,
-        newName: provinces.find((p) => p.code === h.new_code)?.name ?? null,
+        oldName: h.old_name, oldType: h.old_type, newCode: String(h.new_code).padStart(2, '0'),
+        newName: provinces.find((p) => p.code === String(h.new_code).padStart(2, '0'))?.name ?? null,
         changed: Boolean(h.changed), note: h.note,
       })),
       source: 'supabase',
