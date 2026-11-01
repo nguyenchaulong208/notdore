@@ -214,10 +214,16 @@ getAdminDivisions = () => memo('admin', async () => {
     }
 
     const sb = getClient();
-    const { data: units, error: unitsError } = await sb.from('admin_units').select('*');
-    if (unitsError) throw unitsError;
+    const [units, history] = await Promise.all([
+      sb.from('admin_units').select('*'),
+      sb.from('admin_unit_history').select('old_name,old_type,new_code,changed,note'),
+    ]);
+    if (units.error) throw units.error;
+    if (history.error) throw history.error;
 
-    const provinces = (units || []).map((u) => ({
+    const changedCodes = new Set((history.data || []).map((h) => h.new_code));
+
+    const provinces = (units.data || []).map((u) => ({
       code: u.code,
       name: u.name,
       type: u.type,
@@ -254,9 +260,13 @@ getAdminDivisions = () => memo('admin', async () => {
     });
 
     return {
-      meta: { stats: { before: 0, after: provinces.length, merged: 0, unchanged: provinces.length } },
-      provinces: provinces,
-      history: [],
+      meta: { stats: computeStats(provincesWithRename, history.data || []) },
+      provinces: provincesWithRename,
+      history: (history.data || []).map((h) => ({
+        oldName: h.old_name, oldType: h.old_type, newCode: h.new_code,
+        newName: provinces.find((p) => p.code === h.new_code)?.name ?? null,
+        changed: Boolean(h.changed), note: h.note,
+      })),
       source: 'supabase',
     };
   }),
