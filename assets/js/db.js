@@ -226,12 +226,32 @@ getAdminDivisions = () => memo('admin', async () => {
       capital: u.capital || null,
       population: u.population || null,
       areaKm2: u.area_km2 || null,
-      changed: false,
-      merged: false,
+      changed: changedCodes.has(u.code),
+      merged: changedCodes.has(u.code),
       mergedFrom: u.merged_from ? [u.merged_from] : [],
       renamedFrom: null,
       note: u.note || null,
     }));
+
+    const renamed = new Map();
+    for (const h of history.data || []) {
+      if (h.old_name && h.old_name !== h.new_code) {
+        renamed.set(h.new_code, h.old_name);
+      }
+    }
+
+    const provincesWithRename = provinces.map((p) => {
+      const old = renamed.get(p.code);
+      p.renamedFrom = old && !p.name.toLowerCase().includes(old.toLowerCase()) ? old : null;
+      return p;
+    });
+
+    const computeStats = (provinces, history) => ({
+      before: history.length,
+      after: provinces.length,
+      merged: provinces.filter((p) => p.merged).length,
+      unchanged: provinces.filter((p) => !p.merged).length,
+    });
 
     return {
       meta: { stats: { before: 0, after: provinces.length, merged: 0, unchanged: provinces.length } },
