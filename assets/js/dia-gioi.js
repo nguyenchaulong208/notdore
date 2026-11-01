@@ -768,7 +768,7 @@ return all.filter((c) => {
     bootstrap.Modal.getOrCreateInstance(modalEl).show();
   };
 
-  openCommune = (code) => {
+  const openCommune = (code) => {
     const c = (state.communes?.communes || []).find((x) => x.code === code);
     const modalEl = $('dg-modal');
     if (!c || !modalEl) return;
@@ -975,8 +975,6 @@ return all.filter((c) => {
       renderStats();
       renderMeta();
       bind();
-      populateCommuneProvinceFilter();
-      syncCommuneFilters();
 
       const params = new URLSearchParams(location.search);
       const q = params.get('q') || '';
