@@ -14,7 +14,9 @@
      q: '',
      province: 'all',
      type: 'all',
-   };
+     page: 1,
+     pageSize: 15,
+     };
 
    const $ = (id) => document.getElementById(id);
    const TYPE_LABELS = { xa: 'Xã', phuong: 'Phường', dac_ku: 'Đặc khu' };
@@ -34,16 +36,23 @@
    const renderAfterCards = () => {
      const host = $('dg-card-grid');
      if (!host) return;
-     const rows = filterCommunes();
+     const all = filterCommunes();
+     const total = all.length;
+     const totalPages = Math.max(1, Math.ceil(total / state.pageSize));
+     if (state.page > totalPages) state.page = totalPages;
+     if (state.page < 1) state.page = 1;
+     const start = (state.page - 1) * state.pageSize;
+     const rows = all.slice(start, start + state.pageSize);
      const countEl = $('dg-count');
-     if (countEl) countEl.textContent = `${rows.length} / ${allCommunes().length} đơn vị`;
-     if (!rows.length) { host.innerHTML = '<p class="nd-empty"><i class="fas fa-magnifying-glass me-2"></i>Không tìm thấy đơn vị phù hợp.</p>'; return; }
+     if (countEl) countEl.textContent = `${total} đơn vị`;
+     if (!total) { host.innerHTML = '<p class="nd-empty"><i class="fas fa-magnifying-glass me-2"></i>Không tìm thấy đơn vị phù hợp.</p>'; renderPagination(totalPages); return; }
      host.innerHTML = rows.map((c) => {
        const before = (c.beforeNames || []).length ? c.beforeNames.map((n) => `<span class="nd-pill nd-pill--soft">${esc(n)}</span>`).join(' ') : '<span class="nd-muted">Chưa có dữ liệu</span>';
        const status = c.changed === false ? '<span class="nd-pill nd-pill--keep">Giữ nguyên</span>' : (c.beforeNames?.length ? '<span class="nd-pill nd-pill--merge">Sáp nhập</span>' : '<span class="nd-pill nd-pill--soft">Chưa đối chiếu</span>');
        return `<div class="nd-unit-card" data-code="${esc(c.code)}" data-action="detail" style="cursor:pointer;"><div class="nd-unit-top"><span class="nd-unit-code">${esc(c.code)}</span>${status}</div><div class="nd-unit-name">${esc(c.name)}</div><div class="nd-unit-meta">${esc(TYPE_LABELS[c.type] || c.type)} · ${esc(c.provinceName || '—')}</div><div class="nd-unit-from" style="margin-top:.5rem;"><small style="color:var(--text-muted);font-size:.75rem;">Trước:</small>${before}</div></div>`;
      }).join('');
      host.querySelectorAll('[data-action="detail"]').forEach((el) => { el.addEventListener('click', () => openDetail(el.dataset.code)); });
+     renderPagination(totalPages);
    };
 
    const renderBeforeCards = () => {
@@ -56,10 +65,16 @@
      if (q) items = items.filter(([name]) => matches(name, q));
      if (state.province !== 'all') items = items.filter(([, targets]) => targets.some((t) => t.provinceCode === state.province));
      if (state.type !== 'all') items = items.filter(([, targets]) => targets.some((t) => t.type === state.type));
+     const total = items.length;
+     const totalPages = Math.max(1, Math.ceil(total / state.pageSize));
+     if (state.page > totalPages) state.page = totalPages;
+     if (state.page < 1) state.page = 1;
+     const start = (state.page - 1) * state.pageSize;
+     const pageItems = items.slice(start, start + state.pageSize);
      const countEl = $('dg-count');
-     if (countEl) countEl.textContent = `${items.length} tên cũ`;
-     if (!items.length) { host.innerHTML = '<p class="nd-empty"><i class="fas fa-magnifying-glass me-2"></i>Không tìm thấy đơn vị phù hợp.</p>'; return; }
-     host.innerHTML = items.map(([name, targets]) => {
+     if (countEl) countEl.textContent = `${total} tên cũ`;
+     if (!total) { host.innerHTML = '<p class="nd-empty"><i class="fas fa-magnifying-glass me-2"></i>Không tìm thấy đơn vị phù hợp.</p>'; renderPagination(totalPages); return; }
+     host.innerHTML = pageItems.map(([name, targets]) => {
        const targetNames = targets.map((t) => esc(t.name)).join(', ');
        const province = targets[0]?.provinceName || '—';
        return `<div class="nd-unit-card" data-name="${esc(name)}" data-action="detail-before" style="cursor:pointer;"><div class="nd-unit-top"><span class="nd-unit-code">Cũ</span><span class="nd-pill nd-pill--merge">Sáp nhập</span></div><div class="nd-unit-name">${esc(name)}</div><div class="nd-unit-meta">${esc(province)}</div><div class="nd-unit-from" style="margin-top:.5rem;"><small style="color:var(--text-muted);font-size:.75rem;">Sau:</small><span class="nd-pill nd-pill--soft">${esc(targetNames)}</span></div></div>`;
@@ -67,9 +82,28 @@
      host.querySelectorAll('[data-action="detail-before"]').forEach((el) => {
        el.addEventListener('click', () => { const name = el.dataset.name; const targets = beforeMap.get(name) || []; openDetailBefore(name, targets); });
      });
-   };
+     renderPagination(totalPages);
+     };
 
-   const renderCards = () => { if (state.mode === 'after') renderAfterCards(); else renderBeforeCards(); };
+   const renderPagination = (totalPages) => {
+    const host = $('dg-pagination');
+    if (!host) return;
+    if (totalPages <= 1) { host.innerHTML = ''; return; }
+    const btns = [];
+    for (let i = 1; i <= totalPages; i++) {
+      const active = i === state.page;
+      btns.push(`<button type="button" data-page="${i}" style="padding:.4rem .8rem;border:1px solid ${active ? 'var(--accent-purple)' : 'var(--border)'};border-radius:var(--radius-sm);background:${active ? 'var(--accent-purple)' : 'var(--bg-card)'};color:${active ? '#fff' : 'var(--text-secondary)'};cursor:pointer;font-weight:${active ? '700' : '400'};">${i}</button>`);
+    }
+    host.innerHTML = btns.join('');
+    host.querySelectorAll('[data-page]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        state.page = parseInt(btn.dataset.page, 10);
+        renderCards();
+      });
+    });
+  };
+
+  const renderCards = () => { if (state.mode === 'after') renderAfterCards(); else renderBeforeCards(); };
 
    const openDetail = (code) => {
      const c = allCommunes().find((x) => x.code === code);
@@ -115,6 +149,7 @@
    document.querySelectorAll('.nd-mode-btn').forEach((btn) => {
      btn.addEventListener('click', () => {
        state.mode = btn.dataset.mode;
+       state.page = 1;
        document.querySelectorAll('.nd-mode-btn').forEach((b) => {
          const active = b.dataset.mode === state.mode;
          b.classList.toggle('active', active);
@@ -128,13 +163,13 @@
 
    const search = $('dg-search');
    let timer;
-   if (search) { search.addEventListener('input', () => { clearTimeout(timer); timer = setTimeout(() => { state.q = search.value; renderCards(); }, 120); }); }
+   if (search) { search.addEventListener('input', () => { clearTimeout(timer); timer = setTimeout(() => { state.q = search.value; state.page = 1; renderCards(); }, 120); }); }
 
    const provSelect = $('dg-commune-province');
-   if (provSelect) { provSelect.addEventListener('change', (e) => { state.province = e.target.value; renderCards(); }); }
+   if (provSelect) { provSelect.addEventListener('change', (e) => { state.province = e.target.value; state.page = 1; renderCards(); }); }
 
    const typeSelect = $('dg-commune-type');
-   if (typeSelect) { typeSelect.addEventListener('change', (e) => { state.type = e.target.value; renderCards(); }); }
+   if (typeSelect) { typeSelect.addEventListener('change', (e) => { state.type = e.target.value; state.page = 1; renderCards(); }); }
 
    const init = async () => {
      try {

@@ -103,9 +103,12 @@
             </div>
 
             <!-- Card grid -->
-            <div class="nd-card-grid" id="dg-card-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; max-height: 70vh; overflow-y: auto;">
+            <div class="nd-card-grid" id="dg-card-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;">
                 <p class="nd-empty"><i class="fas fa-spinner fa-spin me-2"></i>Đang tải dữ liệu…</p>
             </div>
+
+            <!-- Pagination -->
+            <div id="dg-pagination" style="display: flex; justify-content: center; gap: .5rem; margin-top: 1rem; flex-wrap: wrap;"></div>
 
             <p class="nd-note mt-3">
                 Nguồn dữ liệu: <span id="dg-source">Supabase</span> · Cấp hành chính: tỉnh/thành phố + xã/phường/đặc khu.
