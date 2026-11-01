@@ -144,7 +144,7 @@
      $('dg-modal-title').textContent = `${c.name} (${c.code})`;
      const before = (c.beforeNames || []).length ? c.beforeNames.map((n) => `<span class="nd-pill nd-pill--soft" style="margin:.2rem;">${esc(n)}</span>`).join(' ') : 'Chưa có dữ liệu';
      const status = c.changed === false ? 'Giữ nguyên' : (c.beforeNames?.length ? 'Sáp nhập / đổi tên' : 'Chưa đối chiếu');
-     $('dg-modal-body').innerHTML = `<div style="display:grid;gap:1rem;"><div><strong>Loại:</strong> ${esc(TYPE_LABELS[c.type] || c.type)}</div><div><strong>Tỉnh/TP:</strong> ${esc(c.provinceName || '—')}</div><div><strong>Mã:</strong> ${esc(c.code)}</div><div><strong>Trước sáp nhập:</strong><br>${before}</div><div><strong>Trạng thái:</strong> ${esc(status)}</div>${c.note ? `<div><strong>Ghi chú:</strong> ${esc(c.note)}</div>` : ''}</div>`;
+     $('dg-modal-body').innerHTML = `<div style="display:grid;gap:1rem;"><div><strong>Loại:</strong> ${esc(TYPE_LABELS[c.type] || c.type)}</div><div><strong>Tỉnh/TP:</strong> ${esc(c.provinceName || '—')}</div><div><strong>Mã:</strong> ${esc(c.code)}</div><div><strong>Trước sáp nhập:</strong><br>${before}</div><div><strong>Trạng thái:</strong> ${esc(status)}</div>${c.note ? `<div><strong>Ghi chú:</strong> ${esc(c.note)}</div>` : ''}<div style="margin-top:1rem;"><iframe width="100%" height="300" style="border:0;border-radius:var(--radius-sm);" loading="lazy" allowfullscreen src="https://www.google.com/maps?q=${encodeURIComponent(c.name + ', ' + (c.provinceName || ''))}&output=embed"></iframe></div></div>`;
      modal.show();
    };
 
