@@ -20,6 +20,12 @@
     <link rel="stylesheet" href="../assets/plugins/bootstrap/css/bootstrap.min.css">
     <link rel="stylesheet" href="../assets/css/notdore.css">
     <link rel="stylesheet" href="../assets/css/tools.css">
+    <style>
+        @keyframes ndPulse {
+            0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
+            40% { transform: scale(1); opacity: 1; }
+        }
+    </style>
 </head>
 <body class="anime-page">
 
@@ -97,7 +103,14 @@
 
             <!-- Card grid -->
             <div class="nd-card-grid" id="dg-card-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;">
-                <p class="nd-empty"><i class="fas fa-spinner fa-spin me-2"></i>Đang tải dữ liệu…</p>
+                <div class="nd-loading" style="grid-column:1/-1;text-align:center;padding:3rem;">
+                    <div class="nd-loading-dots" style="display:inline-flex;gap:.5rem;">
+                        <span style="width:12px;height:12px;border-radius:50%;background:var(--accent-purple);animation:ndPulse 1.4s ease-in-out infinite;"></span>
+                        <span style="width:12px;height:12px;border-radius:50%;background:var(--accent-purple);animation:ndPulse 1.4s ease-in-out .2s infinite;"></span>
+                        <span style="width:12px;height:12px;border-radius:50%;background:var(--accent-purple);animation:ndPulse 1.4s ease-in-out .4s infinite;"></span>
+                    </div>
+                    <p style="margin-top:1rem;color:var(--text-muted);">Đang tải dữ liệu…</p>
+                </div>
             </div>
 
             <!-- Pagination -->
