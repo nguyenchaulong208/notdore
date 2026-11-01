@@ -1,0 +1,288 @@
+/* ===== Redesign: Tra cứu địa giới hành chính ===== */
+/* Modern, professional, traffic-attracting design */
+/* Overrides existing nd-* classes for dia-gioi page */
+
+/* ── Hero search section ─────────────────────────────────────── */
+.nd-tool-header {
+  background: linear-gradient(135deg, var(--accent-purple) 0%, var(--accent-purple-light) 50%, var(--accent-pink) 100%);
+  border-radius: var(--radius-lg);
+  padding: 2.5rem 2rem;
+  margin-bottom: 2rem;
+  color: #fff;
+  position: relative;
+  overflow: hidden;
+}
+
+.nd-tool-header::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -20%;
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, transparent 70%);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.nd-tool-title {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  font-weight: 700;
+  margin: 0 0 .5rem;
+  color: #fff;
+  position: relative;
+  z-index: 1;
+}
+
+.nd-tool-sub {
+  opacity: .9;
+  margin: 0 0 1.5rem;
+  position: relative;
+  z-index: 1;
+  color: rgba(255,255,255,0.9);
+}
+
+.nd-tool-header .nd-breadcrumb a {
+  color: rgba(255,255,255,0.8);
+}
+
+.nd-tool-header .nd-breadcrumb span {
+  color: rgba(255,255,255,0.6);
+}
+
+/* ── Stats cards ─────────────────────────────────────────────── */
+.nd-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.nd-stat {
+  background: var(--bg-card);
+  border-radius: var(--radius-md);
+  padding: 1.25rem 1.5rem;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-card);
+  transition: transform .2s ease, box-shadow .2s ease;
+  position: relative;
+  overflow: hidden;
+  text-align: left;
+}
+
+.nd-stat:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-hover);
+}
+
+.nd-stat::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: var(--gradient-primary);
+}
+
+.nd-stat i {
+  color: var(--accent-purple);
+  font-size: 1.2rem;
+  margin-bottom: .5rem;
+  display: block;
+}
+
+.nd-stat strong {
+  font-size: 1.8rem;
+  font-weight: 700;
+  font-family: var(--font-display);
+  color: var(--text-primary);
+  line-height: 1.2;
+  display: block;
+}
+
+.nd-stat span {
+  font-size: .82rem;
+  color: var(--text-secondary);
+  display: block;
+  margin-top: .25rem;
+}
+
+/* ── Tabs redesign ──────────────────────────────────────────── */
+.nd-tabs {
+  display: flex;
+  gap: .5rem;
+  margin-bottom: 1.5rem;
+  border-bottom: 2px solid var(--border);
+  padding-bottom: 0;
+  list-style: none;
+  padding-left: 0;
+}
+
+.nd-tabs button {
+  padding: .75rem 1.25rem;
+  border: none;
+  background: none;
+  color: var(--text-secondary);
+  font-weight: 500;
+  font-size: .9rem;
+  cursor: pointer;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -2px;
+  transition: all .2s ease;
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+}
+
+.nd-tabs button:hover {
+  color: var(--accent-purple);
+  background: var(--bg-card-hover);
+}
+
+.nd-tabs button.active {
+  color: var(--accent-purple);
+  border-bottom-color: var(--accent-purple);
+  font-weight: 600;
+}
+
+/* ── Table redesign ─────────────────────────────────────────── */
+.nd-table-wrap {
+  background: var(--bg-card);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+  margin-bottom: 1.5rem;
+}
+
+.nd-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: .9rem;
+}
+
+.nd-table thead {
+  background: var(--gradient-soft);
+}
+
+.nd-table th {
+  padding: 1rem 1.25rem;
+  text-align: left;
+  font-weight: 600;
+  color: var(--accent-purple);
+  font-size: .82rem;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  border-bottom: 2px solid var(--border);
+}
+
+.nd-table td {
+  padding: .85rem 1.25rem;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+
+.nd-table tbody tr {
+  transition: background .15s ease;
+}
+
+.nd-table tbody tr:hover {
+  background: var(--bg-card-hover);
+}
+
+.nd-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* ── Status pills ───────────────────────────────────────────── */
+.nd-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: .35rem;
+  padding: .3rem .75rem;
+  border-radius: 50px;
+  font-size: .78rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.nd-pill--merge {
+  background: linear-gradient(135deg, rgba(255, 92, 157, 0.12), rgba(255, 92, 157, 0.06));
+  color: var(--accent-pink);
+  border: 1px solid rgba(255, 92, 157, 0.2);
+}
+
+.nd-pill--keep {
+  background: linear-gradient(135deg, rgba(23, 201, 141, 0.12), rgba(23, 201, 141, 0.06));
+  color: var(--accent-green);
+  border: 1px solid rgba(23, 201, 141, 0.2);
+}
+
+.nd-pill--rename {
+  background: linear-gradient(135deg, rgba(18, 184, 230, 0.12), rgba(18, 184, 230, 0.06));
+  color: var(--accent-cyan);
+  border: 1px solid rgba(18, 184, 230, 0.2);
+}
+
+/* ── Toolbar ────────────────────────────────────────────────── */
+.nd-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .75rem;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background: var(--bg-card);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-card);
+}
+
+.nd-toolbar input,
+.nd-toolbar select {
+  padding: .6rem 1rem;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: .9rem;
+  background: var(--bg-input);
+  transition: border-color .2s ease, box-shadow .2s ease;
+}
+
+.nd-toolbar input:focus,
+.nd-toolbar select:focus {
+  outline: none;
+  border-color: var(--accent-purple);
+  box-shadow: 0 0 0 3px rgba(124, 77, 255, 0.1);
+}
+
+.nd-toolbar input {
+  flex: 1;
+  min-width: 200px;
+}
+
+/* ── Note styling ───────────────────────────────────────────── */
+.nd-data-note {
+  background: var(--gradient-soft);
+  border-left: 4px solid var(--accent-purple);
+  padding: 1rem 1.25rem;
+  border-radius: var(--radius-sm);
+  margin-bottom: 1.5rem;
+  font-size: .9rem;
+  color: var(--text-secondary);
+}
+
+/* ── Responsive ─────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .nd-tool-header { padding: 1.5rem 1.25rem; }
+  .nd-tool-title { font-size: 1.5rem; }
+  .nd-stats { grid-template-columns: repeat(2, 1fr); }
+  .nd-table { font-size: .8rem; }
+  .nd-table th, .nd-table td { padding: .6rem .75rem; }
+  .nd-toolbar { flex-direction: column; align-items: stretch; }
+  .nd-toolbar input { min-width: 100%; }
+}
+
+@media (max-width: 480px) {
+  .nd-stats { grid-template-columns: 1fr; }
+}
+
