@@ -86,22 +86,52 @@
      };
 
    const renderPagination = (totalPages) => {
-    const host = $('dg-pagination');
-    if (!host) return;
-    if (totalPages <= 1) { host.innerHTML = ''; return; }
-    const btns = [];
-    for (let i = 1; i <= totalPages; i++) {
-      const active = i === state.page;
-      btns.push(`<button type="button" data-page="${i}" style="padding:.4rem .8rem;border:1px solid ${active ? 'var(--accent-purple)' : 'var(--border)'};border-radius:var(--radius-sm);background:${active ? 'var(--accent-purple)' : 'var(--bg-card)'};color:${active ? '#fff' : 'var(--text-secondary)'};cursor:pointer;font-weight:${active ? '700' : '400'};">${i}</button>`);
-    }
-    host.innerHTML = btns.join('');
-    host.querySelectorAll('[data-page]').forEach((btn) => {
-      btn.addEventListener('click', () => {
-        state.page = parseInt(btn.dataset.page, 10);
-        renderCards();
-      });
-    });
-  };
+     const host = $('dg-pagination');
+     if (!host) return;
+     if (totalPages <= 1) { host.innerHTML = ''; return; }
+     const btns = [];
+     const addBtn = (i, label) => {
+       const active = i === state.page;
+       btns.push(`<button type="button" data-page="${i}" style="padding:.4rem .8rem;border:1px solid ${active ? 'var(--accent-purple)' : 'var(--border)'};border-radius:var(--radius-sm);background:${active ? 'var(--accent-purple)' : 'var(--bg-card)'};color:${active ? '#fff' : 'var(--text-secondary)'};cursor:pointer;font-weight:${active ? '700' : '400'};">${label || i}</button>`);
+     };
+     const addEllipsis = () => btns.push('<span style="padding:.4rem .4rem;color:var(--text-muted);">…</span>');
+
+     // First page
+     addBtn(1);
+     // Pages around current
+     const start = Math.max(2, state.page - 1);
+     const end = Math.min(totalPages - 1, state.page + 1);
+     if (start > 2) addEllipsis();
+     for (let i = start; i <= end; i++) addBtn(i);
+     if (end < totalPages - 1) addEllipsis();
+     // Last page
+     if (totalPages > 1) addBtn(totalPages);
+
+     // Page input
+     btns.push(`<span style="display:flex;align-items:center;gap:.4rem;margin-left:.5rem;"><input id="dg-page-input" type="number" min="1" max="${totalPages}" value="${state.page}" style="width:60px;padding:.3rem;border:1px solid var(--border);border-radius:var(--radius-sm);text-align:center;"><button type="button" id="dg-page-go" style="padding:.4rem .8rem;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg-card);cursor:pointer;">Đi</button></span>`);
+
+     host.innerHTML = btns.join('');
+     host.querySelectorAll('[data-page]').forEach((btn) => {
+       btn.addEventListener('click', () => {
+         state.page = parseInt(btn.dataset.page, 10);
+         renderCards();
+       });
+     });
+     const goBtn = $('dg-page-go');
+     const input = $('dg-page-input');
+     if (goBtn && input) {
+       goBtn.addEventListener('click', () => {
+         const p = parseInt(input.value, 10);
+         if (!isNaN(p) && p >= 1 && p <= totalPages) {
+           state.page = p;
+           renderCards();
+         }
+       });
+       input.addEventListener('keydown', (e) => {
+         if (e.key === 'Enter') goBtn.click();
+       });
+     }
+   };
 
   const renderCards = () => { if (state.mode === 'after') renderAfterCards(); else renderBeforeCards(); };
 
