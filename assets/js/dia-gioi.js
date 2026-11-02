@@ -20,6 +20,7 @@
 
    const $ = (id) => document.getElementById(id);
    const TYPE_LABELS = { xa: 'Xã', phuong: 'Phường', dac_ku: 'Đặc khu' };
+   const PROVINCE_MERGER = {"01":null,"04":null,"08":"Hà Giang + Tuyên Quang","11":null,"12":null,"14":null,"15":"Yên Bái + Lào Cai","19":"Bắc Kạn + Thái Nguyên","20":null,"22":null,"24":"Bắc Giang + Bắc Ninh","25":"Vĩnh Phúc + Hòa Bình + Phú Thọ","31":"Hải Phòng + Hải Dương","33":"Thái Bình + Hưng Yên","37":"Hà Nam + Nam Định + Ninh Bình","38":null,"40":null,"42":null,"44":null,"46":null,"48":null,"51":"Kon Tum + Quảng Ngãi","52":"Bình Định + Gia Lai","56":"Ninh Thuận + Khánh Hòa","66":null,"68":"Kon Tum + Bình Thuận + Lâm Đồng","75":null,"79":"TP. Hồ Chí Minh + Bình Dương + Ba Rịa - Vũng Tàu","80":"Long An + Tây Ninh","82":null,"86":"Bến Tre + Trà Vinh + Vĩnh Long","91":"Kiên Giang + An Giang","92":"TP. Cần Thơ + Sóc Trăng + Hậu Giang","96":"Bắc Liêu + Cà Mau"};
    const allCommunes = () => state.communes?.communes || [];
 
    const filterCommunes = () => {
@@ -144,7 +145,9 @@
      $('dg-modal-title').textContent = `${c.name} (${c.code})`;
      const before = (c.beforeNames || []).length ? c.beforeNames.map((n) => `<span class="nd-pill nd-pill--soft" style="margin:.2rem;">${esc(n)}</span>`).join(' ') : 'Chưa có dữ liệu';
      const status = c.changed === false ? 'Giữ nguyên' : (c.beforeNames?.length ? 'Sáp nhập / đổi tên' : 'Chưa đối chiếu');
-     $('dg-modal-body').innerHTML = `<div style="display:grid;gap:1rem;"><div><strong>Loại:</strong> ${esc(TYPE_LABELS[c.type] || c.type)}</div><div><strong>Tỉnh/TP:</strong> ${esc(c.provinceName || '—')}</div><div><strong>Mã:</strong> ${esc(c.code)}</div><div><strong>Trước sáp nhập:</strong><br>${before}</div><div><strong>Trạng thái:</strong> ${esc(status)}</div>${c.note ? `<div><strong>Ghi chú:</strong> ${esc(c.note)}</div>` : ''}<div style="margin-top:1rem;"><iframe width="100%" height="300" style="border:0;border-radius:var(--radius-sm);" loading="lazy" allowfullscreen src="https://www.google.com/maps?q=${encodeURIComponent(c.name + ', ' + (c.provinceName || ''))}&output=embed"></iframe></div></div>`;
+     const provMerger = PROVINCE_MERGER[c.provinceCode];
+     const provInfo = provMerger ? `<div><strong>Tỉnh/TP gộp từ:</strong> ${esc(provMerger)}</div>` : `<div><strong>Tỉnh/TP:</strong> ${esc(c.provinceName || '—')} (không sáp nhập)</div>`;
+     $('dg-modal-body').innerHTML = `<div style="display:grid;gap:1rem;"><div><strong>Loại:</strong> ${esc(TYPE_LABELS[c.type] || c.type)}</div><div><strong>Tỉnh/TP:</strong> ${esc(c.provinceName || '—')}</div>${provInfo}<div><strong>Mã:</strong> ${esc(c.code)}</div><div><strong>Trước sáp nhập:</strong><br>${before}</div><div><strong>Trạng thái:</strong> ${esc(status)}</div>${c.note ? `<div><strong>Ghi chú:</strong> ${esc(c.note)}</div>` : ''}<div style="margin-top:1rem;"><iframe width="100%" height="300" style="border:0;border-radius:var(--radius-sm);" loading="lazy" allowfullscreen src="https://www.google.com/maps?q=${encodeURIComponent(c.name + ', ' + (c.provinceName || ''))}&output=embed"></iframe></div></div>`;
      modal.show();
    };
 
