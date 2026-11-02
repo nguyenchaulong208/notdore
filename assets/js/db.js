@@ -289,6 +289,18 @@ getCommunes = () => memo('communes', async () => {
     throw new Error('Supabase chưa được cấu hình');
   });
 
+  /** Tải dữ liệu cơ quan quản lý (BHXH/thuế/hải quan cơ sở) theo tỉnh */
+  const getAgencyData = (provinceCode) => memo('agency_' + (provinceCode || 'all'), async () => {
+    await ensureConfig();
+    if (!isSupabaseReady()) throw new Error('Supabase chưa được cấu hình');
+    const sb = getClient();
+    let query = sb.from('agency_management').select('agency_type,agency_name,commune_name,province_code');
+    if (provinceCode) query = query.eq('province_code', provinceCode);
+    const { data, error } = await query;
+    if (error) throw error;
+    return data || [];
+  });
+
   const computeStats = (provinces, history) => ({
     before: history.length,
     after: provinces.length,
@@ -303,6 +315,7 @@ getCommunes = () => memo('communes', async () => {
     getCatalog,
     getAdminDivisions,
     getCommunes,
+    getAgencyData,
     /** Tiện ích dùng chung cho các trang */
     util: {
       escapeHtml: (v) => String(v ?? '').replace(/[&<>"']/g, (c) =>

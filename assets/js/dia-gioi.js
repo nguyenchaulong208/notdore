@@ -136,7 +136,7 @@
 
   const renderCards = () => { if (state.mode === 'after') renderAfterCards(); else renderBeforeCards(); };
 
-   const openDetail = (code) => {
+   const openDetail = async (code) => {
      const c = allCommunes().find((x) => x.code === code);
      if (!c) return;
      const modalEl = $('dg-modal');
@@ -147,7 +147,24 @@
      const status = c.changed === false ? 'Giữ nguyên' : (c.beforeNames?.length ? 'Sáp nhập / đổi tên' : 'Chưa đối chiếu');
      const provMerger = PROVINCE_MERGER[c.provinceCode];
      const provInfo = provMerger ? `<div><strong>Tỉnh/TP gộp từ:</strong> ${esc(provMerger)}</div>` : `<div><strong>Tỉnh/TP:</strong> ${esc(c.provinceName || '—')} (không sáp nhập)</div>`;
-     $('dg-modal-body').innerHTML = `<div style="display:grid;gap:1rem;"><div><strong>Loại:</strong> ${esc(TYPE_LABELS[c.type] || c.type)}</div><div><strong>Tỉnh/TP:</strong> ${esc(c.provinceName || '—')}</div>${provInfo}<div><strong>Mã:</strong> ${esc(c.code)}</div><div><strong>Trước sáp nhập:</strong><br>${before}</div><div><strong>Trạng thái:</strong> ${esc(status)}</div>${c.note ? `<div><strong>Ghi chú:</strong> ${esc(c.note)}</div>` : ''}<div style="margin-top:1rem;"><iframe width="100%" height="300" style="border:0;border-radius:var(--radius-sm);" loading="lazy" allowfullscreen src="https://www.google.com/maps?q=${encodeURIComponent(c.name + ', ' + (c.provinceName || ''))}&output=embed"></iframe></div></div>`;
+     // Fetch base-level agency data from Supabase
+     let bhxhList = [], thueList = [], haiquanList = [];
+     try {
+       const agencyData = await global.NotDoreDB.getAgencyData(c.provinceCode);
+       bhxhList = agencyData.filter((a) => a.agency_type === 'BHXH');
+       thueList = agencyData.filter((a) => a.agency_type === 'THUE');
+       haiquanList = agencyData.filter((a) => a.agency_type === 'HAIQUAN');
+     } catch (e) { /* Supabase not available */ }
+     const formatAgency = (list) => {
+       if (!list.length) return 'chưa có dữ liệu';
+       const unique = [...new Set(list.map((a) => a.agency_name))];
+       return unique.join(', ');
+     };
+     const bhxh = formatAgency(bhxhList);
+     const thue = formatAgency(thueList);
+     const haiquan = formatAgency(haiquanList);
+     const agencyInfo = `<div style="margin-top:.5rem;padding:.5rem;background:var(--card);border-radius:var(--radius-sm);font-size:.85rem;"><strong>Cơ quan quản lý (cơ sở):</strong><br>BHXH: ${esc(bhxh)}<br>Thuế: ${esc(thue)}<br>Hải quan: ${esc(haiquan)}</div>`;
+     $('dg-modal-body').innerHTML = `<div style="display:grid;gap:1rem;"><div><strong>Loại:</strong> ${esc(TYPE_LABELS[c.type] || c.type)}</div><div><strong>Tỉnh/TP:</strong> ${esc(c.provinceName || '—')}</div>${provInfo}<div><strong>Mã:</strong> ${esc(c.code)}</div><div><strong>Trước sáp nhập:</strong><br>${before}</div><div><strong>Trạng thái:</strong> ${esc(status)}</div>${c.note ? `<div><strong>Ghi chú:</strong> ${esc(c.note)}</div>` : ''}${agencyInfo}<div style="margin-top:1rem;"><iframe width="100%" height="300" style="border:0;border-radius:var(--radius-sm);" loading="lazy" allowfullscreen src="https://www.google.com/maps?q=${encodeURIComponent(c.name + ', ' + (c.provinceName || ''))}&output=embed"></iframe></div></div>`;
      modal.show();
    };
 
