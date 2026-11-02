@@ -234,7 +234,7 @@ getAdminDivisions = () => memo('admin', async () => {
     }));
 
     return {
-      meta: { stats: { before: 0, after: provinces.length, merged: 0, unchanged: provinces.length } },
+      meta: { stats: { before: provinces.length, after: provinces.length, merged: 0, unchanged: provinces.length } },
       provinces: provinces,
       history: [],
       source: 'supabase',

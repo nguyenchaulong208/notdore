@@ -21,6 +21,12 @@
     <link rel="stylesheet" href="../assets/plugins/bootstrap/css/bootstrap.min.css">
     <link rel="stylesheet" href="../assets/css/notdore.css">
     <link rel="stylesheet" href="../assets/css/tools.css">
+    <style>
+        @keyframes ndPulse {
+            0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
+            40% { transform: scale(1); opacity: 1; }
+        }
+    </style>
 </head>
 <body class="anime-page">
 
@@ -53,201 +59,66 @@
 
             <h1 class="nd-tool-title">Tra cứu địa giới hành chính</h1>
             <p class="nd-tool-sub">
-                Đối chiếu đơn vị hành chính cấp tỉnh trước và sau sáp nhập (hiệu lực 01/07/2025).
-                Có thể tìm theo tên cũ, tên mới hoặc địa chỉ đầy đủ; thêm tiền tố <em>cũ:</em> hoặc <em>mới:</em> nếu cần chỉ rõ chiều tra cứu.
-            </p>
-
-            <p class="nd-data-note">
-            <i class="fas fa-circle-info" aria-hidden="true"></i>
-            Đã có dữ liệu trước sáp nhập cho tất cả 3.321 xã/phường/đặc khu (từ 34 Nghị quyết UBTVQH15).
-            Cấp huyện không còn từ 01/07/2025. Xem tab Nguồn &amp; ghi chú trước khi dùng cho hồ sơ chính thức.
+                Đối chiếu đơn vị hành chính cấp tỉnh và xã/phường trước và sau sáp nhập (hiệu lực 01/07/2025).
             </p>
 
             <div class="nd-stats" id="dg-stats" aria-live="polite"></div>
 
-            <ul class="nd-tabs mb-3" role="tablist">
-                <li role="presentation">
-                    <button type="button" role="tab" data-dg-tab="history" class="active" aria-selected="true">
-                        <i class="fas fa-right-left me-1" aria-hidden="true"></i>Tra cứu trước ↔ sau sáp nhập
-                    </button>
-                </li>
-                <li role="presentation">
-                    <button type="button" role="tab" data-dg-tab="units" aria-selected="false">
-                        <i class="fas fa-map-location-dot me-1" aria-hidden="true"></i>34 đơn vị hiện tại
-                    </button>
-                </li>
-                <li role="presentation">
-                    <button type="button" role="tab" data-dg-tab="communes" aria-selected="false">
-                        <i class="fas fa-location-dot me-1" aria-hidden="true"></i>Xã / phường
-                    </button>
-                </li>
-                <li role="presentation">
-                    <button type="button" role="tab" data-dg-tab="meta" aria-selected="false">
-                        <i class="fas fa-circle-info me-1" aria-hidden="true"></i>Nguồn &amp; ghi chú
-                    </button>
-                </li>
-            </ul>
+            <!-- Mode toggle: 2 lựa chọn -->
+            <div class="nd-toolbar" style="justify-content: center; gap: 1rem;">
+                <button type="button" class="nd-mode-btn active" data-mode="after"
+                        style="padding: .6rem 1.5rem; border: 2px solid var(--accent-purple); border-radius: var(--radius-sm); background: var(--accent-purple); color: #fff; font-weight: 600; cursor: pointer;">
+                    <i class="fas fa-map-location-dot me-1"></i> Sau sáp nhập
+                </button>
+                <button type="button" class="nd-mode-btn" data-mode="before"
+                        style="padding: .6rem 1.5rem; border: 2px solid var(--border); border-radius: var(--radius-sm); background: var(--bg-card); color: var(--text-secondary); font-weight: 600; cursor: pointer;">
+                    <i class="fas fa-history me-1"></i> Trước sáp nhập
+                </button>
+            </div>
 
+            <!-- Search bar -->
             <div class="nd-toolbar">
                 <div class="nd-field nd-field--grow">
                     <label for="dg-search">Tìm kiếm</label>
                     <input id="dg-search" class="nd-input" type="search"
-                           placeholder="Địa chỉ cũ hoặc mới; thêm cũ: / mới: nếu cần…"
+                           placeholder="Tên xã/phường, tỉnh, mã đơn vị…"
                            autocomplete="off">
                 </div>
-                <div class="nd-field" data-dg-province-only>
-                    <label for="dg-region">Vùng</label>
-                    <select id="dg-region" class="nd-select">
+                <div class="nd-field">
+                    <label for="dg-commune-province">Tỉnh / Thành phố</label>
+                    <select id="dg-commune-province" class="nd-select">
                         <option value="all">Tất cả</option>
-                        <option value="Bắc Bộ">Bắc Bộ</option>
-                        <option value="Trung Bộ">Trung Bộ</option>
-                        <option value="Nam Bộ">Nam Bộ</option>
                     </select>
                 </div>
-                <div class="nd-field" data-dg-province-only>
-                    <label for="dg-type">Loại đơn vị</label>
-                    <select id="dg-type" class="nd-select">
+                <div class="nd-field">
+                    <label for="dg-commune-type">Loại đơn vị</label>
+                    <select id="dg-commune-type" class="nd-select">
                         <option value="all">Tất cả</option>
-                        <option value="Tỉnh">Tỉnh</option>
-                        <option value="Thành phố">Thành phố</option>
-                        <option value="Thủ đô">Thủ đô</option>
+                        <option value="xa">Xã</option>
+                        <option value="phuong">Phường</option>
+                        <option value="dac_ku">Đặc khu</option>
                     </select>
                 </div>
-                <label class="nd-check" data-dg-province-only>
-                    <input type="checkbox" id="dg-only-changed">
-                    Chỉ đơn vị có sáp nhập
-                </label>
-                <span class="nd-count" id="dg-count" aria-live="polite" data-dg-province-only></span>
+                <span class="nd-count" id="dg-count" aria-live="polite"></span>
             </div>
 
-            <section id="dg-panel-history" role="tabpanel">
-                <div class="nd-toolbar nd-toolbar--nested">
-                    <div class="nd-field">
-                        <label for="dg-history-level">Cấp tra cứu</label>
-                        <select id="dg-history-level" class="nd-select">
-                            <option value="province">Cấp tỉnh / thành phố</option>
-                            <option value="commune">Cấp xã / phường / đặc khu</option>
-                        </select>
+            <!-- Card grid -->
+            <div class="nd-card-grid" id="dg-card-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;">
+                <div class="nd-loading" style="grid-column:1/-1;text-align:center;padding:3rem;">
+                    <div class="nd-loading-dots" style="display:inline-flex;gap:.5rem;">
+                        <span style="width:12px;height:12px;border-radius:50%;background:var(--accent-purple);animation:ndPulse 1.4s ease-in-out infinite;"></span>
+                        <span style="width:12px;height:12px;border-radius:50%;background:var(--accent-purple);animation:ndPulse 1.4s ease-in-out .2s infinite;"></span>
+                        <span style="width:12px;height:12px;border-radius:50%;background:var(--accent-purple);animation:ndPulse 1.4s ease-in-out .4s infinite;"></span>
                     </div>
-                    <div class="nd-field" data-dg-history-commune-filter hidden>
-                        <label for="dg-history-commune-province">Tỉnh / Thành phố</label>
-                        <select id="dg-history-commune-province" class="nd-select">
-                            <option value="all">Tất cả</option>
-                        </select>
-                    </div>
-                    <div class="nd-field" data-dg-history-commune-filter hidden>
-                        <label for="dg-history-commune-type">Loại đơn vị</label>
-                        <select id="dg-history-commune-type" class="nd-select">
-                            <option value="all">Tất cả</option>
-                            <option value="xa">Xã</option>
-                            <option value="phuong">Phường</option>
-                            <option value="dac_ku">Đặc khu</option>
-                        </select>
-                    </div>
-                    <span class="nd-count" id="dg-history-commune-count" hidden aria-live="polite"></span>
+                    <p style="margin-top:1rem;color:var(--text-muted);">Đang tải dữ liệu…</p>
                 </div>
+            </div>
 
-                <div class="nd-table-wrap nd-table-wrap--scroll" id="dg-history-province-wrap">
-                    <table class="nd-table">
-                        <caption class="visually-hidden">Đối chiếu đơn vị hành chính cấp tỉnh trước và sau sáp nhập</caption>
-                        <thead>
-                            <tr>
-                                <th scope="col" id="dg-history-before-heading">Trước 01/07/2025</th>
-                                <th scope="col">Loại</th>
-                                <th scope="col" aria-label="Chuyển sang"></th>
-                                <th scope="col" id="dg-history-current-heading">Hiện tại</th>
-                                <th scope="col">Trạng thái</th>
-                            </tr>
-                        </thead>
-                        <tbody id="dg-history-body">
-                            <tr><td colspan="5" class="nd-empty-cell">
-                                <i class="fas fa-spinner fa-spin me-2"></i>Đang tải dữ liệu…
-                            </td></tr>
-                        </tbody>
-                    </table>
-                </div>
-
-                <div class="nd-table-wrap nd-table-wrap--scroll" id="dg-history-commune-wrap" hidden>
-                    <table class="nd-table">
-                        <caption class="visually-hidden">Đối chiếu xã, phường, đặc khu trước và sau sáp nhập</caption>
-                        <thead>
-                            <tr>
-                                <th scope="col" id="dg-history-commune-before-heading">Trước 01/07/2025</th>
-                                <th scope="col" aria-label="Chuyển sang"></th>
-                                <th scope="col" id="dg-history-commune-current-heading">Hiện tại</th>
-                                <th scope="col">Tỉnh / Thành phố</th>
-                                <th scope="col">Trạng thái</th>
-                            </tr>
-                        </thead>
-                        <tbody id="dg-history-commune-body">
-                            <tr><td colspan="5" class="nd-empty-cell">
-                                <i class="fas fa-spinner fa-spin me-2"></i>Đang tải dữ liệu cấp xã…
-                            </td></tr>
-                        </tbody>
-                    </table>
-                </div>
-
-                <p class="nd-note mt-3" id="dg-history-commune-note" hidden>
-                    Đã có dữ liệu trước sáp nhập cho tất cả 3.321 đơn vị cấp xã.
-                    Cấp huyện không còn từ 01/07/2025.
-                </p>
-            </section>
-
-            <section id="dg-panel-units" role="tabpanel" hidden>
-                <div id="dg-units"></div>
-            </section>
-
-            <section id="dg-panel-communes" role="tabpanel" hidden>
-                <div class="nd-toolbar nd-toolbar--nested">
-                    <div class="nd-field">
-                        <label for="dg-commune-province">Tỉnh / Thành phố</label>
-                        <select id="dg-commune-province" class="nd-select">
-                            <option value="all">Tất cả</option>
-                        </select>
-                    </div>
-                    <div class="nd-field">
-                        <label for="dg-commune-type">Loại đơn vị</label>
-                        <select id="dg-commune-type" class="nd-select">
-                            <option value="all">Tất cả</option>
-                            <option value="xa">Xã</option>
-                            <option value="phuong">Phường</option>
-                            <option value="dac_ku">Đặc khu</option>
-                        </select>
-                    </div>
-                    <span class="nd-count" id="dg-commune-count" aria-live="polite"></span>
-                </div>
-
-                <div class="nd-table-wrap nd-table-wrap--scroll">
-                    <table class="nd-table nd-table--communes">
-                        <caption class="visually-hidden">Danh sách xã, phường, đặc khu sau sắp xếp 01/07/2025</caption>
-                        <thead>
-                            <tr>
-                                <th scope="col">Xã / phường / đặc khu</th>
-                                <th scope="col">Loại</th>
-                                <th scope="col">Tỉnh / Thành phố</th>
-                                <th scope="col">Mã</th>
-                            </tr>
-                        </thead>
-                        <tbody id="dg-commune-body">
-                            <tr><td colspan="4" class="nd-empty-cell">
-                                <i class="fas fa-spinner fa-spin me-2"></i>Đang tải dữ liệu cấp xã.
-                            </td></tr>
-                        </tbody>
-                    </table>
-                </div>
-
-                <p class="nd-note mt-3" id="dg-commune-source">
-                    Danh sách xã/phường hiện hành. Đã đối chiếu tên trước 01/07/2025 cho tất cả 3.321 đơn vị.
-                    Cấp huyện không còn từ 01/07/2025.
-                </p>
-            </section>
-
-            <section id="dg-panel-meta" role="tabpanel" hidden>
-                <div class="nd-table-wrap p-3 p-md-4" id="dg-meta"></div>
-            </section>
+            <!-- Pagination -->
+            <div id="dg-pagination" style="display: flex; justify-content: center; gap: .5rem; margin-top: 1rem; flex-wrap: wrap;"></div>
 
             <p class="nd-note mt-3">
-                Nguồn dữ liệu: <span id="dg-source">Supabase</span> · Cấp hành chính: tỉnh/thành phố + xã/phường/đặc khu.
+                Nguồn dữ liệu: <span id="dg-source">Supabase</span>
             </p>
         </main>
 
