@@ -21,9 +21,6 @@
    const $ = (id) => document.getElementById(id);
    const TYPE_LABELS = { xa: 'Xã', phuong: 'Phường', dac_ku: 'Đặc khu' };
    const PROVINCE_MERGER = {"01":null,"04":null,"08":"Hà Giang + Tuyên Quang","11":null,"12":null,"14":null,"15":"Yên Bái + Lào Cai","19":"Bắc Kạn + Thái Nguyên","20":null,"22":null,"24":"Bắc Giang + Bắc Ninh","25":"Vĩnh Phúc + Hòa Bình + Phú Thọ","31":"Hải Phòng + Hải Dương","33":"Thái Bình + Hưng Yên","37":"Hà Nam + Nam Định + Ninh Bình","38":null,"40":null,"42":null,"44":null,"46":null,"48":null,"51":"Kon Tum + Quảng Ngãi","52":"Bình Định + Gia Lai","56":"Ninh Thuận + Khánh Hòa","66":null,"68":"Kon Tum + Bình Thuận + Lâm Đồng","75":null,"79":"TP. Hồ Chí Minh + Bình Dương + Ba Rịa - Vũng Tàu","80":"Long An + Tây Ninh","82":null,"86":"Bến Tre + Trà Vinh + Vĩnh Long","91":"Kiên Giang + An Giang","92":"TP. Cần Thơ + Sóc Trăng + Hậu Giang","96":"Bắc Liêu + Cà Mau"};
-   const AGENCY_BHXH = {"01": "BHXH khu vực I", "04": "BHXH khu vực IX", "08": "BHXH khu vực XIX", "11": "BHXH khu vực III", "12": "BHXH khu vực IV", "14": "BHXH khu vực II", "15": "BHXH khu vực XVII", "19": "BHXH khu vực X", "20": "BHXH khu vực V", "22": "BHXH khu vực VIII", "24": "BHXH khu vực XI", "25": "BHXH khu vực XVIII", "31": "BHXH khu vực XIII", "33": "BHXH khu vực XII", "37": "BHXH khu vực XIV", "38": "BHXH khu vực VI", "40": "BHXH khu vực VII", "42": "BHXH khu vực XV", "44": "BHXH khu vực XVI", "46": "BHXH khu vực XX", "48": "BHXH khu vực XXII", "51": "BHXH khu vực XXI", "52": "BHXH khu vực XXIII", "56": "BHXH khu vực XXIV", "66": "BHXH khu vực XXVI", "68": "BHXH khu vực XXV", "75": "BHXH khu vực XXVIII", "79": "BHXH khu vực XXVII", "80": "BHXH khu vực XXIX", "82": "BHXH khu vực XXXIII", "86": "BHXH khu vực XXXI", "91": "BHXH khu vực XXXIV", "92": "BHXH khu vực XXX", "96": "BHXH khu vực XXXII"};
-   const AGENCY_THUE = {"01": "Chi cục Thuế khu vực I", "04": "Chi cục Thuế khu vực VI", "08": "Chi cục Thuế khu vực VII", "11": "Chi cục Thuế khu vực IX", "12": "Chi cục Thuế khu vực IX", "14": "Chi cục Thuế khu vực IX", "15": "Chi cục Thuế khu vực VIII", "19": "Chi cục Thuế khu vực VII", "20": "Chi cục Thuế khu vực VI", "22": "Chi cục Thuế khu vực III", "24": "Chi cục Thuế khu vực V", "25": "Chi cục Thuế khu vực VIII", "31": "Chi cục Thuế khu vực III", "33": "Chi cục Thuế khu vực IV", "37": "Chi cục Thuế khu vực IV", "38": "Chi cục Thuế khu vực X", "40": "Chi cục Thuế khu vực X", "42": "Chi cục Thuế khu vực XI", "44": "Chi cục Thuế khu vực XI", "46": "Chi cục Thuế khu vực XII", "48": "Chi cục Thuế khu vực XII", "51": "Chi cục Thuế khu vực XII", "52": "Chi cục Thuế khu vực XIII", "56": "Chi cục Thuế khu vực XIII", "66": "Chi cục Thuế khu vực XIV", "68": "Chi cục Thuế khu vực XIV", "75": "Chi cục Thuế khu vực XV", "79": "Chi cục Thuế khu vực II", "80": "Chi cục Thuế khu vực XVI", "82": "Chi cục Thuế khu vực XVII", "86": "Chi cục Thuế khu vực XVIII", "91": "Chi cục Thuế khu vực XIX", "92": "Chi cục Thuế khu vực XIX", "96": "Chi cục Thuế khu vực XX"};
-   const AGENCY_HAIQUAN = {"01": "Chi cục Hải quan khu vực I", "04": "Chi cục Hải quan khu vực VI", "08": "Chi cục Hải quan khu vực VII", "11": "Chi cục Hải quan khu vực VII", "12": "Chi cục Hải quan khu vực VII", "14": "Chi cục Hải quan khu vực VII", "15": "Chi cục Hải quan khu vực I", "19": "Chi cục Hải quan khu vực V", "20": "Chi cục Hải quan khu vực VI", "22": "Chi cục Hải quan khu vực III", "24": "Chi cục Hải quan khu vực V", "25": "Chi cục Hải quan khu vực I", "31": "Chi cục Hải quan khu vực III", "33": "Chi cục Hải quan khu vực IV", "37": "Chi cục Hải quan khu vực X", "38": "Chi cục Hải quan khu vực X", "40": "Chi cục Hải quan khu vực XI", "42": "Chi cục Hải quan khu vực XI", "44": "Chi cục Hải quan khu vực IX", "46": "Chi cục Hải quan khu vực IX", "48": "Chi cục Hải quan khu vực XII", "51": "Chi cục Hải quan khu vực XII", "52": "Chi cục Hải quan khu vực XIII", "56": "Chi cục Hải quan khu vực XIII", "66": "Chi cục Hải quan khu vực XIV", "68": "Chi cục Hải quan khu vực XIV", "75": "Chi cục Hải quan khu vực XV", "79": "Chi cục Hải quan khu vực II", "80": "Chi cục Hải quan khu vực XVI", "82": "Chi cục Hải quan khu vực XX", "86": "Chi cục Hải quan khu vực XVII", "91": "Chi cục Hải quan khu vực XX", "92": "Chi cục Hải quan khu vực XVII", "96": "Chi cục Hải quan khu vực XVIII"};
    const allCommunes = () => state.communes?.communes || [];
 
    const filterCommunes = () => {
@@ -139,7 +136,7 @@
 
   const renderCards = () => { if (state.mode === 'after') renderAfterCards(); else renderBeforeCards(); };
 
-   const openDetail = (code) => {
+   const openDetail = async (code) => {
      const c = allCommunes().find((x) => x.code === code);
      if (!c) return;
      const modalEl = $('dg-modal');
@@ -150,10 +147,23 @@
      const status = c.changed === false ? 'Giữ nguyên' : (c.beforeNames?.length ? 'Sáp nhập / đổi tên' : 'Chưa đối chiếu');
      const provMerger = PROVINCE_MERGER[c.provinceCode];
      const provInfo = provMerger ? `<div><strong>Tỉnh/TP gộp từ:</strong> ${esc(provMerger)}</div>` : `<div><strong>Tỉnh/TP:</strong> ${esc(c.provinceName || '—')} (không sáp nhập)</div>`;
-     const bhxh = AGENCY_BHXH[c.provinceCode] || '—';
-     const thue = AGENCY_THUE[c.provinceCode] || '—';
-     const haiquan = AGENCY_HAIQUAN[c.provinceCode] || '—';
-     const agencyInfo = `<div style="margin-top:.5rem;padding:.5rem;background:var(--card);border-radius:var(--radius-sm);font-size:.85rem;"><strong>Cơ quan quản lý:</strong><br>BHXH: ${esc(bhxh)}<br>Thuế: ${esc(thue)}<br>Hải quan: ${esc(haiquan)}</div>`;
+     // Fetch base-level agency data from Supabase
+     let bhxhList = [], thueList = [], haiquanList = [];
+     try {
+       const agencyData = await global.NotDoreDB.getAgencyData(c.provinceCode);
+       bhxhList = agencyData.filter((a) => a.agency_type === 'BHXH');
+       thueList = agencyData.filter((a) => a.agency_type === 'THUE');
+       haiquanList = agencyData.filter((a) => a.agency_type === 'HAIQUAN');
+     } catch (e) { /* Supabase not available */ }
+     const formatAgency = (list) => {
+       if (!list.length) return 'chưa có dữ liệu';
+       const unique = [...new Set(list.map((a) => a.agency_name))];
+       return unique.join(', ');
+     };
+     const bhxh = formatAgency(bhxhList);
+     const thue = formatAgency(thueList);
+     const haiquan = formatAgency(haiquanList);
+     const agencyInfo = `<div style="margin-top:.5rem;padding:.5rem;background:var(--card);border-radius:var(--radius-sm);font-size:.85rem;"><strong>Cơ quan quản lý (cơ sở):</strong><br>BHXH: ${esc(bhxh)}<br>Thuế: ${esc(thue)}<br>Hải quan: ${esc(haiquan)}</div>`;
      $('dg-modal-body').innerHTML = `<div style="display:grid;gap:1rem;"><div><strong>Loại:</strong> ${esc(TYPE_LABELS[c.type] || c.type)}</div><div><strong>Tỉnh/TP:</strong> ${esc(c.provinceName || '—')}</div>${provInfo}<div><strong>Mã:</strong> ${esc(c.code)}</div><div><strong>Trước sáp nhập:</strong><br>${before}</div><div><strong>Trạng thái:</strong> ${esc(status)}</div>${c.note ? `<div><strong>Ghi chú:</strong> ${esc(c.note)}</div>` : ''}${agencyInfo}<div style="margin-top:1rem;"><iframe width="100%" height="300" style="border:0;border-radius:var(--radius-sm);" loading="lazy" allowfullscreen src="https://www.google.com/maps?q=${encodeURIComponent(c.name + ', ' + (c.provinceName || ''))}&output=embed"></iframe></div></div>`;
      modal.show();
    };
