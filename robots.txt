@@ -1,7 +1,5 @@
 User-agent: *
 Allow: /
-Sitemap: https://www.notdore.io.vn/sitemap.xml
+Disallow: /admin/
 
-# Admin panel — private, không index
-User-agent: Disallow
-Allow: /admin/
+Sitemap: https://www.notdore.io.vn/sitemap.xml
