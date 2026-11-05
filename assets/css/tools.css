@@ -882,6 +882,9 @@
 .nd-unit-meta { font-size: .82rem; color: var(--text-secondary); }
 
 .nd-unit-from { display: flex; flex-wrap: wrap; gap: .3rem; margin-top: .35rem; }
+
+.nd-report-btn { transition: color .15s, background .15s; }
+.nd-report-btn:hover { color: #e74c3c !important; background: rgba(231,76,60,.1) !important; }
 .nd-unit-from span {
   font-size: .74rem;
   padding: .1rem .5rem;
