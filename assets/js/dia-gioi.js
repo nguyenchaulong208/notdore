@@ -50,7 +50,7 @@
      host.innerHTML = rows.map((c) => {
        const before = (c.beforeNames || []).length ? c.beforeNames.map((n) => `<span class="nd-pill nd-pill--soft">${esc(n)}</span>`).join(' ') : '<span class="nd-muted">Chưa có dữ liệu</span>';
        const status = c.changed === false ? '<span class="nd-pill nd-pill--keep">Giữ nguyên</span>' : (c.beforeNames?.length ? '<span class="nd-pill nd-pill--merge">Sáp nhập</span>' : '<span class="nd-pill nd-pill--soft">Chưa đối chiếu</span>');
-       return `<div class="nd-unit-card" data-code="${esc(c.code)}" data-action="detail" style="cursor:pointer;position:relative;"><div class="nd-unit-top"><span class="nd-unit-code">${esc(c.code)}</span>${status}</div><div class="nd-unit-name">${esc(c.name)}</div><div class="nd-unit-meta">${esc(TYPE_LABELS[c.type] || c.type)} · ${esc(c.provinceName || '—')}</div><div class="nd-unit-from" style="margin-top:.5rem;"><small style="color:var(--text-muted);font-size:.75rem;">Trước:</small>${before}</div><button type="button" class="nd-report-btn" data-report="${esc(c.code)}" title="Báo sai thông tin" style="position:absolute;top:.5rem;right:.5rem;background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:.8rem;padding:.2rem .4rem;border-radius:4px;" onclick="event.stopPropagation();"><i class="fas fa-flag"></i></button></div>`;
+       return `<div class="nd-unit-card" data-code="${esc(c.code)}" data-action="detail" style="cursor:pointer;position:relative;"><div class="nd-unit-top"><span class="nd-unit-code">${esc(c.code)}</span>${status}</div><div class="nd-unit-name">${esc(c.name)}</div><div class="nd-unit-meta">${esc(TYPE_LABELS[c.type] || c.type)} · ${esc(c.provinceName || '—')}</div><div class="nd-unit-from" style="margin-top:.5rem;"><small style="color:var(--text-muted);font-size:.75rem;">Trước:</small>${before}</div><button type="button" class="nd-report-btn" data-report="${esc(c.code)}" title="Báo sai thông tin" style="position:absolute;top:.5rem;right:.5rem;background:none;border:1px solid var(--border);cursor:pointer;color:var(--text-muted);font-size:.7rem;padding:.15rem .5rem;border-radius:4px;font-weight:600;" onclick="event.stopPropagation();">Báo cáo</button></div>`;
      }).join('');
      host.querySelectorAll('[data-action="detail"]').forEach((el) => { el.addEventListener('click', () => openDetail(el.dataset.code)); });
      host.querySelectorAll('.nd-report-btn').forEach((btn) => {
@@ -184,8 +184,27 @@
      const thue = formatAgency(thueList);
      const haiquan = formatAgency(haiquanList);
      const agencyInfo = `<div style="margin-top:.5rem;padding:.5rem;background:var(--card);border-radius:var(--radius-sm);font-size:.85rem;"><strong>Cơ quan quản lý (cơ sở):</strong><br>BHXH: ${esc(bhxh)}<br>Thuế: ${esc(thue)}<br>Hải quan: ${esc(haiquan)}</div>`;
-     $('dg-modal-body').innerHTML = `<div style="display:grid;gap:1rem;"><div><strong>Loại:</strong> ${esc(TYPE_LABELS[c.type] || c.type)}</div><div><strong>Tỉnh/TP:</strong> ${esc(c.provinceName || '—')}</div>${provInfo}<div><strong>Mã:</strong> ${esc(c.code)}</div><div><strong>Trước sáp nhập:</strong><br>${before}</div><div><strong>Trạng thái:</strong> ${esc(status)}</div>${c.note ? `<div><strong>Ghi chú:</strong> ${esc(c.note)}</div>` : ''}${agencyInfo}<div style="margin-top:1rem;"><iframe width="100%" height="300" style="border:0;border-radius:var(--radius-sm);" loading="lazy" allowfullscreen src="https://www.google.com/maps?q=${encodeURIComponent(c.name + ', ' + (c.provinceName || ''))}&output=embed"></iframe></div></div>`;
+     const reportBtn = `<div style="margin-top:1rem;text-align:center;"><button type="button" class="nd-report-btn" id="dg-report-btn" style="background:none;border:1px solid var(--border);cursor:pointer;color:var(--text-muted);font-size:.85rem;padding:.4rem 1rem;border-radius:4px;font-weight:600;transition:color .15s,background .15s;">Báo cáo sai thông tin</button></div>`;
+     $('dg-modal-body').innerHTML = `<div style="display:grid;gap:1rem;"><div><strong>Loại:</strong> ${esc(TYPE_LABELS[c.type] || c.type)}</div><div><strong>Tỉnh/TP:</strong> ${esc(c.provinceName || '—')}</div>${provInfo}<div><strong>Mã:</strong> ${esc(c.code)}</div><div><strong>Trước sáp nhập:</strong><br>${before}</div><div><strong>Trạng thái:</strong> ${esc(status)}</div>${c.note ? `<div><strong>Ghi chú:</strong> ${esc(c.note)}</div>` : ''}${agencyInfo}<div style="margin-top:1rem;"><iframe width="100%" height="300" style="border:0;border-radius:var(--radius-sm);" loading="lazy" allowfullscreen src="https://www.google.com/maps?q=${encodeURIComponent(c.name + ', ' + (c.provinceName || ''))}&output=embed"></iframe></div>${reportBtn}</div>`;
      modal.show();
+      // Attach report button handler in detail modal
+      const reportBtnEl = $('dg-report-btn');
+      if (reportBtnEl) {
+        reportBtnEl.addEventListener('click', () => {
+          const subject = encodeURIComponent(`Báo sai thông tin: ${c.name} (${c.code})`);
+          const body = encodeURIComponent(
+            `Tôi phát hiện thông tin sai trong card sau:\n\n` +
+            `Mã: ${c.code}\n` +
+            `Tên: ${c.name}\n` +
+            `Tỉnh/TP: ${c.provinceName || '—'}\n` +
+            `Loại: ${TYPE_LABELS[c.type] || c.type}\n` +
+            `Trước sáp nhập: ${(c.beforeNames || []).join(', ') || 'Chưa có dữ liệu'}\n\n` +
+            `Mô tả sai:\n[Vui lòng mô tả chi tiết thông tin sai ở đây]\n\n` +
+            `Thông tin đúng (nếu biết):\n[Vui lòng điền thông tin đúng ở đây]`
+          );
+          window.open(`mailto:nguyenchaulong.data208@gmail.com?subject=${subject}&body=${body}`, '_blank');
+        });
+      }
    };
 
    const openDetailBefore = (name, targets) => {
