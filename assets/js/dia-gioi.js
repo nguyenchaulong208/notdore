@@ -70,7 +70,29 @@
            `Mô tả sai:\n[Vui lòng mô tả chi tiết thông tin sai ở đây]\n\n` +
            `Thông tin đúng (nếu biết):\n[Vui lòng điền thông tin đúng ở đây]`
          );
-         window.open(`mailto:nguyenchaulong.data208@gmail.com?subject=${subject}&body=${body}`, '_blank');
+         const desc = prompt('Mô tả thông tin sai (tùy chọn):');
+         const correct = prompt('Thông tin đúng (nếu biết):');
+         fetch('/api/report', {
+           method: 'POST',
+           headers: { 'Content-Type': 'application/json' },
+           body: JSON.stringify({
+             code: c.code,
+             name: c.name,
+             province: c.provinceName || '—',
+             type: TYPE_LABELS[c.type] || c.type,
+             beforeNames: c.beforeNames || [],
+             description: desc || '[Không cung cấp]',
+             correctInfo: correct || '[Không cung cấp]',
+           }),
+         }).then((r) => r.json()).then((data) => {
+           if (data.success) {
+             alert('Đã gửi báo cáo thành công. Cảm ơn bạn!');
+           } else {
+             alert('Gửi báo cáo thất bại: ' + (data.error || 'Lỗi không xác định'));
+           }
+         }).catch(() => {
+           alert('Gửi báo cáo thất bại. Vui lòng thử lại sau.');
+         });
        });
      });
      renderPagination(totalPages);
@@ -202,7 +224,29 @@
             `Mô tả sai:\n[Vui lòng mô tả chi tiết thông tin sai ở đây]\n\n` +
             `Thông tin đúng (nếu biết):\n[Vui lòng điền thông tin đúng ở đây]`
           );
-          window.open(`mailto:nguyenchaulong.data208@gmail.com?subject=${subject}&body=${body}`, '_blank');
+          const desc = prompt('Mô tả thông tin sai (tùy chọn):');
+          const correct = prompt('Thông tin đúng (nếu biết):');
+          fetch('/api/report', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              code: c.code,
+              name: c.name,
+              province: c.provinceName || '—',
+              type: TYPE_LABELS[c.type] || c.type,
+              beforeNames: c.beforeNames || [],
+              description: desc || '[Không cung cấp]',
+              correctInfo: correct || '[Không cung cấp]',
+            }),
+          }).then((r) => r.json()).then((data) => {
+            if (data.success) {
+              alert('Đã gửi báo cáo thành công. Cảm ơn bạn!');
+            } else {
+              alert('Gửi báo cáo thất bại: ' + (data.error || 'Lỗi không xác định'));
+            }
+          }).catch(() => {
+            alert('Gửi báo cáo thất bại. Vui lòng thử lại sau.');
+          });
         });
       }
    };
