@@ -108,20 +108,23 @@
                             </div>
                         </section>
 
-                        <section class="nd-side-panel nd-quote-panel" aria-labelledby="quote-title">
+                        <section class="nd-side-panel nd-tarot-panel" aria-labelledby="tarot-title">
                             <header class="nd-side-head">
-                                <h2 class="nd-side-title" id="quote-title">Câu nói hay</h2>
-                                <button class="nd-quote-refresh" type="button" id="quote-refresh"
-                                        aria-label="Đổi câu nói khác" title="Đổi câu nói khác">
-                                    <i class="fas fa-arrows-rotate" aria-hidden="true"></i>
+                                <h2 class="nd-side-title" id="tarot-title">Tarot</h2>
+                                <button class="nd-tarot-draw" type="button" id="tarot-draw"
+                                        aria-label="Rút bài Tarot" title="Rút bài Tarot">
+                                    <i class="fas fa-dice" aria-hidden="true"></i>
                                 </button>
                             </header>
-                            <blockquote class="nd-quote" id="quote-box" aria-live="polite">
-                                <span class="nd-quote-mark" aria-hidden="true">“</span>
-                                <p class="nd-quote-text" id="quote-text">Có công mài sắt, có ngày nên kim.</p>
-                                <footer class="nd-quote-author" id="quote-author">— Tục ngữ Việt Nam</footer>
-                            </blockquote>
-                            <p class="nd-quote-hint">Mỗi ngày một câu</p>
+                            <div class="nd-tarot-card" id="tarot-card" aria-live="polite">
+                                <div class="nd-tarot-card-inner">
+                                    <div class="nd-tarot-card-front">
+                                        <div class="nd-tarot-card-name" id="tarot-name">Nhấn để rút bài</div>
+                                        <div class="nd-tarot-card-meaning" id="tarot-meaning"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <p class="nd-tarot-hint" id="tarot-hint">Mỗi ngày một lá bài</p>
                         </section>
                     </aside>
                 </div>
@@ -159,6 +162,7 @@
     <script src="assets/js/config.js"></script>
     <script src="assets/js/db.js"></script>
     <script src="assets/js/tools.js"></script>
+    <script src="assets/js/tarot.js"></script>
     <script src="assets/js/oneko.js" data-cat="assets/images/oneko.gif"></script>
     <script>
         // Font Awesome chỉ tự thay <i> một lần khi tải trang. Bật watch() để icon
