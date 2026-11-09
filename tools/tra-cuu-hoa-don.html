@@ -28,7 +28,7 @@
     </header>
 
     <main class="site-section">
-      <div class="container" style="max-width: 900px;">
+      <div class="container" style="max-width: 1100px;">
         <h1 class="site-section-heading">Tra cứu hóa đơn điện tử</h1>
         <p class="site-section-sub">Danh sách link tra cứu hóa đơn, biên lai điện tử — tra cứu nhanh theo tên, loại</p>
 
@@ -42,8 +42,8 @@
           </select>
         </div>
 
-        <div id="link-list" style="display:grid; gap:.75rem;"></div>
-        <div id="empty-state" style="text-align:center; padding:3rem 1rem; color:var(--text-muted); display:none;">
+        <div id="link-list" class="nd-tools-grid"></div>
+        <div id="empty-state" class="nd-empty" style="display:none;">
           <i class="fas fa-search me-2"></i>Không tìm thấy link phù hợp.
         </div>
       </div>
@@ -66,5 +66,3 @@
   <script src="../assets/js/tra-cuu-hoa-don.js"></script>
 </body>
 </html>
-HTMLEOF
-echo "Done"

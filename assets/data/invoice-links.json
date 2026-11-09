@@ -1,6 +1,62 @@
 [
-  {"name": "Tổng cục Thuế — Tra cứu hóa đơn điện tử", "type": "Hóa đơn điện tử", "url": "https://hoadondientu.gdt.gov.vn/", "note": "Tra cứu hóa đơn điện tử do Tổng cục Thuế quản lý"},
-  {"name": "Saigon Newport - Tra cứu hóa đơn điện tử", "type": "Hóa đơn điện tử", "url": "https://https://eport.tcis.co/DownloadInvoice#/", "note": "Tra cứu hóa đơn điện tử Saigon Newport"},
-  {"name": "Vietnamhub - Tra cứu hóa đơn, chứng từ cảng", "type": "Hóa đơn điện tử", "url": "https://vietnamhub.vn/login/", "note": "Vietnamhub - Tra cứu hóa đơn, chứng từ cảng"},
-{"name": "Cảng Bến Nghé - Tra cứu hóa đơn điện tử", "type": "Hóa đơn điện tử", "url": "https://hoadon.benngheport.com/", "note": "Cảng Bến Nghé - Tra cứu hóa đơn điện tử"},
+  {
+    "name": "BKAV eHoadon — Tra cứu hóa đơn",
+    "type": "Hóa đơn điện tử",
+    "url": "http://ehoadon.vn",
+    "note": "Cổng tra cứu hóa đơn BKAV"
+  },
+  {
+    "name": "BKAV SoLog — Tra cứu hóa đơn",
+    "type": "Hóa đơn điện tử",
+    "url": "http://solog.ehoadon.vn",
+    "note": "Cổng tra cứu hóa đơn BKAV SoLog"
+  },
+  {
+    "name": "BKAV — Tra cứu bằng mã tra cứu",
+    "type": "Hóa đơn điện tử",
+    "url": "http://tracuu.ehoadon.vn",
+    "note": "Tra cứu hóa đơn BKAV bằng mã tra cứu"
+  },
+  {
+    "name": "VNPT Invoice — Bình Dương port",
+    "type": "Hóa đơn điện tử",
+    "url": "https://bnpbinhduong-tt78.vnpt-invoice.com.vn/",
+    "note": "Cổng tra cứu hóa đơn VNPT Bình Dương"
+  },
+  {
+    "name": "VNPT Invoice — Hàng hóa Nội Bài",
+    "type": "Hóa đơn điện tử",
+    "url": "https://hanghoanoibai-tt78.vnpt-invoice.com.vn",
+    "note": "Cổng tra cứu hóa đơn VNPT Hàng hóa Nội Bài"
+  },
+  {
+    "name": "VNPT Invoice — Hương Dương port",
+    "type": "Hóa đơn điện tử",
+    "url": "https://huongduongport-tt78.vnpt-invoice.com.vn",
+    "note": "Cổng tra cứu hóa đơn VNPT Hương Dương"
+  },
+  {
+    "name": "ALS Invoice — Tra cứu hóa đơn",
+    "type": "Hóa đơn điện tử",
+    "url": "https://invoice.als.com.vn",
+    "note": "Cổng tra cứu hóa đơn ALS"
+  },
+  {
+    "name": "VNPT Invoice — Nam Đình Vũ port",
+    "type": "Hóa đơn điện tử",
+    "url": "https://namdinhvuport-tt78.vnpt-invoice.com.vn",
+    "note": "Cổng tra cứu hóa đơn VNPT Nam Đình Vũ"
+  },
+  {
+    "name": "VNPT Invoice — SCSC",
+    "type": "Hóa đơn điện tử",
+    "url": "https://scsc-tt78.vnpt-invoice.com.vn",
+    "note": "Cổng tra cứu hóa đơn VNPT SCSC"
+  },
+  {
+    "name": "VNPT Invoice — SNP",
+    "type": "Hóa đơn điện tử",
+    "url": "https://snp-tt78.vnpt-invoice.com.vn",
+    "note": "Cổng tra cứu hóa đơn VNPT SNP"
+  }
 ]
