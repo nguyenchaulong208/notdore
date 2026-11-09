@@ -283,18 +283,20 @@
         await writable.close();
 
         // Remove from source
-        await sourceDirHandle.removeEntry(f.name, { recursive: false }).catch(() => {
+        try {
+          await sourceDirHandle.removeEntry(f.name, { recursive: false });
+        } catch (e) {
           // If file is in subfolder, need to navigate
           const parts = f.path.split('/');
           if (parts.length > 1) {
             // Try removing from parent
-            let parent = sourceDirHandle;
+            let parentDir = sourceDirHandle;
             for (let i = 0; i < parts.length - 1; i++) {
-              parent = await parent.getDirectoryHandle(parts[i]);
+              parentDir = await parentDir.getDirectoryHandle(parts[i]);
             }
-            await parent.removeEntry(parts[parts.length - 1]);
+            await parentDir.removeEntry(parts[parts.length - 1]);
           }
-        });
+        }
 
         done++;
         log.innerHTML += `<div style="color:var(--accent-green);"><i class="fas fa-check me-1"></i>${f.name}</div>`;
