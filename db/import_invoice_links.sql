@@ -32,5 +32,3 @@ INSERT INTO public.invoice_links (name, type, url, note) VALUES
   ('Hóa đơn BKAV eHoadon', 'Hóa đơn điện tử', 'https://hoadon.bkav.com.vn/', 'Tra cứu hóa đơn BKAV'),
   ('Biên lai điện tử — Tổng cục Thuế', 'Biên lai', 'https://bienlaidientu.gdt.gov.vn/', 'Tra cứu biên lai điện tử'),
   ('Tra cứu MST — Tổng cục Thuế', 'Mã số thuế', 'https://tracuunnt.gdt.gov.vn/tcnnt/mstdn.jsp', 'Tra cứu thông tin doanh nghiệp theo MST');
-HTMLEOF
-echo "Done"
