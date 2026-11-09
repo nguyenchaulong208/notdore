@@ -440,4 +440,4 @@ không trộn nhãn danh mục vào từng block.
 
 ## Giấy phép & ghi công
 
-Xem `license.txt` và `CREDITS.md`. Giao diện dựa trên template DevBook của Xiaoying Riley (3rd Wave Media).
+Xem `CREDITS.md`. Giao diện tự thiết kế, không dùng template bên ngoài.
