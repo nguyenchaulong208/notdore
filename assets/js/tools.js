@@ -237,6 +237,7 @@
         { name: 'Sửa tên file hàng loạt', description: 'Đổi tên nhiều file cùng lúc — theo mẫu hoặc sửa từng file, tải về ZIP', icon: 'fa-file-signature', url: 'tools/sua-ten-file.html', tags: ['rename', 'file', 'hàng loạt'], external: false },
         { name: 'Di chuyển file hàng loạt', description: 'Load folder, chọn file cần di chuyển, di chuyển hàng loạt cùng lúc', icon: 'fa-folder-tree', url: 'tools/di-chuyen-file.html', tags: ['move', 'file', 'folder', 'hàng loạt'], external: false },
         { name: 'Sinh mật khẩu PDF', description: 'Tạo mật khẩu ngẫu nhiên cho file PDF — chọn độ dài, copy hoặc xuất file txt', icon: 'fa-key', url: 'tools/sinh-mat-khau-pdf.html', tags: ['password', 'pdf', 'mật khẩu', 'ngẫu nhiên'], external: false },
+        { name: 'Tra cứu hóa đơn', description: 'Danh sách link tra cứu hóa đơn điện tử, biên lai — tìm kiếm nhanh theo tên, loại', icon: 'fa-file-invoice', url: 'tools/tra-cuu-hoa-don.html', tags: ['hóa đơn', 'invoice', 'link', 'tra cứu'], external: false },
       ];
 
       const external = (catalog.external || []).map((e) => ({
