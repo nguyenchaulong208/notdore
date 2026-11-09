@@ -1,0 +1,163 @@
+// ============================================================
+  // Dữ liệu công thức Excel — thêm mới tại đây
+  // ============================================================
+  const XL_FORMULAS = [
+    {
+      title: 'Tính tổng theo nhiều điều kiện',
+      category: 'Xử lý dữ liệu',
+      scenario: 'Tính tổng doanh thu của một sản phẩm cụ thể trong một tháng cụ thể, từ bảng dữ liệu lớn.',
+      formula: '=SUMIFS(DoanhThu, SanPham, "A", Thang, "1")',
+      example: 'Bảng: cột A = Sản phẩm, cột B = Tháng, cột C = Doanh thu. Công thức trả về tổng doanh thu sản phẩm A trong tháng 1.',
+      tags: ['SUMIFS', 'tổng', 'điều kiện', 'doanh thu', 'tháng']
+    },
+    {
+      title: 'Tìm kiếm giá trị theo 2 tiêu chí',
+      category: 'Xử lý dữ liệu',
+      scenario: 'Tìm giá bán của một sản phẩm theo mã sản phẩm và kích thước, từ bảng giá phức tạp.',
+      formula: '=INDEX(Gia, MATCH(1, (MaSP="A001")*(KichThuoc="L"), 0))',
+      example: 'Cần nhập mảng công thức (Ctrl+Shift+Enter). Trả về giá bán của sản phẩm A001 kích thước L.',
+      tags: ['INDEX', 'MATCH', 'tìm kiếm', '2 tiêu chí', 'mảng']
+    },
+    {
+      title: 'Tính lương net từ lương gross',
+      category: 'Tài chính',
+      scenario: 'Tính lương thực nhận (net) từ lương gross, áp dụng thuế TNCN và bảo hiểm theo quy định hiện hành.',
+      formula: '=Gross - BHXH - BHYT - BHTN - ThueTNCN',
+      example: 'Gross = 20.000.000. BHXH = 8%, BHYT = 1.5%, BHTN = 1%, Thuế TNCN theo biểu lũy tiến. Net = Gross - các khoản trừ.',
+      tags: ['lương', 'gross', 'net', 'thuế TNCN', 'bảo hiểm']
+    },
+    {
+      title: 'Đếm số ngày làm việc giữa 2 ngày',
+      category: 'Nhân sự',
+      scenario: 'Tính số ngày làm việc thực tế giữa ngày bắt đầu và ngày kết thúc, loại trừ cuối tuần và ngày lễ.',
+      formula: '=NETWORKDAYS(StartDate, EndDate, Holidays)',
+      example: 'StartDate = 01/01/2026, EndDate = 31/01/2026, Holidays = danh sách ngày lễ. Trả về số ngày làm việc.',
+      tags: ['NETWORKDAYS', 'ngày làm việc', 'cuối tuần', 'ngày lễ']
+    },
+    {
+      title: 'Xếp hạng theo nhiều tiêu chí',
+      category: 'Xử lý dữ liệu',
+      scenario: 'Xếp hạng nhân viên theo điểm KPI, nếu bằng điểm thì xếp theo thâm niên.',
+      formula: '=RANK.EQ(KPI, Range) + COUNTIFS(KPI_Range, KPI, Seniority_Range, ">"&Seniority)',
+      example: 'KPI = 85, Range = danh sách KPI. Nếu 2 người cùng 85 điểm, người có thâm niên cao hơn xếp trước.',
+      tags: ['RANK', 'COUNTIFS', 'xếp hạng', 'KPI', 'thâm niên']
+    },
+    {
+      title: 'Tính tiền tăng ca',
+      category: 'Nhân sự',
+      scenario: 'Tính tiền tăng ca theo giờ, phân biệt tăng ca ngày thường (150%), cuối tuần (200%), ngày lễ (300%).',
+      formula: '=IF(LoaiNgay="Lễ", GioTC*LuongGio*3, IF(LoaiNgay="CN", GioTC*LuongGio*2, GioTC*LuongGio*1.5))',
+      example: 'GioTC = 5 giờ, LuongGio = 50.000. Nếu ngày lễ: 5*50000*3 = 750.000đ.',
+      tags: ['IF', 'tăng ca', 'lương', 'ngày lễ', 'cuối tuần']
+    },
+    {
+      title: 'Lấy giá trị cuối cùng trong cột (không rỗng)',
+      category: 'Xử lý dữ liệu',
+      scenario: 'Tìm giá trị cuối cùng trong cột A (không tính ô trống), dùng cho bảng dữ liệu liên tục thêm dòng.',
+      formula: '=LOOKUP(2, 1/(A:A<>""), A:A)',
+      example: 'Cột A có dữ liệu từ A1 đến A50, sau đó trống. Công thức trả về giá trị ở A50.',
+      tags: ['LOOKUP', 'giá trị cuối', 'cột', 'dữ liệu động']
+    },
+    {
+      title: 'Tính tiền hoa hồng theo bậc',
+      category: 'Tài chính',
+      scenario: 'Tính tiền hoa hồng theo bậc doanh số: < 10tr → 5%, 10-50tr → 8%, > 50tr → 10%.',
+      formula: '=IF(DoanhSo<10000000, DoanhSo*0.05, IF(DoanhSo<=50000000, DoanhSo*0.08, DoanhSo*0.1))',
+      example: 'DoanhSo = 30.000.000 → 30tr * 8% = 2.400.000đ.',
+      tags: ['IF', 'hoa hồng', 'bậc', 'doanh số', 'tính tiền']
+    },
+    {
+      title: 'Kiểm tra trùng lặp trong danh sách',
+      category: 'Xử lý dữ liệu',
+      scenario: 'Đánh dấu các dòng trùng lặp trong danh sách nhân viên theo mã NV.',
+      formula: '=IF(COUNTIF($A$2:$A$100, A2)>1, "Trùng", "OK")',
+      example: 'Cột A chứa mã NV. Nếu mã xuất hiện > 1 lần → "Trùng", ngược lại "OK".',
+      tags: ['COUNTIF', 'trùng lặp', 'kiểm tra', 'mã NV']
+    },
+    {
+      title: 'Tính tuổi từ ngày sinh',
+      category: 'Nhân sự',
+      scenario: 'Tính tuổi chính xác của nhân viên từ ngày sinh đến ngày hiện tại.',
+      formula: '=DATEDIF(NgaySinh, TODAY(), "Y")',
+      example: 'NgaySinh = 15/03/1990. TODAY() = 02/11/2026. Kết quả: 36 tuổi.',
+      tags: ['DATEDIF', 'tuổi', 'ngày sinh', 'TODAY']
+    },
+    {
+      title: 'Chuẩn hóa tên (viết hoa chữ cái đầu)',
+      category: 'Xử lý dữ liệu',
+      scenario: 'Chuẩn hóa tên nhân viên: viết hoa chữ cái đầu mỗi từ, bỏ khoảng trắng thừa.',
+      formula: '=PROPER(TRIM(A2))',
+      example: 'A2 = "  nguyen van a  " → "Nguyen Van A".',
+      tags: ['PROPER', 'TRIM', 'chuẩn hóa', 'tên', 'văn bản']
+    },
+    {
+      title: 'Tính tồn kho cuối kỳ',
+      category: 'Kho vận',
+      scenario: 'Tính tồn kho cuối kỳ = Tồn đầu + Nhập - Xuất, có kiểm tra nếu âm thì báo lỗi.',
+      formula: '=IF(TonDau+Nhap-Xuat<0, "Lỗi: âm kho", TonDau+Nhap-Xuat)',
+      example: 'TonDau=100, Nhap=50, Xuat=160 → "Lỗi: âm kho". Nếu Xuat=120 → 30.',
+      tags: ['IF', 'tồn kho', 'nhập', 'xuất', 'kho vận']
+    }
+  ];
+
+  // ============================================================
+  // State & render
+  // ============================================================
+  let xlState = { q: '', category: 'all' };
+
+  function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+  function xlFilter() {
+    const q = xlState.q.toLowerCase().trim();
+    return XL_FORMULAS.filter(f => {
+      if (xlState.category !== 'all' && f.category !== xlState.category) return false;
+      if (!q) return true;
+      const text = [f.title, f.scenario, f.formula, f.example, ...(f.tags || [])].join(' ').toLowerCase();
+      return text.includes(q);
+    });
+  }
+
+  function xlRender() {
+    const host = document.getElementById('xl-grid');
+    const empty = document.getElementById('xl-empty');
+    const count = document.getElementById('xl-count');
+    const rows = xlFilter();
+
+    count.textContent = `${rows.length} công thức`;
+    if (!rows.length) { host.innerHTML = ''; empty.style.display = 'block'; return; }
+    empty.style.display = 'none';
+
+    host.innerHTML = rows.map(f => `
+      <div class="nd-unit-card" style="cursor:default; display:flex; flex-direction:column; gap:.5rem;">
+        <div style="display:flex; justify-content:space-between; align-items:center; gap:.5rem;">
+          <span class="nd-pill nd-pill--soft" style="font-size:.72rem;">${esc(f.category)}</span>
+        </div>
+        <div style="font-weight:700; font-size:1.05rem; color:var(--text-primary);">${esc(f.title)}</div>
+        <div style="font-size:.85rem; color:var(--text-secondary); line-height:1.5;">${esc(f.scenario)}</div>
+        <div style="background:var(--bg-card-hover); border:1px solid var(--border); border-radius:var(--radius-sm); padding:.6rem .8rem; font-family:monospace; font-size:.85rem; color:var(--accent-purple); word-break:break-all; white-space:pre-wrap;">${esc(f.formula)}</div>
+        <div style="font-size:.82rem; color:var(--text-muted); line-height:1.5;"><strong>Ví dụ:</strong> ${esc(f.example)}</div>
+        <div style="display:flex; flex-wrap:wrap; gap:.3rem; margin-top:.3rem;">
+          ${(f.tags || []).map(t => `<span class="nd-pill nd-pill--soft" style="font-size:.7rem; padding:.1rem .5rem;">${esc(t)}</span>`).join('')}
+        </div>
+      </div>
+    `).join('');
+  }
+
+  // Init categories
+  function xlInitCategories() {
+    const cats = [...new Set(XL_FORMULAS.map(f => f.category))].sort();
+    const sel = document.getElementById('xl-category');
+    cats.forEach(c => {
+      const opt = document.createElement('option');
+      opt.value = c;
+      opt.textContent = c;
+      sel.appendChild(opt);
+    });
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    xlInitCategories();
+    xlRender();
+    document.getElementById('xl-search').addEventListener('input', (e) => { xlState.q = e.target.value; xlRender(); });
+    document.getElementById('xl-category').addEventListener('change', (e) => { xlState.category = e.target.value; xlRender(); });
+  });
