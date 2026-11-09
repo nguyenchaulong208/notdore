@@ -1,11 +1,5 @@
 [
   {"name": "Tổng cục Thuế — Tra cứu hóa đơn điện tử", "type": "Hóa đơn điện tử", "url": "https://hoadondientu.gdt.gov.vn/", "note": "Tra cứu hóa đơn điện tử do Tổng cục Thuế quản lý"},
-  {"name": "Cục Thuế TP.HCM", "type": "Hóa đơn điện tử", "url": "https://hoadon.hochiminhcity.gov.vn/", "note": "Tra cứu hóa đơn điện tử TP.HCM"},
-  {"name": "Hóa đơn VNPT", "type": "Hóa đơn điện tử", "url": "https://hoadondientu.vnpt.vn/", "note": "Tra cứu hóa đơn VNPT"},
-  {"name": "Hóa đơn Viettel", "type": "Hóa đơn điện tử", "url": "https://hoadon.viettel.vn/", "note": "Tra cứu hóa đơn Viettel"},
-  {"name": "Hóa đơn FPT", "type": "Hóa đơn điện tử", "url": "https://hoadon.fpt.vn/", "note": "Tra cứu hóa đơn FPT"},
-  {"name": "Hóa đơn MISA meInvoice", "type": "Hóa đơn điện tử", "url": "https://hoadon.misa.com.vn/", "note": "Tra cứu hóa đơn MISA"},
-  {"name": "Hóa đơn BKAV eHoadon", "type": "Hóa đơn điện tử", "url": "https://hoadon.bkav.com.vn/", "note": "Tra cứu hóa đơn BKAV"},
-  {"name": "Biên lai điện tử — Tổng cục Thuế", "type": "Biên lai", "url": "https://bienlaidientu.gdt.gov.vn/", "note": "Tra cứu biên lai điện tử"},
-  {"name": "Tra cứu MST — Tổng cục Thuế", "type": "Mã số thuế", "url": "https://tracuunnt.gdt.gov.vn/tcnnt/mstdn.jsp", "note": "Tra cứu thông tin doanh nghiệp theo MST"}
+  {"name": "Saigon Newport - Tra cứu hóa đơn điện tử", "type": "Hóa đơn điện tử", "url": "https://https://eport.tcis.co/DownloadInvoice#/", "note": "Tra cứu hóa đơn điện tử Saigon Newport"},
+  {"name": "Vietnamhub - Tra cứu hóa đơn, chứng từ cảng", "type": "Hóa đơn điện tử", "url": "https://vietnamhub.vn/login/", "note": "Vietnamhub - Tra cứu hóa đơn, chứng từ cảng"},
 ]
