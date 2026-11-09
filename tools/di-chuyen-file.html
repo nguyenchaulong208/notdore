@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Di chuyển file hàng loạt — NotDore</title>
+  <meta name="description" content="Công cụ di chuyển file hàng loạt trên trình duyệt — load folder, chọn file, di chuyển cùng lúc">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/fontawesome.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/solid.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" media="print" onload="this.media='all'">
+  <link rel="stylesheet" href="../assets/css/notdore.css">
+  <link rel="stylesheet" href="../assets/css/tools.css">
+</head>
+<body>
+  <div class="anime-container">
+    <header class="anime-header">
+      <a class="anime-brand" href="../index.html"><span>NotDore</span></a>
+      <nav class="anime-nav">
+        <a href="../index.html" class="anime-nav-link">Công cụ</a>
+        <a href="../thu-vien.html" class="anime-nav-link">Thư viện</a>
+        <a href="../about.html" class="anime-nav-link">Giới thiệu</a>
+        <a href="../contact.html" class="anime-nav-link">Liên hệ</a>
+      </nav>
+    </header>
+
+    <main class="site-section">
+      <div class="container" style="max-width: 1100px;">
+        <h1 class="site-section-heading">Di chuyển file hàng loạt</h1>
+        <p class="site-section-sub">Load folder → chọn file cần di chuyển → chọn thư mục đích → di chuyển cùng lúc</p>
+
+        <!-- Browser support notice -->
+        <div id="support-notice" style="display:none; background:var(--bg-card); border:1px solid var(--accent-red); border-radius:var(--radius-md); padding:1rem; margin-bottom:1.5rem; color:var(--accent-red);">
+          <i class="fas fa-exclamation-triangle me-2"></i>
+          Trình duyệt của bạn không hỗ trợ File System Access API. Vui lòng sử dụng Chrome hoặc Edge mới nhất.
+        </div>
+
+        <!-- Step 1: Source folder -->
+        <div id="step1" style="background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius-md); padding:1.5rem; margin-bottom:1.5rem;">
+          <div style="display:flex; align-items:center; gap:1rem; flex-wrap:wrap;">
+            <div style="flex:1;">
+              <h3 style="font-size:1.1rem; font-weight:700; margin-bottom:.3rem;">Bước 1: Chọn thư mục nguồn</h3>
+              <p style="font-size:.85rem; color:var(--text-muted); margin:0;">Chọn thư mục chứa các file cần di chuyển</p>
+            </div>
+            <button id="pick-source" class="btn-primary-nd" style="padding:.6rem 1.2rem; font-size:.85rem;">
+              <i class="fas fa-folder-open me-1"></i> Chọn thư mục nguồn
+            </button>
+          </div>
+          <div id="source-info" style="margin-top:1rem; font-size:.85rem; color:var(--text-secondary); display:none;">
+            <i class="fas fa-folder me-1" style="color:var(--accent-purple);"></i>
+            <span id="source-path"></span> — <span id="source-count">0</span> file
+          </div>
+        </div>
+
+        <!-- Step 2: File list with selection -->
+        <div id="step2" style="display:none; margin-bottom:1.5rem;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:.75rem; flex-wrap:wrap; gap:.5rem;">
+            <h3 style="font-size:1.1rem; font-weight:700; margin:0;">Bước 2: Chọn file cần di chuyển</h3>
+            <div style="display:flex; gap:.5rem;">
+              <button id="select-all" class="btn-outline-nd" style="padding:.4rem .8rem; font-size:.8rem;">Chọn tất cả</button>
+              <button id="deselect-all" class="btn-outline-nd" style="padding:.4rem .8rem; font-size:.8rem;">Bỏ chọn</button>
+              <span id="selected-count" style="font-size:.85rem; color:var(--text-muted); align-self:center;">0 đã chọn</span>
+            </div>
+          </div>
+          <div style="overflow-x:auto; border:1px solid var(--border); border-radius:var(--radius-md); max-height:400px; overflow-y:auto;">
+            <table style="width:100%; border-collapse:collapse; font-size:.85rem;">
+              <thead style="position:sticky; top:0; background:var(--bg-card-hover); z-index:1;">
+                <tr>
+                  <th style="padding:.6rem .8rem; text-align:center; border-bottom:1px solid var(--border); width:40px;">
+                    <input type="checkbox" id="check-all">
+                  </th>
+                  <th style="padding:.6rem .8rem; text-align:left; border-bottom:1px solid var(--border);">Tên file</th>
+                  <th style="padding:.6rem .8rem; text-align:left; border-bottom:1px solid var(--border);">Thư mục con</th>
+                  <th style="padding:.6rem .8rem; text-align:left; border-bottom:1px solid var(--border); width:90px;">Kích thước</th>
+                </tr>
+              </thead>
+              <tbody id="file-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Step 3: Destination folder -->
+        <div id="step3" style="display:none; background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius-md); padding:1.5rem; margin-bottom:1.5rem;">
+          <div style="display:flex; align-items:center; gap:1rem; flex-wrap:wrap;">
+            <div style="flex:1;">
+              <h3 style="font-size:1.1rem; font-weight:700; margin-bottom:.3rem;">Bước 3: Chọn thư mục đích</h3>
+              <p style="font-size:.85rem; color:var(--text-muted); margin:0;">File sẽ được di chuyển vào thư mục này</p>
+            </div>
+            <button id="pick-dest" class="btn-primary-nd" style="padding:.6rem 1.2rem; font-size:.85rem;">
+              <i class="fas fa-folder-plus me-1"></i> Chọn thư mục đích
+            </button>
+          </div>
+          <div id="dest-info" style="margin-top:1rem; font-size:.85rem; color:var(--text-secondary); display:none;">
+            <i class="fas fa-folder me-1" style="color:var(--accent-green);"></i>
+            <span id="dest-path"></span>
+          </div>
+        </div>
+
+        <!-- Step 4: Execute -->
+        <div id="step4" style="display:none; text-align:center; margin-bottom:1.5rem;">
+          <button id="execute-move" class="btn-primary-nd" style="padding:.8rem 2rem; font-size:1rem;">
+            <i class="fas fa-arrows-alt me-1"></i> Di chuyển <span id="move-count">0</span> file
+          </button>
+          <p style="font-size:.82rem; color:var(--text-muted); margin-top:.5rem;">Lưu ý: thao tác này sẽ di chuyển file thật sự trên máy tính của bạn</p>
+        </div>
+
+        <!-- Progress -->
+        <div id="progress-wrap" style="display:none; margin-bottom:1.5rem;">
+          <div style="background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius-md); padding:1.2rem;">
+            <div style="display:flex; justify-content:space-between; margin-bottom:.5rem;">
+              <span style="font-size:.85rem; font-weight:600;">Đang di chuyển...</span>
+              <span id="progress-text" style="font-size:.85rem; color:var(--text-muted);">0/0</span>
+            </div>
+            <div style="background:var(--border); border-radius:4px; height:8px; overflow:hidden;">
+              <div id="progress-bar" style="background:var(--accent-purple); height:100%; width:0%; transition:width .2s;"></div>
+            </div>
+            <div id="move-log" style="margin-top:.75rem; font-size:.8rem; max-height:150px; overflow-y:auto; color:var(--text-secondary);"></div>
+          </div>
+        </div>
+
+        <!-- Result -->
+        <div id="result-wrap" style="display:none; background:var(--bg-card); border:1px solid var(--accent-green); border-radius:var(--radius-md); padding:1.2rem; text-align:center;">
+          <i class="fas fa-check-circle" style="font-size:2rem; color:var(--accent-green); margin-bottom:.5rem;"></i>
+          <p style="font-weight:600; margin-bottom:.3rem;">Hoàn thành!</p>
+          <p id="result-text" style="font-size:.85rem; color:var(--text-secondary); margin:0;"></p>
+          <button id="reset-btn" class="btn-outline-nd" style="margin-top:1rem; padding:.5rem 1.2rem; font-size:.85rem;">Làm lại</button>
+        </div>
+      </div>
+    </main>
+
+    <footer class="site-footer">
+      <p>NotDore — Theodore.</p>
+      <p>
+        <a href="../index.html">Trang chủ</a> ·
+        <a href="../about.html">Giới thiệu</a> ·
+        <a href="../privacy.html">Chính sách bảo mật</a> ·
+        <a href="../contact.html">Liên hệ</a>
+      </p>
+    </footer>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" defer></script>
+  <script>
+  // Check browser support
+  if (!('showDirectoryPicker' in window)) {
+    document.getElementById('support-notice').style.display = 'block';
+  }
+
+  // State
+  let sourceDirHandle = null;
+  let destDirHandle = null;
+  let allFiles = []; // { name, path, size, handle, selected }
+  let selectedFiles = new Set();
+
+  const $ = (id) => document.getElementById(id);
+
+  function formatSize(bytes) {
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+  }
+
+  // Recursively collect files
+  async function collectFiles(dirHandle, basePath = '') {
+    const files = [];
+    for await (const [name, handle] of dirHandle.entries()) {
+      const path = basePath ? `${basePath}/${name}` : name;
+      if (handle.kind === 'file') {
+        const file = await handle.getFile();
+        files.push({ name, path, size: file.size, handle, selected: false });
+      } else if (handle.kind === 'directory') {
+        const subFiles = await collectFiles(handle, path);
+        files.push(...subFiles);
+      }
+    }
+    return files;
+  }
+
+  // Step 1: Pick source
+  $('pick-source').addEventListener('click', async () => {
+    try {
+      sourceDirHandle = await window.showDirectoryPicker({ mode: 'readwrite' });
+      allFiles = await collectFiles(sourceDirHandle);
+      selectedFiles.clear();
+
+      $('source-path').textContent = sourceDirHandle.name;
+      $('source-count').textContent = allFiles.length;
+      $('source-info').style.display = 'block';
+
+      renderFileList();
+      $('step2').style.display = 'block';
+      $('step3').style.display = 'block';
+    } catch (e) {
+      if (e.name !== 'AbortError') alert('Lỗi: ' + e.message);
+    }
+  });
+
+  // Render file list
+  function renderFileList() {
+    const tbody = $('file-tbody');
+    tbody.innerHTML = allFiles.map((f, i) => {
+      const dir = f.path.includes('/') ? f.path.substring(0, f.path.lastIndexOf('/')) : '';
+      return `
+        <tr style="border-bottom:1px solid var(--border);">
+          <td style="padding:.5rem .8rem; text-align:center;">
+            <input type="checkbox" class="file-check" data-index="${i}" ${f.selected ? 'checked' : ''}>
+          </td>
+          <td style="padding:.5rem .8rem; color:var(--text-primary); font-size:.82rem;">${f.name}</td>
+          <td style="padding:.5rem .8rem; color:var(--text-muted); font-size:.8rem;">${dir || '—'}</td>
+          <td style="padding:.5rem .8rem; color:var(--text-muted); font-size:.8rem;">${formatSize(f.size)}</td>
+        </tr>
+      `;
+    }).join('');
+
+    tbody.querySelectorAll('.file-check').forEach(cb => {
+      cb.addEventListener('change', (e) => {
+        const idx = parseInt(e.target.dataset.index);
+        allFiles[idx].selected = e.target.checked;
+        updateSelectedCount();
+      });
+    });
+    updateSelectedCount();
+  }
+
+  function updateSelectedCount() {
+    const count = allFiles.filter(f => f.selected).length;
+    $('selected-count').textContent = `${count} đã chọn`;
+    $('move-count').textContent = count;
+    if (count > 0 && destDirHandle) {
+      $('step4').style.display = 'block';
+    } else {
+      $('step4').style.display = 'none';
+    }
+  }
+
+  // Select/deselect all
+  $('select-all').addEventListener('click', () => {
+    allFiles.forEach(f => f.selected = true);
+    renderFileList();
+  });
+  $('deselect-all').addEventListener('click', () => {
+    allFiles.forEach(f => f.selected = false);
+    renderFileList();
+  });
+  $('check-all').addEventListener('change', (e) => {
+    allFiles.forEach(f => f.selected = e.target.checked);
+    renderFileList();
+  });
+
+  // Step 3: Pick destination
+  $('pick-dest').addEventListener('click', async () => {
+    try {
+      destDirHandle = await window.showDirectoryPicker({ mode: 'readwrite' });
+      $('dest-path').textContent = destDirHandle.name;
+      $('dest-info').style.display = 'block';
+      updateSelectedCount();
+    } catch (e) {
+      if (e.name !== 'AbortError') alert('Lỗi: ' + e.message);
+    }
+  });
+
+  // Step 4: Execute move
+  $('execute-move').addEventListener('click', async () => {
+    const toMove = allFiles.filter(f => f.selected);
+    if (!toMove.length || !destDirHandle) return;
+
+    $('progress-wrap').style.display = 'block';
+    $('step4').style.display = 'none';
+    const log = $('move-log');
+    log.innerHTML = '';
+    let done = 0;
+    const total = toMove.length;
+
+    for (const f of toMove) {
+      try {
+        // Read file content
+        const file = await f.handle.getFile();
+        const content = await file.arrayBuffer();
+
+        // Create in destination
+        const newHandle = await destDirHandle.getFileHandle(f.name, { create: true });
+        const writable = await newHandle.createWritable();
+        await writable.write(content);
+        await writable.close();
+
+        // Remove from source
+        await sourceDirHandle.removeEntry(f.name, { recursive: false }).catch(() => {
+          // If file is in subfolder, need to navigate
+          const parts = f.path.split('/');
+          if (parts.length > 1) {
+            // Try removing from parent
+            let parent = sourceDirHandle;
+            for (let i = 0; i < parts.length - 1; i++) {
+              parent = await parent.getDirectoryHandle(parts[i]);
+            }
+            await parent.removeEntry(parts[parts.length - 1]);
+          }
+        });
+
+        done++;
+        log.innerHTML += `<div style="color:var(--accent-green);"><i class="fas fa-check me-1"></i>${f.name}</div>`;
+      } catch (e) {
+        log.innerHTML += `<div style="color:var(--accent-red);"><i class="fas fa-times me-1"></i>${f.name} — ${e.message}</div>`;
+      }
+      $('progress-text').textContent = `${done}/${total}`;
+      $('progress-bar').style.width = `${(done / total) * 100}%`;
+    }
+
+    $('progress-wrap').style.display = 'none';
+    $('result-wrap').style.display = 'block';
+    $('result-text').textContent = `Đã di chuyển ${done}/${total} file thành công.`;
+  });
+
+  // Reset
+  $('reset-btn').addEventListener('click', () => {
+    sourceDirHandle = null;
+    destDirHandle = null;
+    allFiles = [];
+    selectedFiles.clear();
+    $('source-info').style.display = 'none';
+    $('dest-info').style.display = 'none';
+    $('step2').style.display = 'none';
+    $('step3').style.display = 'none';
+    $('step4').style.display = 'none';
+    $('result-wrap').style.display = 'none';
+    $('file-tbody').innerHTML = '';
+  });
+  </script>
+</body>
+</html>
+HTMLEOF
+echo "Done"

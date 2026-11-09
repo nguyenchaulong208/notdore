@@ -235,6 +235,7 @@
       const localTools = [
         { name: 'Công thức Excel', description: 'Kho công thức Excel thực tế cho công việc — tra cứu theo tình huống, danh mục, từ khóa', icon: 'fa-file-excel', url: 'tools/excel-cong-thuc.html', tags: ['excel', 'công thức', 'hàm'], external: false },
         { name: 'Sửa tên file hàng loạt', description: 'Đổi tên nhiều file cùng lúc — theo mẫu hoặc sửa từng file, tải về ZIP', icon: 'fa-file-pen', url: 'tools/sua-ten-file.html', tags: ['rename', 'file', 'hàng loạt'], external: false },
+        { name: 'Di chuyển file hàng loạt', description: 'Load folder, chọn file cần di chuyển, di chuyển hàng loạt cùng lúc', icon: 'fa-arrows-alt', url: 'tools/di-chuyen-file.html', tags: ['move', 'file', 'folder', 'hàng loạt'], external: false },
       ];
 
       const external = (catalog.external || []).map((e) => ({
