@@ -8,27 +8,29 @@ CREATE TABLE IF NOT EXISTS public.invoice_links (
   created_at timestamptz DEFAULT now()
 );
 
--- Bật RLS (tùy chọn)
+-- Bật RLS
 ALTER TABLE public.invoice_links ENABLE ROW LEVEL SECURITY;
 
 -- Policy: cho phép mọi người đọc
+DROP POLICY IF EXISTS "Allow public read" ON public.invoice_links;
 CREATE POLICY "Allow public read" ON public.invoice_links
   FOR SELECT USING (true);
 
 -- GRANT
 GRANT SELECT ON public.invoice_links TO anon, authenticated;
 
--- Xóa dữ liệu cũ (nếu có) trước khi insert
+-- Xóa dữ liệu cũ
 DELETE FROM public.invoice_links;
 
--- Insert dữ liệu từ JSON
+-- Insert dữ liệu
 INSERT INTO public.invoice_links (name, type, url, note) VALUES
-  ('Tổng cục Thuế — Tra cứu hóa đơn điện tử', 'Hóa đơn điện tử', 'https://hoadondientu.gdt.gov.vn/', 'Tra cứu hóa đơn điện tử do Tổng cục Thuế quản lý'),
-  ('Cục Thuế TP.HCM', 'Hóa đơn điện tử', 'https://hoadon.hochiminhcity.gov.vn/', 'Tra cứu hóa đơn điện tử TP.HCM'),
-  ('Hóa đơn VNPT', 'Hóa đơn điện tử', 'https://hoadondientu.vnpt.vn/', 'Tra cứu hóa đơn VNPT'),
-  ('Hóa đơn Viettel', 'Hóa đơn điện tử', 'https://hoadon.viettel.vn/', 'Tra cứu hóa đơn Viettel'),
-  ('Hóa đơn FPT', 'Hóa đơn điện tử', 'https://hoadon.fpt.vn/', 'Tra cứu hóa đơn FPT'),
-  ('Hóa đơn MISA meInvoice', 'Hóa đơn điện tử', 'https://hoadon.misa.com.vn/', 'Tra cứu hóa đơn MISA'),
-  ('Hóa đơn BKAV eHoadon', 'Hóa đơn điện tử', 'https://hoadon.bkav.com.vn/', 'Tra cứu hóa đơn BKAV'),
-  ('Biên lai điện tử — Tổng cục Thuế', 'Biên lai', 'https://bienlaidientu.gdt.gov.vn/', 'Tra cứu biên lai điện tử'),
-  ('Tra cứu MST — Tổng cục Thuế', 'Mã số thuế', 'https://tracuunnt.gdt.gov.vn/tcnnt/mstdn.jsp', 'Tra cứu thông tin doanh nghiệp theo MST');
+  ('BKAV eHoadon — Tra cứu hóa đơn', 'Hóa đơn điện tử', 'http://ehoadon.vn', 'Cổng tra cứu hóa đơn BKAV'),
+  ('BKAV SoLog — Tra cứu hóa đơn', 'Hóa đơn điện tử', 'http://solog.ehoadon.vn', 'Cổng tra cứu hóa đơn BKAV SoLog'),
+  ('BKAV — Tra cứu bằng mã tra cứu', 'Hóa đơn điện tử', 'http://tracuu.ehoadon.vn', 'Tra cứu hóa đơn BKAV bằng mã tra cứu'),
+  ('VNPT Invoice — Bình Dương port', 'Hóa đơn điện tử', 'https://bnpbinhduong-tt78.vnpt-invoice.com.vn/', 'Cổng tra cứu hóa đơn VNPT Bình Dương'),
+  ('VNPT Invoice — Hàng hóa Nội Bài', 'Hóa đơn điện tử', 'https://hanghoanoibai-tt78.vnpt-invoice.com.vn', 'Cổng tra cứu hóa đơn VNPT Hàng hóa Nội Bài'),
+  ('VNPT Invoice — Hương Dương port', 'Hóa đơn điện tử', 'https://huongduongport-tt78.vnpt-invoice.com.vn', 'Cổng tra cứu hóa đơn VNPT Hương Dương'),
+  ('ALS Invoice — Tra cứu hóa đơn', 'Hóa đơn điện tử', 'https://invoice.als.com.vn', 'Cổng tra cứu hóa đơn ALS'),
+  ('VNPT Invoice — Nam Đình Vũ port', 'Hóa đơn điện tử', 'https://namdinhvuport-tt78.vnpt-invoice.com.vn', 'Cổng tra cứu hóa đơn VNPT Nam Đình Vũ'),
+  ('VNPT Invoice — SCSC', 'Hóa đơn điện tử', 'https://scsc-tt78.vnpt-invoice.com.vn', 'Cổng tra cứu hóa đơn VNPT SCSC'),
+  ('VNPT Invoice — SNP', 'Hóa đơn điện tử', 'https://snp-tt78.vnpt-invoice.com.vn', 'Cổng tra cứu hóa đơn VNPT SNP');

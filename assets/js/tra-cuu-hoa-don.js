@@ -48,34 +48,21 @@ const $ = (id) => document.getElementById(id);
     empty.style.display = 'none';
 
     host.innerHTML = filtered.map(l => `
-      <div style="background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius-md); padding:1rem; display:flex; align-items:center; gap:1rem; flex-wrap:wrap;">
-        <div style="flex:1; min-width:200px;">
-          <div style="display:flex; align-items:center; gap:.5rem; margin-bottom:.2rem;">
-            <span style="font-weight:600; color:var(--text-primary);">${esc(l.name)}</span>
-            <span class="nd-pill nd-pill--soft" style="font-size:.7rem;">${esc(l.type)}</span>
-          </div>
-          ${l.note ? `<div style="font-size:.8rem; color:var(--text-muted); margin-bottom:.3rem;">${esc(l.note)}</div>` : ''}
-          <a href="${esc(l.url)}" target="_blank" rel="noopener" style="font-size:.82rem; color:var(--accent-purple); word-break:break-all;">${esc(l.url)}</a>
-        </div>
-        <div style="display:flex; gap:.4rem;">
-          <a href="${esc(l.url)}" target="_blank" rel="noopener" class="btn-primary-nd" style="padding:.35rem .7rem; font-size:.8rem;">
-            <i class="fas fa-external-link-alt"></i> Mở
-          </a>
-          <button class="copy-url" data-url="${esc(l.url)}" style="background:none; border:1px solid var(--border); border-radius:8px; padding:.35rem .6rem; cursor:pointer; color:var(--text-secondary); font-size:.8rem;" title="Copy URL">
-            <i class="fas fa-copy"></i>
-          </button>
-        </div>
-      </div>
+      <a class="nd-tool-card nd-tool-card--int" href="${esc(l.url)}" target="_blank" rel="noopener noreferrer">
+        <span class="nd-tool-top">
+          <span class="nd-tool-icon"><i class="fas fa-file-invoice" aria-hidden="true"></i></span>
+          <span class="nd-tool-badge">${esc(l.type)}</span>
+        </span>
+        <h2 class="nd-tool-name">${esc(l.name)}</h2>
+        <p class="nd-tool-desc">${esc(l.note || '')}</p>
+        <span class="nd-tool-foot">
+          <span class="nd-tool-meta">${esc(l.url.replace(/^https?:\/\//, '').split('/')[0])}</span>
+          <span class="nd-tool-go" aria-hidden="true">
+            <i class="fas fa-arrow-up-right-from-square"></i>
+          </span>
+        </span>
+      </a>
     `).join('');
-
-    host.querySelectorAll('.copy-url').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        navigator.clipboard.writeText(e.currentTarget.dataset.url).then(() => {
-          e.currentTarget.innerHTML = '<i class="fas fa-check" style="color:var(--accent-green);"></i>';
-          setTimeout(() => { e.currentTarget.innerHTML = '<i class="fas fa-copy"></i>'; }, 1500);
-        });
-      });
-    });
   }
 
   function initFilterTypes() {
