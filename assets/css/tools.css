@@ -1094,3 +1094,175 @@
   .nd-online-label,
   .nd-online-sep { display: none; }
 }
+
+/* --- Bai viet / article pages ---------------------------------------- */
+.nd-article-head {
+  margin-bottom: 1.75rem;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid var(--border);
+}
+.nd-article-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin: .75rem 0 0;
+  font-size: .85rem;
+  color: var(--text-muted);
+}
+.nd-article-meta i { margin-right: .35rem; }
+.nd-article-body h2 {
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin: 2rem 0 .85rem;
+  color: var(--text-primary);
+}
+.nd-article-body h3 {
+  font-family: var(--font-display);
+  font-size: 1.08rem;
+  font-weight: 700;
+  margin: 1.5rem 0 .6rem;
+  color: var(--text-primary);
+}
+.nd-article-body p {
+  margin-bottom: 1rem;
+  line-height: 1.8;
+  color: var(--text-secondary);
+}
+.nd-article-body ul,
+.nd-article-body ol {
+  margin: 0 0 1.1rem 1.25rem;
+  color: var(--text-secondary);
+}
+.nd-article-body li {
+  margin-bottom: .55rem;
+  line-height: 1.75;
+}
+.nd-article-body strong { color: var(--text-primary); font-weight: 600; }
+.nd-article-body a { color: var(--accent-purple); text-decoration: none; }
+.nd-article-body a:hover { text-decoration: underline; }
+.nd-article-body code {
+  padding: .1rem .35rem;
+  border-radius: 6px;
+  background: var(--bg-card-hover);
+  font-size: .88em;
+}
+.nd-callout {
+  margin: 1.5rem 0;
+  padding: 1rem 1.25rem;
+  border-left: 3px solid var(--accent-purple-light);
+  border-radius: var(--radius-sm);
+  background: var(--gradient-soft);
+  color: var(--text-secondary);
+  line-height: 1.7;
+}
+.nd-author-box {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+  margin-top: 2.5rem;
+  padding: 1.25rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--bg-card);
+}
+.nd-author-avatar {
+  flex: 0 0 auto;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 50%;
+  background: var(--gradient-primary);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+}
+.nd-author-info h3 {
+  margin: 0 0 .35rem;
+  font-family: var(--font-display);
+  font-size: 1rem;
+  color: var(--text-primary);
+}
+.nd-author-info p {
+  margin: 0;
+  font-size: .85rem;
+  line-height: 1.65;
+  color: var(--text-muted);
+}
+.nd-related {
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border);
+}
+.nd-related h2 {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  margin-bottom: .75rem;
+  color: var(--text-primary);
+}
+.nd-related ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: .5rem;
+}
+.nd-related a {
+  color: var(--accent-purple);
+  font-size: .9rem;
+  text-decoration: none;
+}
+.nd-related a:hover { text-decoration: underline; }
+
+/* --- Blog listing ---------------------------------------------------- */
+.nd-blog-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: 1.75rem;
+}
+.nd-blog-card {
+  display: block;
+  padding: 1.25rem 1.35rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--bg-card);
+  text-decoration: none;
+  transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease;
+}
+.nd-blog-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(139, 74, 240, .35);
+  box-shadow: var(--shadow-card);
+}
+.nd-blog-card h2 {
+  font-family: var(--font-display);
+  font-size: 1.12rem;
+  font-weight: 700;
+  margin-bottom: .5rem;
+  color: var(--text-primary);
+}
+.nd-blog-card p {
+  margin-bottom: .6rem;
+  font-size: .88rem;
+  line-height: 1.65;
+  color: var(--text-secondary);
+}
+.nd-blog-meta {
+  font-size: .78rem;
+  color: var(--text-muted);
+}
+
+/* --- Guide link on tool pages ---------------------------------------- */
+.nd-tool-guide-link {
+  margin: .5rem 0 1.25rem;
+  font-size: .9rem;
+}
+.nd-tool-guide-link a {
+  color: var(--accent-purple);
+  text-decoration: none;
+}
+.nd-tool-guide-link a:hover { text-decoration: underline; }
+.nd-tool-guide-link i { margin-right: .4rem; }
