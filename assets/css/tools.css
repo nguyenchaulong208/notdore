@@ -1094,21 +1094,3 @@
   .nd-online-label,
   .nd-online-sep { display: none; }
 }
-
-/* --- AdSense ad slots ----------------------------------------------- */
-.nd-ad-slot {
-  margin: 1.75rem auto;
-  text-align: center;
-}
-.nd-ad-slot .adsbygoogle {
-  display: block;
-  margin: 0 auto;
-  max-width: 100%;
-}
-.nd-tools-side .nd-ad-slot {
-  margin: 0;
-  padding: 1.35rem;
-  border: 1.5px solid var(--text-primary);
-  border-radius: 14px;
-  background: var(--bg-card);
-}
