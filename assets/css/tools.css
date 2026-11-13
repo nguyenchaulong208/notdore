@@ -1024,10 +1024,9 @@
   line-height: 1.4;
 }
 
-/* --- Online visitors badge ------------------------------------------- */
-.anime-header .nd-online-badge {
-  margin-left: auto;
-  flex: 0 0 auto;
+/* --- Online visitors badge (cuối trang) --------------------------------- */
+.anime-footer .nd-online-badge {
+  margin-top: .6rem;
 }
 .nd-online-badge {
   display: inline-flex;
@@ -1072,5 +1071,4 @@
 }
 @media (max-width: 599px) {
   .nd-online-label { display: none; }
-  .anime-header .nd-online-badge { margin-left: 0; }
 }
