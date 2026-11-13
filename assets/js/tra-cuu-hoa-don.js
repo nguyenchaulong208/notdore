@@ -48,7 +48,7 @@ const $ = (id) => document.getElementById(id);
     empty.style.display = 'none';
 
     host.innerHTML = filtered.map(l => `
-      <a class="nd-tool-card nd-tool-card--int" href="${esc(l.url)}" target="_blank" rel="noopener noreferrer">
+      <a class="nd-tool-card nd-tool-card--int" href="${esc(l.url)}" target="_blank" rel="noopener noreferrer" style="aspect-ratio:auto; min-height:180px;">
         <span class="nd-tool-top">
           <span class="nd-tool-icon"><i class="fas fa-file-invoice" aria-hidden="true"></i></span>
           <span class="nd-tool-badge">${esc(l.type)}</span>

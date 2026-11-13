@@ -25,6 +25,7 @@
         <a href="../thu-vien.html" class="anime-nav-link">Thư viện</a>
         <a href="../contact.html" class="anime-nav-link">Liên hệ</a>
       </nav>
+      <span id="online-badge" class="nd-online-badge" title="Số người đang trực tuyến (cập nhật mỗi 15 giây)"><span class="nd-online-dot" aria-hidden="true"></span><span class="nd-online-num">&hellip;</span><span class="nd-online-label">người đang trực tuyến</span></span>
     </header>
 
     <main class="site-section">
@@ -144,7 +145,8 @@
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" defer></script>
   <script src="../assets/js/di-chuyen-file.js"></script>
-</body>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../assets/js/config.js"></script>
+    <script src="../assets/js/online-counter.js"></script>
+  </body>
 </html>
-HTMLEOF
-echo "Done"
