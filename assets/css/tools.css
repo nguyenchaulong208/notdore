@@ -1252,58 +1252,165 @@
 /* --- Guide section (bai viet nhung trong trang cong cu) ---------------- */
 .nd-guide {
   margin-top: 3rem;
-  padding-top: 2rem;
-  border-top: 1px solid var(--border);
+  padding: 1.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--bg-card);
+  box-shadow: var(--shadow-card);
 }
+
 .nd-guide-title {
+  display: flex;
+  align-items: center;
+  gap: .85rem;
+  margin: 0 0 1.5rem;
+  padding-bottom: 1.1rem;
+  border-bottom: 1px solid var(--border);
   font-family: var(--font-display);
-  font-size: 1.35rem;
+  font-size: 1.3rem;
   font-weight: 700;
-  margin-bottom: 1.25rem;
   color: var(--text-primary);
 }
+
 .nd-guide-title i {
-  margin-right: .5rem;
-  color: var(--accent-purple);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: 2.4rem;
+  height: 2.4rem;
+  border-radius: 12px;
+  background: var(--gradient-primary);
+  color: #fff;
+  font-size: 1.05rem;
+  box-shadow: 0 6px 16px rgba(124, 77, 255, .28);
 }
-.nd-guide-body h2 {
-  font-family: var(--font-display);
-  font-size: 1.15rem;
-  font-weight: 700;
-  margin: 1.75rem 0 .75rem;
+
+.nd-guide-body > p:first-child {
+  font-size: 1.02rem;
   color: var(--text-primary);
 }
+
+.nd-guide-body h2 {
+  position: relative;
+  margin: 2rem 0 .85rem;
+  padding-left: .95rem;
+  font-family: var(--font-display);
+  font-size: 1.18rem;
+  font-weight: 700;
+  line-height: 1.35;
+  color: var(--text-primary);
+}
+
+.nd-guide-body h2::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: .18rem;
+  bottom: .18rem;
+  width: 3px;
+  border-radius: 2px;
+  background: var(--gradient-primary);
+}
+
 .nd-guide-body h3 {
+  margin: 1.5rem 0 .65rem;
   font-family: var(--font-display);
   font-size: 1.02rem;
   font-weight: 700;
-  margin: 1.4rem 0 .6rem;
   color: var(--text-primary);
 }
+
 .nd-guide-body p {
   margin-bottom: 1rem;
-  line-height: 1.8;
+  line-height: 1.85;
   color: var(--text-secondary);
 }
+
 .nd-guide-body ul,
 .nd-guide-body ol {
-  margin: 0 0 1.1rem 1.25rem;
+  margin: 0 0 1.2rem;
+  padding: 0;
+  list-style: none;
   color: var(--text-secondary);
 }
-.nd-guide-body li {
-  margin-bottom: .55rem;
+
+.nd-guide-body ul li {
+  position: relative;
+  margin-bottom: .6rem;
+  padding-left: 1.4rem;
   line-height: 1.75;
 }
+
+.nd-guide-body ul li::before {
+  content: '';
+  position: absolute;
+  left: .2rem;
+  top: .62em;
+  width: .45rem;
+  height: .45rem;
+  border-radius: 50%;
+  background: var(--accent-purple-light);
+}
+
+.nd-guide-body ol {
+  counter-reset: nd-ol;
+}
+
+.nd-guide-body ol li {
+  position: relative;
+  margin-bottom: .6rem;
+  padding-left: 1.95rem;
+  line-height: 1.75;
+  counter-increment: nd-ol;
+}
+
+.nd-guide-body ol li::before {
+  content: counter(nd-ol);
+  position: absolute;
+  left: 0;
+  top: .14em;
+  width: 1.3rem;
+  height: 1.3rem;
+  border-radius: 50%;
+  background: var(--gradient-soft);
+  color: var(--accent-purple);
+  font-size: .72rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .nd-guide-body strong { color: var(--text-primary); font-weight: 600; }
 .nd-guide-body a { color: var(--accent-purple); text-decoration: none; }
 .nd-guide-body a:hover { text-decoration: underline; }
+
 .nd-guide-body code {
-  padding: .1rem .35rem;
+  padding: .12rem .4rem;
   border-radius: 6px;
   background: var(--bg-card-hover);
   font-size: .88em;
 }
 
+.nd-guide-body .nd-callout {
+  margin: 1.5rem 0;
+  padding: 1.1rem 1.25rem;
+  border: 1px solid rgba(139, 74, 240, .22);
+  border-left: 3px solid var(--accent-purple-light);
+  border-radius: var(--radius-sm);
+  background: var(--gradient-soft);
+  color: var(--text-secondary);
+  line-height: 1.75;
+}
+
+.nd-guide-body .nd-callout strong { color: var(--accent-purple); }
+
+@media (max-width: 599px) {
+  .nd-guide { padding: 1.25rem; }
+  .nd-guide-title { font-size: 1.15rem; }
+  .nd-guide-title i { width: 2rem; height: 2rem; font-size: .9rem; }
+}
 /* --- Contact form ---------------------------------------------------- */
 .nd-contact-form {
   margin: 1.75rem 0;
