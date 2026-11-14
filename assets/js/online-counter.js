@@ -36,13 +36,11 @@
     var el = badge();
     if (!el) return;
     el.innerHTML =
-      '<span class="nd-online-dot" aria-hidden="true"></span>' +
-      '<span class="nd-online-label">Đang trực tuyến</span>' +
-      '<span class="nd-online-sep" aria-hidden="true">·</span>' +
-      '<span class="nd-online-num">' + count + '</span>' +
-      '<span class="nd-online-unit">người</span>';
+      '<i class="fas fa-signal" aria-hidden="true"></i>' +
+      '<span class="nd-online-num">' + count + '</span>';
     el.classList.add('is-live');
-    el.setAttribute('aria-label', count + ' người đang trực tuyến');
+    el.setAttribute('aria-label', count + ' ngườời đang trực tuyến');
+    el.setAttribute('title', count + ' ngườời đang trực tuyến');
   }
 
   function getClient() {

@@ -24,7 +24,6 @@
     </a>
       <nav class="anime-nav" aria-label="Điều hướng chính">
         <a href="../index.html" class="anime-nav-link" aria-current="page">Công cụ</a>
-        <a href="../bai-viet" class="anime-nav-link">Bài viết</a>
         <a href="../thu-vien.html" class="anime-nav-link">Thư viện</a>
         <a href="../contact.html" class="anime-nav-link">Liên hệ</a>
       </nav>
@@ -34,7 +33,6 @@
       <div class="container" style="max-width: 1100px;">
         <h1 class="site-section-heading">Công thức Excel</h1>
         <p class="site-section-sub">Kho công thức thực tế cho công việc — tra cứu theo tình huống, danh mục, từ khóa</p>
-<p class="nd-tool-guide-link"><a href="../bai-viet/cong-thuc-excel-hay-dung.html"><i class="fas fa-book-open" aria-hidden="true"></i> Đọc hướng dẫn chi tiết</a></p>
 
         <!-- Search & Filter -->
         <div class="nd-toolbar" style="flex-wrap: wrap; gap: 0.75rem; margin-bottom: 1.5rem;">
@@ -55,6 +53,41 @@
           <i class="fas fa-search me-2"></i>Không tìm thấy công thức phù hợp.
         </div>
       </div>
+    <section class="nd-guide" aria-labelledby="guide-title">
+      <h2 class="nd-guide-title" id="guide-title"><i class="fas fa-book-open" aria-hidden="true"></i> Hướng dẫn chi tiết</h2>
+      <div class="nd-guide-body">
+<p>Excel vẫn là công cụ phổ biến nhất trong công việc hành chính, kế toán và quản lý dữ liệu. Nhưng phần lớn người dùng chỉ dùng được những hàm cơ bản. Bài viết này tổng hợp các công thức thực tế thường gặp trong công việc hằng ngày, kèm ví dụ cụ thể để bạn áp dụng ngay.</p>
+
+            <h2>SUMIFS — tổng hợp có điều kiện</h2>
+            <p>SUMIFS dùng để cộng dồn một cột số dựa trên nhiều điều kiện khác nhau. Ví dụ, bạn có bảng chi tiêu và muốn tính tổng chi phí thuộc một bộ phận trong một khoảng thời gian nhất định.</p>
+            <p>Công thức có dạng: <strong>SUMIFS(cột_tổng, cột_điều_kiện_1, điều_kiện_1, cột_điều_kiện_2, điều_kiện_2, ...)</strong>. Điểm mấu chốt là cột tổng phải là tham số đầu tiên, khác với SUMIF chỉ có một điều kiện.</p>
+            <p>Mở rộng bằng ký tự đại diện: dùng dấu <code>*</code> để đại diện cho một chuỗi bất kỳ, và <code>?</code> cho một ký tự bất kỳ. Điều này rất hữu ích khi bạn cần lọc theo đầu mã, theo năm hoặc theo một phần của tên.</p>
+
+            <h2>INDEX kết hợp MATCH — tra cứu linh hoạt</h2>
+            <p>Đây là cặp công thức thay thế VLOOKUP linh hoạt hơn rất nhiều. INDEX trả về giá trị ở một vị trí trong dải, MATCH trả về vị trí của một giá trị trong dải.</p>
+            <p>Ứng dụng: tra cứu thông tin nhân viên theo mã, tra cứu giá theo mã sản phẩm, hoặc tra cứu trong bảng có nhiều cột tiêu chí. Với INDEX/MATCH, bạn có thể tra cứu sang trái — điều VLOOKUP không làm được.</p>
+
+            <h2>NETWORKDAYS — tính số ngày làm việc</h2>
+            <p>Hàm này tính số ngày làm việc giữa hai mốc thời gian, tự động loại trừ cuối tuần. Bạn cũng có thể truyền thêm danh sách ngày nghỉ lễ để loại trừ chính xác hơn.</p>
+            <p>Công thức rất hữu ích khi tính thời hạn báo cáo, thời gian xử lý hồ sơ hay ngày đi làm thực tế của nhân viên.</p>
+
+            <h2>Một số tình huống thực tế khác</h2>
+            <ul>
+              <li><strong>Tính lương tổng hợp:</strong> kết hợp nhiều công thức để tính lương ròng từ lương gốc, phụ cấp, trễ công và các khoản trừ.</li>
+              <li><strong>Phân hạng:</strong> dùng RANK để xếp thứ tự theo doanh số hoặc điểm số, có thể phân hạng theo từng nhóm riêng.</li>
+              <li><strong>Loại bỏ trùng lặp:</strong> dùng COUNTIF để đánh dấu dòng bị trùng, sau đó lọc và xóa.</li>
+              <li><strong>Định dạng tên và nội dung:</strong> PROPER để viết hoa đầu mỗi từ, TRIM để xóa khoảng trắng thừa hai bên.</li>
+            </ul>
+
+            <h2>Câu hỏi thường gặp</h2>
+            <p><strong>Công thức bị lỗi #N/A là sao?</strong><br>Thường do giá trị tra cứu không tồn tại trong dải. Bạn có thể bọc công thức trong IFERROR để hiển thị một giá trị thay thế thay vì mã lỗi.</p>
+            <p><strong>Có cách nào thay VLOOKUP không?</strong><br>Có, INDEX/MATCH hoặc XLOOKUP (phiên bản Excel mới hơn) đều linh hoạt hơn VLOOKUP.</p>
+
+            <div class="nd-callout">
+              <strong>Mẹo:</strong> bạn có thể lưu lại các công thức mình dùng thường xuyên vào trang <a href="../tools/excel-cong-thuc.html">Công thức Excel</a> của NotDore để tra cứu lại nhanh khi cần.
+            </div>
+      </div>
+    </section>
     </main>
 
     <footer class="anime-footer">
@@ -65,7 +98,7 @@
         <a href="../privacy.html">Chính sách bảo mật</a> ·
         <a href="../contact.html">Liên hệ</a>
       </p>
-      <span id="online-badge" class="nd-online-badge" title="Số ngườời đang trực tuyến (cập nhật mỗi 15 giây)"><span class="nd-online-dot" aria-hidden="true"></span><span class="nd-online-label">Đang trực tuyến</span><span class="nd-online-sep" aria-hidden="true">&middot;</span><span class="nd-online-num">&hellip;</span><span class="nd-online-unit">ngườời</span></span>
+      <span id="online-badge" class="nd-online-badge" title="Số ngườời đang trực tuyến (cập nhật mỗi 15 giây)"><i class="fas fa-signal" aria-hidden="true"></i><span class="nd-online-num">&hellip;</span></span><span class="nd-online-label">Đang trực tuyến</span><span class="nd-online-sep" aria-hidden="true">&middot;</span><span class="nd-online-num">&hellip;</span><span class="nd-online-unit">ngườời</span></span>
     </footer>
   </div>
 

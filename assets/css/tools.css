@@ -1024,7 +1024,7 @@
   line-height: 1.4;
 }
 
-/* --- Online visitors badge (cuối trang) --------------------------------- */
+/* --- Online visitors badge (cuoi trang, icon gon) ------------------------- */
 .anime-footer .nd-online-badge {
   margin-top: .9rem;
   font-family: var(--font-display);
@@ -1033,8 +1033,8 @@
 .nd-online-badge {
   display: inline-flex;
   align-items: center;
-  gap: .6rem;
-  padding: .55rem 1.05rem;
+  gap: .4rem;
+  padding: .4rem .7rem;
   border: 1px solid rgba(23, 201, 141, .28);
   border-radius: 999px;
   background: linear-gradient(180deg, rgba(23, 201, 141, .10), rgba(23, 201, 141, .02));
@@ -1053,47 +1053,29 @@
   box-shadow: 0 8px 20px rgba(23, 201, 141, .16);
 }
 
-.nd-online-dot {
-  position: relative;
+.nd-online-badge i {
   flex: 0 0 auto;
-  width: .55rem;
-  height: .55rem;
-  border-radius: 50%;
-  background: var(--accent-green);
-}
-.nd-online-badge.is-live .nd-online-dot::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: 50%;
-  border: 2px solid var(--accent-green);
-  animation: nd-online-pulse 2.2s ease-out infinite;
+  font-size: .8rem;
+  color: var(--accent-green);
 }
 
-.nd-online-label { color: var(--text-muted); }
-
-.nd-online-sep { color: var(--border-strong); }
+.nd-online-badge.is-live i {
+  animation: nd-online-pulse 2.2s ease-in-out infinite;
+}
 
 .nd-online-num {
-  font-size: 1rem;
+  font-size: .9rem;
   font-weight: 700;
   line-height: 1;
-  color: var(--accent-green);
+  color: var(--text-primary);
   font-variant-numeric: tabular-nums;
 }
 
-.nd-online-unit { color: var(--text-muted); }
-
 @keyframes nd-online-pulse {
-  0%   { transform: scale(.9); opacity: .85; }
-  70%  { transform: scale(2.2); opacity: 0; }
-  100% { transform: scale(2.2); opacity: 0; }
+  0%, 100% { opacity: 1; }
+  50%      { opacity: .4; }
 }
 
-@media (max-width: 599px) {
-  .nd-online-label,
-  .nd-online-sep { display: none; }
-}
 
 /* --- Bai viet / article pages ---------------------------------------- */
 .nd-article-head {
@@ -1266,3 +1248,113 @@
 }
 .nd-tool-guide-link a:hover { text-decoration: underline; }
 .nd-tool-guide-link i { margin-right: .4rem; }
+
+/* --- Guide section (bai viet nhung trong trang cong cu) ---------------- */
+.nd-guide {
+  margin-top: 3rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--border);
+}
+.nd-guide-title {
+  font-family: var(--font-display);
+  font-size: 1.35rem;
+  font-weight: 700;
+  margin-bottom: 1.25rem;
+  color: var(--text-primary);
+}
+.nd-guide-title i {
+  margin-right: .5rem;
+  color: var(--accent-purple);
+}
+.nd-guide-body h2 {
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  font-weight: 700;
+  margin: 1.75rem 0 .75rem;
+  color: var(--text-primary);
+}
+.nd-guide-body h3 {
+  font-family: var(--font-display);
+  font-size: 1.02rem;
+  font-weight: 700;
+  margin: 1.4rem 0 .6rem;
+  color: var(--text-primary);
+}
+.nd-guide-body p {
+  margin-bottom: 1rem;
+  line-height: 1.8;
+  color: var(--text-secondary);
+}
+.nd-guide-body ul,
+.nd-guide-body ol {
+  margin: 0 0 1.1rem 1.25rem;
+  color: var(--text-secondary);
+}
+.nd-guide-body li {
+  margin-bottom: .55rem;
+  line-height: 1.75;
+}
+.nd-guide-body strong { color: var(--text-primary); font-weight: 600; }
+.nd-guide-body a { color: var(--accent-purple); text-decoration: none; }
+.nd-guide-body a:hover { text-decoration: underline; }
+.nd-guide-body code {
+  padding: .1rem .35rem;
+  border-radius: 6px;
+  background: var(--bg-card-hover);
+  font-size: .88em;
+}
+
+/* --- Contact form ---------------------------------------------------- */
+.nd-contact-form {
+  margin: 1.75rem 0;
+  padding: 1.5rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--bg-card);
+}
+.nd-form-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+.nd-form-field {
+  margin-bottom: 1rem;
+  display: flex;
+  flex-direction: column;
+}
+.nd-form-field label {
+  margin-bottom: .4rem;
+  font-size: .85rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.nd-form-field label span { color: var(--accent-red); }
+.nd-form-field input,
+.nd-form-field textarea {
+  padding: .65rem .8rem;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg-input);
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: .9rem;
+  transition: border-color .15s ease;
+}
+.nd-form-field input:focus,
+.nd-form-field textarea:focus {
+  outline: none;
+  border-color: var(--accent-purple-light);
+  box-shadow: 0 0 0 3px rgba(139, 74, 240, .12);
+}
+.nd-form-field textarea { resize: vertical; }
+.nd-submit-btn { margin-top: .25rem; }
+.nd-form-status {
+  margin: .9rem 0 0;
+  font-size: .88rem;
+  min-height: 1.2rem;
+}
+.nd-form-status.is-ok { color: #16a34a; }
+.nd-form-status.is-err { color: var(--accent-red); }
+@media (max-width: 599px) {
+  .nd-form-row { grid-template-columns: minmax(0, 1fr); }
+}

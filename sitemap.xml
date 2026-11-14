@@ -78,47 +78,4 @@
     <priority>0.5</priority>
   </url>
 
-  <url>
-    <loc>https://www.notdore.io.vn/bai-viet</loc>
-    <lastmod>2026-11-08</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://www.notdore.io.vn/bai-viet/tra-cuu-dia-gioi-hanh-chinh</loc>
-    <lastmod>2026-11-08</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://www.notdore.io.vn/bai-viet/cong-thuc-excel-hay-dung</loc>
-    <lastmod>2026-11-08</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://www.notdore.io.vn/bai-viet/sua-ten-file-hang-loat</loc>
-    <lastmod>2026-11-08</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://www.notdore.io.vn/bai-viet/di-chuyen-file-hang-loat</loc>
-    <lastmod>2026-11-08</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://www.notdore.io.vn/bai-viet/sinh-mat-khau-pdf-an-toan</loc>
-    <lastmod>2026-11-08</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://www.notdore.io.vn/bai-viet/tra-cuu-hoa-don-dien-tu</loc>
-    <lastmod>2026-11-08</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-
 </urlset>

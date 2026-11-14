@@ -24,7 +24,6 @@
     </a>
       <nav class="anime-nav">
         <a href="index.html" class="anime-nav-link">Công cụ</a>
-        <a href="bai-viet" class="anime-nav-link">Bài viết</a>
         <a href="thu-vien.html" class="anime-nav-link">Thư viện</a>
         <a href="about.html" class="anime-nav-link">Giới thiệu</a>
         <a href="contact.html" class="anime-nav-link active">Liên hệ</a>
@@ -35,23 +34,42 @@
       <div class="container" style="max-width: 800px;">
         <h1 class="site-section-heading">Liên hệ</h1>
 
-        <p class="text-center">NotDore rất hoan nghênh mọi góp ý, báo lỗi hoặc đề xuất bổ sung dữ liệu. Bạn có thể liên hệ qua các kênh sau:</p>
+        <p class="text-center">NotDore rất hoan nghênh mọi góp ý, báo lỗi hoặc đề xuất bổ sung dữ liệu. Điền vào biểu mẫu bên dưới, tin nhắn sẽ được gửi trực tiếp đến chúng tôi.</p>
 
-        <div class="text-center mt-4">
-          <a href="mailto:nguyenchaulong.data208@gmail.com" class="btn-primary-nd">
-            <i class="fas fa-envelope me-1"></i> nguyenchaulong.data208@gmail.com
-          </a>
-        </div>
+        <form id="contact-form" class="nd-contact-form" novalidate>
+          <div class="nd-form-row">
+            <div class="nd-form-field">
+              <label for="ct-name">Họ tên <span aria-hidden="true">*</span></label>
+              <input id="ct-name" name="name" type="text" autocomplete="name" required>
+            </div>
+            <div class="nd-form-field">
+              <label for="ct-email">Email <span aria-hidden="true">*</span></label>
+              <input id="ct-email" name="email" type="email" autocomplete="email" required>
+            </div>
+          </div>
+          <div class="nd-form-field">
+            <label for="ct-subject">Chủ đề</label>
+            <input id="ct-subject" name="subject" type="text">
+          </div>
+          <div class="nd-form-field">
+            <label for="ct-message">Nội dung <span aria-hidden="true">*</span></label>
+            <textarea id="ct-message" name="message" rows="6" required></textarea>
+          </div>
+          <button type="submit" class="btn-primary-nd nd-submit-btn">
+            <i class="fas fa-paper-plane me-1" aria-hidden="true"></i> Gửi tin nhắn
+          </button>
+          <p id="ct-status" class="nd-form-status" role="status" aria-live="polite"></p>
+        </form>
 
-        <h2 class="mt-5">Góp ý nội dung</h2>
+        <h2 class="mt-5">Các chủ đề thường gặp</h2>
         <ul>
-          <li><strong>Báo lỗi:</strong> Nếu bạn phát hiện dữ liệu sai hoặc lỗi hiển thị, vui lòng gửi email với mô tả chi tiết.</li>
+          <li><strong>Báo lỗi:</strong> Nếu bạn phát hiện dữ liệu sai hoặc lỗi hiển thị, vui lòng mô tả cụ thể để chúng tôi kiểm tra.</li>
           <li><strong>Bổ sung dữ liệu:</strong> Nếu bạn có dữ liệu chính thức muốn bổ sung, chúng tôi rất hoan nghênh.</li>
           <li><strong>Đề xuất tính năng:</strong> Ý tưởng về công cụ mới hoặc cải thiện giao diện.</li>
         </ul>
 
         <h2 class="mt-4">Phản hồi</h2>
-        <p>Chúng tôi cố gắng phản hồi mọi email trong vòng 48 giờ làm việc.</p>
+        <p>Chúng tôi cố gắng phản hồi mọi tin nhắn trong vòng 48 giờ làm việc.</p>
       </div>
     </main>
 
@@ -62,11 +80,12 @@
         <a href="about.html">Giới thiệu</a> ·
         <a href="privacy.html">Chính sách bảo mật</a>
       </p>
-      <span id="online-badge" class="nd-online-badge" title="Số ngườời đang trực tuyến (cập nhật mỗi 15 giây)"><span class="nd-online-dot" aria-hidden="true"></span><span class="nd-online-label">Đang trực tuyến</span><span class="nd-online-sep" aria-hidden="true">&middot;</span><span class="nd-online-num">&hellip;</span><span class="nd-online-unit">ngườời</span></span>
+      <span id="online-badge" class="nd-online-badge" title="Số ngườời đang trực tuyến (cập nhật mỗi 15 giây)"><i class="fas fa-signal" aria-hidden="true"></i><span class="nd-online-num">&hellip;</span></span><span class="nd-online-label">Đang trực tuyến</span><span class="nd-online-sep" aria-hidden="true">&middot;</span><span class="nd-online-num">&hellip;</span><span class="nd-online-unit">ngườời</span></span>
     </footer>
   </div>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="assets/js/config.js"></script>
     <script src="assets/js/online-counter.js"></script>
+    <script src="assets/js/contact.js"></script>
   </body>
 </html>
