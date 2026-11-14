@@ -1,6 +1,15 @@
 {
   "cleanUrls": true,
   "trailingSlash": false,
+  "redirects": [
+    { "source": "/bai-viet", "destination": "/", "permanent": true },
+    { "source": "/bai-viet/tra-cuu-dia-gioi-hanh-chinh", "destination": "/tools/dia-gioi-hanh-chinh", "permanent": true },
+    { "source": "/bai-viet/cong-thuc-excel-hay-dung", "destination": "/tools/excel-cong-thuc", "permanent": true },
+    { "source": "/bai-viet/sua-ten-file-hang-loat", "destination": "/tools/sua-ten-file", "permanent": true },
+    { "source": "/bai-viet/di-chuyen-file-hang-loat", "destination": "/tools/di-chuyen-file", "permanent": true },
+    { "source": "/bai-viet/sinh-mat-khau-pdf-an-toan", "destination": "/tools/sinh-mat-khau-pdf", "permanent": true },
+    { "source": "/bai-viet/tra-cuu-hoa-don-dien-tu", "destination": "/tools/tra-cuu-hoa-don", "permanent": true }
+  ],
   "headers": [
     {
       "source": "/ads.txt",
