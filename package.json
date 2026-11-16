@@ -15,7 +15,8 @@
     "build:reform-sql": "node scripts/build-reform-summary-sql.mjs",
     "build:reform": "node scripts/build-reform-summary-data.mjs && node scripts/build-reform-summary-sql.mjs",
     "split:geo": "node scripts/split-geo-seed.mjs",
-    "fetch:communes": "node scripts/fetch-communes.mjs"
+    "fetch:communes": "node scripts/fetch-communes.mjs",
+    "brain:3d": "node scripts/make-brain3d.mjs"
   },
   "description": "Website công cụ chạy trực tiếp trên trình duyệt. Không cần cài đặt, không gửi dữ liệu lên server.",
   "main": "index.js",

@@ -204,7 +204,7 @@ window.DATA = ${DATA};
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     var scene = new THREE.Scene();
     scene.background = new THREE.Color(0x0b0d17);
-    scene.fog = new THREE.FogExp2(0x0b0d17, 0.0032);
+    scene.fog = new THREE.FogExp2(0x0b0d17, 0.0021);
     var camera = new THREE.PerspectiveCamera(58, window.innerWidth / window.innerHeight, 0.5, 5000);
     camera.position.set(0, 120, 260);
     var controls = new THREE.OrbitControls(camera, renderer.domElement);
@@ -319,6 +319,33 @@ window.DATA = ${DATA};
       edgeIndex.set(e.s + '::' + e.t, { mesh: l, edge: e });
     });
     var haloGroup = new THREE.Group(); group.add(haloGroup);
+    // Nhãn community nổi trên mỗi cụm — "bộ não" chỉ đọc được khi biết từng cụm là gì.
+    // fog:false là bắt buộc: FogExp2 ở khoảng cách fit (~870) làm sprite mờ gần như hết.
+    function makeTextSprite(text, color, scale) {
+      var fs = 46, pad = 16;
+      var c = document.createElement('canvas');
+      var cx0 = c.getContext('2d');
+      cx0.font = '600 ' + fs + 'px "Segoe UI", system-ui, sans-serif';
+      c.width = Math.ceil(cx0.measureText(text).width) + pad * 2;
+      c.height = fs + pad * 2;
+      var x = c.getContext('2d');
+      x.fillStyle = 'rgba(10,13,24,0.82)';
+      var rr = 16; x.beginPath();
+      x.moveTo(rr, 0); x.arcTo(c.width, 0, c.width, c.height, rr);
+      x.arcTo(c.width, c.height, 0, c.height, rr);
+      x.arcTo(0, c.height, 0, 0, rr); x.arcTo(0, 0, c.width, 0, rr);
+      x.closePath(); x.fill();
+      x.font = '600 ' + fs + 'px "Segoe UI", system-ui, sans-serif';
+      x.fillStyle = color || '#e8ecf8'; x.textBaseline = 'middle';
+      x.fillText(text, pad, c.height / 2 + 2);
+      var tex = new THREE.CanvasTexture(c); tex.minFilter = THREE.LinearFilter;
+      var sp = new THREE.Sprite(new THREE.SpriteMaterial({
+        map: tex, transparent: true, depthTest: false, depthWrite: false, fog: false }));
+      var sc = scale || 0.055;
+      sp.scale.set(c.width * sc, c.height * sc, 1);
+      sp.renderOrder = 10;
+      return sp;
+    }
     comIds.forEach(function (c) {
       var ctr = centroids.get(c); var r = 0;
       DATA.nodes.filter(function (n) { return n.com === c; })
@@ -335,6 +362,11 @@ window.DATA = ${DATA};
       var dot = new THREE.Mesh(new THREE.SphereGeometry(1.8, 12, 10),
         new THREE.MeshBasicMaterial({ color: new THREE.Color(comColor(c)), transparent: true, opacity: 0.9 }));
       dot.position.set(ctr.x, ctr.y + r * 0.6, ctr.z); haloGroup.add(dot);
+      var cn = DATA.comNames.filter(function (x) { return x.id === c; })[0];
+      var cl = makeTextSprite((cn ? cn.name : ('Community ' + c)) + '  ·  ' +
+        DATA.nodes.filter(function (n) { return n.com === c; }).length, comColor(c), 0.15);
+      cl.position.set(ctr.x, ctr.y + r * 0.6 + 8, ctr.z);
+      haloGroup.add(cl);
     });
 
     var labelGroup = new THREE.Group(); group.add(labelGroup);
@@ -353,8 +385,8 @@ window.DATA = ${DATA};
       x.fillStyle = n.kind === 'file' ? '#ffffff' : '#e8ecf8'; x.textBaseline = 'middle';
       x.fillText(n.label, pad, c.height / 2 + 2);
       var tex = new THREE.CanvasTexture(c); tex.minFilter = THREE.LinearFilter;
-      var sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true, depthTest: false, depthWrite: false }));
-      var sc = 0.055; sp.scale.set(c.width * sc, c.height * sc, 1);
+      var sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true, depthTest: false, depthWrite: false, fog: false }));
+      var sc = 0.075; sp.scale.set(c.width * sc, c.height * sc, 1);
       sp.position.copy(pos.get(n.id)); sp.position.y += n.size + 1.6;
       sp.renderOrder = 10; sp.visible = false; sp.userData = { id: n.id };
       labelGroup.add(sp); labelSprites.set(n.id, sp);
