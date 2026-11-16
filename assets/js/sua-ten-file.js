@@ -40,16 +40,16 @@
   function renderFileList() {
     fileCount.textContent = files.length;
     fileTbody.innerHTML = files.map((f, i) => `
-      <tr style="border-bottom:1px solid var(--border);">
-        <td style="padding:.5rem .8rem; color:var(--text-muted);">${i + 1}</td>
-        <td style="padding:.5rem .8rem; color:var(--text-secondary); font-size:.82rem; max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${f.originalName}">${f.originalName}</td>
-        <td style="padding:.5rem .8rem;">
-          <input type="text" value="${f.newName}" data-id="${f.id}" class="rename-input"
-                 style="width:100%; padding:.35rem .5rem; border:1px solid var(--border); border-radius:6px; font-size:.85rem; background:var(--bg-input); color:var(--text-primary);">
+      <tr class="nd-row-line">
+        <td class="nd-td nd-td--muted">${i + 1}</td>
+        <td title="${f.originalName}" class="nd-td nd-td--secondary nd-td--xs nd-td--ellipsis">${f.originalName}</td>
+        <td class="nd-td">
+          <input type="text" value="${f.newName}" data-id="${f.id}"class=""rename-input nd-rename-input"
+                >
         </td>
-        <td style="padding:.5rem .8rem; color:var(--text-muted); font-size:.8rem;">${formatSize(f.size)}</td>
-        <td style="padding:.5rem .8rem; text-align:center;">
-          <button class="remove-file" data-id="${f.id}" style="background:none; border:none; cursor:pointer; color:var(--accent-red); font-size:.9rem;">
+        <td class="nd-td nd-td--muted nd-td--sm">${formatSize(f.size)}</td>
+        <td class="nd-td nd-td--center">
+          <buttonclass=""remove-file nd-btn-icon nd-btn-icon--danger" data-id="${f.id}">
             <i class="fas fa-times"></i>
           </button>
         </td>

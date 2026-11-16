@@ -128,16 +128,16 @@
     empty.style.display = 'none';
 
     host.innerHTML = rows.map(f => `
-      <div class="nd-unit-card" style="cursor:default; display:flex; flex-direction:column; gap:.5rem;">
-        <div style="display:flex; justify-content:space-between; align-items:center; gap:.5rem;">
-          <span class="nd-pill nd-pill--soft" style="font-size:.72rem;">${esc(f.category)}</span>
+      <divclass=""nd-unit-card nd-card-body">
+        <div class="nd-bar-tight">
+          <spanclass=""nd-pill nd-pill--soft nd-fs-72">${esc(f.category)}</span>
         </div>
-        <div style="font-weight:700; font-size:1.05rem; color:var(--text-primary);">${esc(f.title)}</div>
-        <div style="font-size:.85rem; color:var(--text-secondary); line-height:1.5;">${esc(f.scenario)}</div>
-        <div style="background:var(--bg-card-hover); border:1px solid var(--border); border-radius:var(--radius-sm); padding:.6rem .8rem; font-family:monospace; font-size:.85rem; color:var(--accent-purple); word-break:break-all; white-space:pre-wrap;">${esc(f.formula)}</div>
-        <div style="font-size:.82rem; color:var(--text-muted); line-height:1.5;"><strong>Ví dụ:</strong> ${esc(f.example)}</div>
-        <div style="display:flex; flex-wrap:wrap; gap:.3rem; margin-top:.3rem;">
-          ${(f.tags || []).map(t => `<span class="nd-pill nd-pill--soft" style="font-size:.7rem; padding:.1rem .5rem;">${esc(t)}</span>`).join('')}
+        <div class="nd-card-title">${esc(f.title)}</div>
+        <div class="nd-text-body">${esc(f.scenario)}</div>
+        <div class="nd-codebox">${esc(f.formula)}</div>
+        <div class="nd-text-hint"><strong>Ví dụ:</strong> ${esc(f.example)}</div>
+        <div class="nd-tags">
+          ${(f.tags || []).map(t => `<spanclass=""nd-pill nd-pill--soft nd-badge-sm">${esc(t)}</span>`).join('')}
         </div>
       </div>
     `).join('');

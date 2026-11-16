@@ -7,6 +7,17 @@
   <title>Công thức Excel — NotDore</title>
     <link rel="canonical" href="https://www.notdore.io.vn/tools/excel-cong-thuc">
   <meta name="description" content="Kho công thức Excel thực tế cho công việc — tra cứu theo tình huống, danh mục, từ khóa">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="NotDore">
+    <meta property="og:locale" content="vi_VN">
+    <meta property="og:title" content="Công thức Excel — NotDore">
+    <meta property="og:description" content="Kho công thức Excel thực tế cho công việc — tra cứu theo tình huống, danh mục, từ khóa">
+    <meta property="og:url" content="https://www.notdore.io.vn/tools/excel-cong-thuc">
+    <meta property="og:image" content="https://www.notdore.io.vn/assets/images/og-image.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Công thức Excel — NotDore">
+    <meta name="twitter:description" content="Kho công thức Excel thực tế cho công việc — tra cứu theo tình huống, danh mục, từ khóa">
+    <meta name="twitter:image" content="https://www.notdore.io.vn/assets/images/og-image.png">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/fontawesome.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/solid.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" media="print" onload="this.media='all'">
@@ -32,26 +43,26 @@
     </header>
 
     <main class="site-section">
-      <div class="container" style="max-width: 1100px;">
+      <div class="container nd-container">
         <h1 class="site-section-heading">Công thức Excel</h1>
         <p class="site-section-sub">Kho công thức thực tế cho công việc — tra cứu theo tình huống, danh mục, từ khóa</p>
 
         <!-- Search & Filter -->
-        <div class="nd-toolbar" style="flex-wrap: wrap; gap: 0.75rem; margin-bottom: 1.5rem;">
-          <div style="flex: 1; min-width: 240px; position: relative;">
-            <i class="fas fa-magnifying-glass" style="position:absolute; left:.8rem; top:50%; transform:translateY(-50%); color:var(--text-muted);"></i>
+        <div class="nd-toolbar nd-toolbar-row">
+          <div class="nd-search-wrap">
+            <i class="fas fa-magnifying-glass nd-input-icon"></i>
             <input id="xl-search" type="search" placeholder="Tìm theo tên, tình huống, công thức, từ khóa..." 
-                   style="width:100%; padding:.6rem .8rem .6rem 2.4rem; border:2px solid var(--border); border-radius:var(--radius-sm); font-size:.9rem; background:var(--bg-input); color:var(--text-primary);">
+                   class="nd-form-search">
           </div>
-          <select id="xl-category" style="padding:.6rem 1rem; border:2px solid var(--border); border-radius:var(--radius-sm); font-size:.9rem; background:var(--bg-input); color:var(--text-primary);">
+          <select id="xl-category" class="nd-form-select nd-form-select--md">
             <option value="all">Tất cả danh mục</option>
           </select>
-          <span id="xl-count" style="font-size:.85rem; color:var(--text-muted); white-space:nowrap;">0 công thức</span>
+          <span id="xl-count" class="nd-count nd-count--nowrap">0 công thức</span>
         </div>
 
         <!-- Formula cards -->
-        <div id="xl-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 1.2rem;"></div>
-        <div id="xl-empty" class="nd-empty" style="display:none; text-align:center; padding:3rem 1rem; color:var(--text-muted);">
+        <div id="xl-grid" class="nd-grid nd-grid--cards"></div>
+        <div id="xl-empty"class=""nd-empty is-hidden nd-empty-text">
           <i class="fas fa-search me-2"></i>Không tìm thấy công thức phù hợp.
         </div>
       </div>

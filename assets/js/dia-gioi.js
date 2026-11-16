@@ -49,7 +49,7 @@
      host.innerHTML = rows.map((c) => {
        const before = (c.beforeNames || []).length ? c.beforeNames.map((n) => `<span class="nd-pill nd-pill--soft">${esc(n)}</span>`).join(' ') : '<span class="nd-muted">Chưa có dữ liệu</span>';
        const status = c.changed === false ? '<span class="nd-pill nd-pill--keep">Giữ nguyên</span>' : (c.beforeNames?.length ? '<span class="nd-pill nd-pill--merge">Sáp nhập</span>' : '<span class="nd-pill nd-pill--soft">Chưa đối chiếu</span>');
-       return `<div class="nd-unit-card" data-code="${esc(c.code)}" data-action="detail" style="cursor:pointer;position:relative;"><div class="nd-unit-top"><span class="nd-unit-code">${esc(c.code)}</span>${status}</div><div class="nd-unit-name">${esc(c.name)}</div><div class="nd-unit-meta">${esc(TYPE_LABELS[c.type] || c.type)} · ${esc(c.provinceName || '—')}</div><div class="nd-unit-from" style="margin-top:.5rem;"><small style="color:var(--text-muted);font-size:.75rem;">Trước:</small>${before}</div><div style="margin-top:.5rem;text-align:right;"><button type="button" class="nd-report-btn" data-report="${esc(c.code)}" title="Báo sai thông tin" style="background:none;border:1px solid var(--border);cursor:pointer;color:var(--text-muted);font-size:.7rem;padding:.15rem .5rem;border-radius:4px;font-weight:600;" onclick="event.stopPropagation();">Báo cáo</button></div></div>`;
+       return `<divclass=""nd-unit-card nd-clickable" data-code="${esc(c.code)}" data-action="detail"><div class="nd-unit-top"><span class="nd-unit-code">${esc(c.code)}</span>${status}</div><div class="nd-unit-name">${esc(c.name)}</div><div class="nd-unit-meta">${esc(TYPE_LABELS[c.type] || c.type)} · ${esc(c.provinceName || '—')}</div><divclass=""nd-unit-from nd-mt-05"><small class="nd-meta-sm">Trước:</small>${before}</div><div class="nd-right"><button type="button"class=""nd-report-btn nd-mini-btn" data-report="${esc(c.code)}" title="Báo sai thông tin" onclick="event.stopPropagation();">Báo cáo</button></div></div>`;
      }).join('');
      host.querySelectorAll('[data-action="detail"]').forEach((el) => { el.addEventListener('click', () => openDetail(el.dataset.code)); });
      host.querySelectorAll('.nd-report-btn').forEach((btn) => {
@@ -106,7 +106,7 @@
        const active = i === state.page;
        btns.push(`<button type="button" data-page="${i}" style="padding:.4rem .8rem;border:1px solid ${active ? 'var(--accent-purple)' : 'var(--border)'};border-radius:var(--radius-sm);background:${active ? 'var(--accent-purple)' : 'var(--bg-card)'};color:${active ? '#fff' : 'var(--text-secondary)'};cursor:pointer;font-weight:${active ? '700' : '400'};">${label || i}</button>`);
      };
-     const addEllipsis = () => btns.push('<span style="padding:.4rem .4rem;color:var(--text-muted);">…</span>');
+     const addEllipsis = () => btns.push('<span class="nd-p-04 nd-text-muted">…</span>');
 
      // First page
      addBtn(1);
@@ -120,7 +120,7 @@
      if (totalPages > 1) addBtn(totalPages);
 
      // Page input
-     btns.push(`<span style="display:flex;align-items:center;gap:.4rem;margin-left:.5rem;"><input id="dg-page-input" type="number" min="1" max="${totalPages}" value="${state.page}" style="width:60px;padding:.3rem;border:1px solid var(--border);border-radius:var(--radius-sm);text-align:center;"><button type="button" id="dg-page-go" style="padding:.4rem .8rem;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg-card);cursor:pointer;">Đi</button></span>`);
+     btns.push(`<span class="nd-inline-gap"><input id="dg-page-input" type="number" min="1" max="${totalPages}" value="${state.page}" class="nd-page-input"><button type="button" id="dg-page-go" class="nd-page-btn">Đi</button></span>`);
 
      host.innerHTML = btns.join('');
      host.querySelectorAll('[data-page]').forEach((btn) => {
@@ -152,7 +152,7 @@
      if (!modalEl) return;
      const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
      $('dg-modal-title').textContent = `${c.name} (${c.code})`;
-     const before = (c.beforeNames || []).length ? c.beforeNames.map((n) => `<span class="nd-pill nd-pill--soft" style="margin:.2rem;">${esc(n)}</span>`).join(' ') : 'Chưa có dữ liệu';
+     const before = (c.beforeNames || []).length ? c.beforeNames.map((n) => `<spanclass=""nd-pill nd-pill--soft nd-m-02">${esc(n)}</span>`).join(' ') : 'Chưa có dữ liệu';
      const status = c.changed === false ? 'Giữ nguyên' : (c.beforeNames?.length ? 'Sáp nhập / đổi tên' : 'Chưa đối chiếu');
      const provMerger = PROVINCE_MERGER[c.provinceCode];
      const provInfo = provMerger ? `<div><strong>Tỉnh/TP gộp từ:</strong> ${esc(provMerger)}</div>` : `<div><strong>Tỉnh/TP:</strong> ${esc(c.provinceName || '—')} (không sáp nhập)</div>`;
@@ -172,9 +172,9 @@
      const bhxh = formatAgency(bhxhList);
      const thue = formatAgency(thueList);
      const haiquan = formatAgency(haiquanList);
-     const agencyInfo = `<div style="margin-top:.5rem;padding:.5rem;background:var(--card);border-radius:var(--radius-sm);font-size:.85rem;"><strong>Cơ quan quản lý (cơ sở):</strong><br>BHXH: ${esc(bhxh)}<br>Thuế: ${esc(thue)}<br>Hải quan: ${esc(haiquan)}</div>`;
-     const reportBtn = `<div style="margin-top:1rem;text-align:center;"><button type="button" class="nd-report-btn" id="dg-report-btn" style="background:none;border:1px solid var(--border);cursor:pointer;color:var(--text-muted);font-size:.85rem;padding:.4rem 1rem;border-radius:4px;font-weight:600;transition:color .15s,background .15s;">Báo cáo sai thông tin</button></div>`;
-     $('dg-modal-body').innerHTML = `<div style="display:grid;gap:1rem;"><div><strong>Loại:</strong> ${esc(TYPE_LABELS[c.type] || c.type)}</div><div><strong>Tỉnh/TP:</strong> ${esc(c.provinceName || '—')}</div>${provInfo}<div><strong>Mã:</strong> ${esc(c.code)}</div><div><strong>Trước sáp nhập:</strong><br>${before}</div><div><strong>Trạng thái:</strong> ${esc(status)}</div>${c.note ? `<div><strong>Ghi chú:</strong> ${esc(c.note)}</div>` : ''}${agencyInfo}<div style="margin-top:1rem;"><iframe width="100%" height="300" style="border:0;border-radius:var(--radius-sm);" loading="lazy" allowfullscreen src="https://www.google.com/maps?q=${encodeURIComponent(c.name + ', ' + (c.provinceName || ''))}&output=embed"></iframe></div>${reportBtn}</div>`;
+     const agencyInfo = `<div class="nd-note-box"><strong>Cơ quan quản lý (cơ sở):</strong><br>BHXH: ${esc(bhxh)}<br>Thuế: ${esc(thue)}<br>Hải quan: ${esc(haiquan)}</div>`;
+     const reportBtn = `<div class="nd-mt-1 nd-center"><button type="button"class=""nd-report-btn nd-mini-btn nd-mini-btn--lg" id="dg-report-btn">Báo cáo sai thông tin</button></div>`;
+     $('dg-modal-body').innerHTML = `<div class="nd-grid nd-grid--1"><div><strong>Loại:</strong> ${esc(TYPE_LABELS[c.type] || c.type)}</div><div><strong>Tỉnh/TP:</strong> ${esc(c.provinceName || '—')}</div>${provInfo}<div><strong>Mã:</strong> ${esc(c.code)}</div><div><strong>Trước sáp nhập:</strong><br>${before}</div><div><strong>Trạng thái:</strong> ${esc(status)}</div>${c.note ? `<div><strong>Ghi chú:</strong> ${esc(c.note)}</div>` : ''}${agencyInfo}<div class="nd-mt-1"><iframe width="100%" height="300" loading="lazy" allowfullscreen src="https://www.google.com/maps?q=${encodeURIComponent(c.name + ', ' + (c.provinceName || ''))}&output=embed" class="nd-img-rounded"></iframe></div>${reportBtn}</div>`;
      modal.show();
       // Attach report button handler in detail modal
       const reportBtnEl = $('dg-report-btn');

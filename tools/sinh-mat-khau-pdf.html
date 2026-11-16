@@ -7,6 +7,17 @@
   <title>Sinh mật khẩu PDF — NotDore</title>
     <link rel="canonical" href="https://www.notdore.io.vn/tools/sinh-mat-khau-pdf">
   <meta name="description" content="Công cụ sinh mật khẩu ngẫu nhiên cho file PDF — chọn số ký tự, copy kết quả, xuất file txt">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="NotDore">
+    <meta property="og:locale" content="vi_VN">
+    <meta property="og:title" content="Sinh mật khẩu PDF — NotDore">
+    <meta property="og:description" content="Công cụ sinh mật khẩu ngẫu nhiên cho file PDF — chọn số ký tự, copy kết quả, xuất file txt">
+    <meta property="og:url" content="https://www.notdore.io.vn/tools/sinh-mat-khau-pdf">
+    <meta property="og:image" content="https://www.notdore.io.vn/assets/images/og-image.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Sinh mật khẩu PDF — NotDore">
+    <meta name="twitter:description" content="Công cụ sinh mật khẩu ngẫu nhiên cho file PDF — chọn số ký tự, copy kết quả, xuất file txt">
+    <meta name="twitter:image" content="https://www.notdore.io.vn/assets/images/og-image.png">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/fontawesome.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/solid.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" media="print" onload="this.media='all'">
@@ -32,61 +43,61 @@
     </header>
 
     <main class="site-section">
-      <div class="container" style="max-width: 700px;">
+      <div class="container nd-container nd-container--form">
         <h1 class="site-section-heading">Sinh mật khẩu PDF</h1>
         <p class="site-section-sub">Tạo mật khẩu ngẫu nhiên cho file PDF — chọn độ dài, copy hoặc xuất file txt</p>
 
         <!-- Settings -->
-        <div style="background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius-md); padding:1.5rem; margin-bottom:1.5rem;">
-          <h3 style="font-size:1.1rem; font-weight:700; margin-bottom:1rem;">Cài đặt</h3>
+        <div class="nd-panel">
+          <h3 class="nd-heading nd-heading--lg">Cài đặt</h3>
 
-          <div style="margin-bottom:1rem;">
-            <label style="font-size:.85rem; font-weight:600; color:var(--text-secondary); display:block; margin-bottom:.4rem;">Số lượng ký tự</label>
-            <input id="pwd-length" type="number" value="12" min="4" max="128" style="width:100%; padding:.6rem .8rem; border:2px solid var(--border); border-radius:var(--radius-sm); font-size:.9rem; background:var(--bg-input); color:var(--text-primary);">
+          <div class="nd-mb-1">
+            <label class="nd-label nd-label--md">Số lượng ký tự</label>
+            <input id="pwd-length" type="number" value="12" min="4" max="128" class="nd-form-control nd-form-control--md">
           </div>
 
-          <div style="margin-bottom:1rem;">
-            <label style="font-size:.85rem; font-weight:600; color:var(--text-secondary); display:block; margin-bottom:.4rem;">Số lượng mật khẩu cần sinh</label>
-            <input id="pwd-count" type="number" value="1" min="1" max="50" style="width:100%; padding:.6rem .8rem; border:2px solid var(--border); border-radius:var(--radius-sm); font-size:.9rem; background:var(--bg-input); color:var(--text-primary);">
+          <div class="nd-mb-1">
+            <label class="nd-label nd-label--md">Số lượng mật khẩu cần sinh</label>
+            <input id="pwd-count" type="number" value="1" min="1" max="50" class="nd-form-control nd-form-control--md">
           </div>
 
-          <div style="margin-bottom:1rem;">
-            <label style="font-size:.85rem; font-weight:600; color:var(--text-secondary); display:block; margin-bottom:.5rem;">Loại ký tự</label>
-            <div style="display:flex; flex-wrap:wrap; gap:.75rem;">
-              <label style="display:flex; align-items:center; gap:.4rem; font-size:.85rem; cursor:pointer;">
+          <div class="nd-mb-1">
+            <label class="nd-label nd-label--lg">Loại ký tự</label>
+            <div class="nd-row">
+              <label class="nd-chip">
                 <input type="checkbox" id="pwd-upper" checked> Chữ hoa (A-Z)
               </label>
-              <label style="display:flex; align-items:center; gap:.4rem; font-size:.85rem; cursor:pointer;">
+              <label class="nd-chip">
                 <input type="checkbox" id="pwd-lower" checked> Chữ thường (a-z)
               </label>
-              <label style="display:flex; align-items:center; gap:.4rem; font-size:.85rem; cursor:pointer;">
+              <label class="nd-chip">
                 <input type="checkbox" id="pwd-numbers" checked> Số (0-9)
               </label>
-              <label style="display:flex; align-items:center; gap:.4rem; font-size:.85rem; cursor:pointer;">
+              <label class="nd-chip">
                 <input type="checkbox" id="pwd-symbols"> Ký tự đặc biệt (!@#$%...)
               </label>
             </div>
           </div>
 
-          <button id="generate-btn" class="btn-primary-nd" style="width:100%; padding:.7rem; font-size:.95rem; justify-content:center;">
+          <button id="generate-btn"class=""btn-primary-nd nd-btn-block">
             <i class="fas fa-key me-1"></i> Sinh mật khẩu
           </button>
         </div>
 
         <!-- Results -->
-        <div id="results-wrap" style="display:none;">
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:.75rem; flex-wrap:wrap; gap:.5rem;">
-            <h3 style="font-size:1.1rem; font-weight:700; margin:0;">Kết quả</h3>
-            <div style="display:flex; gap:.5rem;">
-              <button id="copy-all-btn" class="btn-outline-nd" style="padding:.4rem .8rem; font-size:.8rem;">
+        <div id="results-wrap" class="is-hidden">
+          <div class="nd-panel-bar">
+            <h3 class="nd-heading nd-heading--flush">Kết quả</h3>
+            <div class="nd-actions">
+              <button id="copy-all-btn"class=""btn-outline-nd nd-btn-xs">
                 <i class="fas fa-copy me-1"></i> Copy tất cả
               </button>
-              <button id="export-txt-btn" class="btn-outline-nd" style="padding:.4rem .8rem; font-size:.8rem;">
+              <button id="export-txt-btn"class=""btn-outline-nd nd-btn-xs">
                 <i class="fas fa-file-export me-1"></i> Xuất file TXT
               </button>
             </div>
           </div>
-          <div id="password-list" style="background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius-md); padding:1rem; font-family:monospace; font-size:1rem;"></div>
+          <div id="password-list" class="nd-output"></div>
         </div>
       </div>
     <section class="nd-guide" aria-labelledby="guide-title">

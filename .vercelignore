@@ -1,0 +1,17 @@
+# Khong day cac file nay len Vercel — chi chay local hoac thuoc phat trien.
+node_modules/
+.git/
+
+# Admin chay bang Node server cuc bo, khong phai site tinh
+admin/
+
+# Dev tooling / agent definitions
+.opencode/
+.agents/
+scripts/
+
+# Du lieu setup CSDL (chay tay trong SQL Editor)
+db/
+
+# Knowledge graph sinh ra
+graphify-out/

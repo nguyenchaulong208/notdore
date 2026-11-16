@@ -1,15 +1,17 @@
 /**
  * db.js — lớp truy cập dữ liệu duy nhất cho frontend.
  *
- * Thứ tự ưu tiên:
- *   1. Supabase (nếu config.js có supabaseUrl + supabaseAnonKey và đã nạp supabase-js)
- *   2. Supabase REST API (nguồn dữ liệu chính).
- *   - public.communes: 3,321 đơn vị (xã/phường/đặc khu)
- *   - public.admin_unit_history: 317 bản ghi beforeNames
- *   - public.admin_units: 34 đơn vị cấp tỉnh
+ * Nguồn dữ liệu: Supabase (config.js cung cấp supabaseUrl + supabaseAnonKey,
+ * supabase-js nạp qua CDN). Không có JSON fallback — thiếu Supabase thì
+ * getCatalog/getCommunes sẽ throw và trang hiển thị thông báo lỗi.
  *
- * Mọi hàm trả về CÙNG một cấu trúc dù dữ liệu đến từ đâu, nên phần render
- * không cần biết nguồn. Kết quả được cache trong bộ nhớ cho mỗi lần tải trang.
+ * Bảng đang dùng:
+ *   - public.communes        : 3.321 xã/phường/đặc khu + tên trước sáp nhập
+ *   - public.tools           : danh mục công cụ nội bộ
+ *   - public.tool_categories : danh mục công cụ ngoài
+ *   - public.agency_management: cơ quan BHXH/thuế/hải quan theo đơn vị
+ *
+ * Kết quả được memoize trong bộ nhớ cho từng lần tải trang.
  */
 (function (global) {
   'use strict';
@@ -42,7 +44,7 @@
       try {
         await global.NOTDORE_CONFIG_READY;
       } catch {
-        // config.js đã ghi log; tiếp tục với JSON tĩnh.
+        // config.js đã ghi log; tiếp tục với cấu hình hiện có.
       }
     }
 
@@ -146,22 +148,6 @@
     dac_ku: rows.filter((row) => row.level_code === 'dac_ku').length,
   });
 
-  const mapProvince = (row, changedCodes) => ({
-    code: row.code,
-    name: row.name,
-    type: row.type,
-    region: row.region,
-    centrallyRun: Boolean(row.centrally_run),
-    capital: row.capital,
-    population: row.population,
-    areaKm2: row.area_km2 === null ? null : Number(row.area_km2),
-    mergedFrom: row.merged_from ? String(row.merged_from).split(',').map((s) => s.trim()).filter(Boolean) : [],
-    changed: changedCodes ? changedCodes.has(row.code) : null,
-    renamedFrom: null,
-    note: row.note,
-    predecessorsRaw: null,
-  });
-
   /* ── Catalog: danh mục + công cụ + link ngoài ─────────────────────── */
   const getCatalog = () => memo('catalog', async () => {
     await ensureConfig();
@@ -201,8 +187,7 @@
 getCommunes = () => memo('communes', async () => {
     await ensureConfig();
 
-    // Supabase là nguồn chính. Chỉ tải JSON khi chưa cấu hình Supabase
-    // hoặc khi truy vấn Supabase thất bại.
+    // Supabase là nguồn dữ liệu duy nhất; thiếu cấu hình hoặc lỗi truy vấn thì throw.
     if (isSupabaseReady()) {
       try {
         const sb = getClient();
@@ -256,14 +241,6 @@ getCommunes = () => memo('communes', async () => {
     const { data, error } = await query;
     if (error) throw error;
     return data || [];
-  });
-
-  const computeStats = (provinces, history) => ({
-    before: history.length,
-    after: provinces.length,
-    unchanged: history.filter((h) => !h.changed).length,
-    merged: history.filter((h) => h.changed).length,
-    mergedUnits: provinces.filter((p) => p.changed).length,
   });
 
   global.NotDoreDB = {

@@ -58,13 +58,13 @@
     tbody.innerHTML = allFiles.map((f, i) => {
       const dir = f.path.includes('/') ? f.path.substring(0, f.path.lastIndexOf('/')) : '';
       return `
-        <tr style="border-bottom:1px solid var(--border);">
-          <td style="padding:.5rem .8rem; text-align:center;">
+        <tr class="nd-row-line">
+          <td class="nd-td nd-td--center">
             <input type="checkbox" class="file-check" data-index="${i}" ${f.selected ? 'checked' : ''}>
           </td>
-          <td style="padding:.5rem .8rem; color:var(--text-primary); font-size:.82rem;">${f.name}</td>
-          <td style="padding:.5rem .8rem; color:var(--text-muted); font-size:.8rem;">${dir || '—'}</td>
-          <td style="padding:.5rem .8rem; color:var(--text-muted); font-size:.8rem;">${formatSize(f.size)}</td>
+          <td class="nd-td nd-td--primary nd-td--xs">${f.name}</td>
+          <td class="nd-td nd-td--muted nd-td--sm">${dir || '—'}</td>
+          <td class="nd-td nd-td--muted nd-td--sm">${formatSize(f.size)}</td>
         </tr>
       `;
     }).join('');
@@ -157,9 +157,9 @@
         }
 
         done++;
-        log.innerHTML += `<div style="color:var(--accent-green);"><i class="fas fa-check me-1"></i>${f.name}</div>`;
+        log.innerHTML += `<div class="nd-text-success"><i class="fas fa-check me-1"></i>${f.name}</div>`;
       } catch (e) {
-        log.innerHTML += `<div style="color:var(--accent-red);"><i class="fas fa-times me-1"></i>${f.name} — ${e.message}</div>`;
+        log.innerHTML += `<div class="nd-text-danger"><i class="fas fa-times me-1"></i>${f.name} — ${e.message}</div>`;
       }
       $('progress-text').textContent = `${done}/${total}`;
       $('progress-bar').style.width = `${(done / total) * 100}%`;

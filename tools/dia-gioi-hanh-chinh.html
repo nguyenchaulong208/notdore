@@ -8,11 +8,15 @@
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="NotDore">
     <meta property="og:locale" content="vi_VN">
-    <meta property="og:title" content="Tra cứu địa giới hành chính sau sáp nhập 2025">
-    <meta property="og:description" content="63 tỉnh thành cũ nay thuộc đơn vị nào? Tra cứu cấp tỉnh và 3.321 xã/phường/đặc khu sau sáp nhập.">
-    <meta property="og:url" content="https://www.notdore.io.vn/tools/dia-gioi-hanh-chinh.html">
-    <meta name="twitter:card" content="summary">
-    <meta name="google-adsense-account" content="ca-pub-9767208027997083">
+    <meta property="og:title" content="Tra cứu địa giới hành chính sau sáp nhập 2025 — NotDore">
+    <meta property="og:description" content="Đối chiếu 63 tỉnh thành trước sáp nhập sang 34 đơn vị cấp tỉnh, kèm 3.321 xã/phường/đặc khu hiệu lực 01/07/2025. Tất cả đơn vị đều có dữ liệu tên trước sáp nhập. Tìm theo tên cũ, tên mới, vùng hoặc mã đơn vị.">
+    <meta property="og:url" content="https://www.notdore.io.vn/tools/dia-gioi-hanh-chinh">
+    <meta property="og:image" content="https://www.notdore.io.vn/assets/images/og-image.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Tra cứu địa giới hành chính sau sáp nhập 2025 — NotDore">
+    <meta name="twitter:description" content="Đối chiếu 63 tỉnh thành trước sáp nhập sang 34 đơn vị cấp tỉnh, kèm 3.321 xã/phường/đặc khu hiệu lực 01/07/2025. Tất cả đơn vị đều có dữ liệu tên trước sáp nhập. Tìm theo tên cũ, tên mới, vùng hoặc mã đơn vị.">
+    <meta name="twitter:image" content="https://www.notdore.io.vn/assets/images/og-image.png">
+<meta name="google-adsense-account" content="ca-pub-9767208027997083">
     <link rel="shortcut icon" href="../favicon.ico">
     <link rel="canonical" href="https://www.notdore.io.vn/tools/dia-gioi-hanh-chinh">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet">
@@ -92,19 +96,19 @@
             </div>
 
             <!-- Card grid -->
-            <div class="nd-card-grid" id="dg-card-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;">
-                <div class="nd-loading" style="grid-column:1/-1;text-align:center;padding:3rem;">
-                    <div class="nd-loading-dots" style="display:inline-flex;gap:.5rem;">
-                        <span style="width:12px;height:12px;border-radius:50%;background:var(--accent-purple);animation:ndPulse 1.4s ease-in-out infinite;"></span>
-                        <span style="width:12px;height:12px;border-radius:50%;background:var(--accent-purple);animation:ndPulse 1.4s ease-in-out .2s infinite;"></span>
-                        <span style="width:12px;height:12px;border-radius:50%;background:var(--accent-purple);animation:ndPulse 1.4s ease-in-out .4s infinite;"></span>
+            <div class="nd-card-grid nd-grid nd-grid--3" id="dg-card-grid">
+                <div class="nd-loading nd-cell-full">
+                    <div class="nd-loading-dots nd-inline-actions">
+                        <span class="nd-dot"></span>
+                        <span class="nd-dot nd-dot--1"></span>
+                        <span class="nd-dot nd-dot--2"></span>
                     </div>
-                    <p style="margin-top:1rem;color:var(--text-muted);">Đang tải dữ liệu…</p>
+                    <p class="nd-text-muted nd-mt-1">Đang tải dữ liệu…</p>
                 </div>
             </div>
 
             <!-- Pagination -->
-            <div id="dg-pagination" style="display: flex; justify-content: center; gap: .5rem; margin-top: 1rem; flex-wrap: wrap;"></div>
+            <div id="dg-pagination" class="nd-pagination"></div>
 
             <p class="nd-note mt-3">
                 Nguồn dữ liệu: <span id="dg-source">Supabase</span>

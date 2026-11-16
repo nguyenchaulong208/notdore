@@ -7,6 +7,17 @@
   <title>Sửa tên file hàng loạt — NotDore</title>
     <link rel="canonical" href="https://www.notdore.io.vn/tools/sua-ten-file">
   <meta name="description" content="Công cụ sửa tên file hàng loạt trên trình duyệt — đổi tên theo mẫu hoặc sửa từng file, tải về cùng lúc">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="NotDore">
+    <meta property="og:locale" content="vi_VN">
+    <meta property="og:title" content="Sửa tên file hàng loạt — NotDore">
+    <meta property="og:description" content="Công cụ sửa tên file hàng loạt trên trình duyệt — đổi tên theo mẫu hoặc sửa từng file, tải về cùng lúc">
+    <meta property="og:url" content="https://www.notdore.io.vn/tools/sua-ten-file">
+    <meta property="og:image" content="https://www.notdore.io.vn/assets/images/og-image.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Sửa tên file hàng loạt — NotDore">
+    <meta name="twitter:description" content="Công cụ sửa tên file hàng loạt trên trình duyệt — đổi tên theo mẫu hoặc sửa từng file, tải về cùng lúc">
+    <meta name="twitter:image" content="https://www.notdore.io.vn/assets/images/og-image.png">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/fontawesome.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/solid.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" media="print" onload="this.media='all'">
@@ -32,75 +43,75 @@
     </header>
 
     <main class="site-section">
-      <div class="container" style="max-width: 1100px;">
+      <div class="container nd-container">
         <h1 class="site-section-heading">Sửa tên file hàng loạt</h1>
         <p class="site-section-sub">Chọn nhiều file → đổi tên theo mẫu hoặc sửa từng file → tải về cùng lúc (dạng ZIP)</p>
 
         <!-- Upload area -->
-        <div id="drop-zone" style="border:2px dashed var(--border); border-radius:var(--radius-md); padding:2.5rem; text-align:center; cursor:pointer; background:var(--bg-card); margin-bottom:1.5rem; transition:border-color .2s, background .2s;">
-          <i class="fas fa-cloud-upload-alt" style="font-size:2.5rem; color:var(--accent-purple-light); margin-bottom:.75rem;"></i>
-          <p style="margin:0; font-weight:600; color:var(--text-primary);">Kéo thả file vào đây hoặc click để chọn</p>
-          <p style="margin:.3rem 0 0; font-size:.85rem; color:var(--text-muted);">Hỗ trợ chọn nhiều file cùng lúc</p>
-          <input type="file" id="file-input" multiple style="display:none;">
+        <div id="drop-zone" class="nd-dropzone">
+          <i class="fas fa-cloud-upload-alt nd-hero"></i>
+          <p class="nd-dropzone-title">Kéo thả file vào đây hoặc click để chọn</p>
+          <p class="nd-dropzone-hint">Hỗ trợ chọn nhiều file cùng lúc</p>
+          <input type="file" id="file-input" multiple class="is-hidden">
         </div>
 
         <!-- Bulk rename controls -->
-        <div id="bulk-controls" style="display:none; background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius-md); padding:1.2rem; margin-bottom:1.5rem;">
-          <h3 style="font-size:1.1rem; font-weight:700; margin-bottom:1rem;">Đổi tên hàng loạt</h3>
-          <div style="display:grid; grid-template-columns:1fr 1fr 1fr auto; gap:.75rem; align-items:end; flex-wrap:wrap;">
+        <div id="bulk-controls" class="is-hidden nd-box nd-panel--tight nd-mb-15">
+          <h3 class="nd-heading nd-heading--lg">Đổi tên hàng loạt</h3>
+          <div class="nd-form-grid">
             <div>
-              <label style="font-size:.8rem; font-weight:600; color:var(--text-secondary); display:block; margin-bottom:.3rem;">Tiền tố (Prefix)</label>
-              <input id="bulk-prefix" type="text" placeholder="VD: BaoCao_" style="width:100%; padding:.5rem .7rem; border:2px solid var(--border); border-radius:var(--radius-sm); font-size:.85rem; background:var(--bg-input); color:var(--text-primary);">
+              <label class="nd-label">Tiền tố (Prefix)</label>
+              <input id="bulk-prefix" type="text" placeholder="VD: BaoCao_" class="nd-form-control">
             </div>
             <div>
-              <label style="font-size:.8rem; font-weight:600; color:var(--text-secondary); display:block; margin-bottom:.3rem;">Hậu tố (Suffix)</label>
-              <input id="bulk-suffix" type="text" placeholder="VD: _v2" style="width:100%; padding:.5rem .7rem; border:2px solid var(--border); border-radius:var(--radius-sm); font-size:.85rem; background:var(--bg-input); color:var(--text-primary);">
+              <label class="nd-label">Hậu tố (Suffix)</label>
+              <input id="bulk-suffix" type="text" placeholder="VD: _v2" class="nd-form-control">
             </div>
             <div>
-              <label style="font-size:.8rem; font-weight:600; color:var(--text-secondary); display:block; margin-bottom:.3rem;">Đánh số từ</label>
-              <input id="bulk-start" type="number" value="1" min="1" style="width:100%; padding:.5rem .7rem; border:2px solid var(--border); border-radius:var(--radius-sm); font-size:.85rem; background:var(--bg-input); color:var(--text-primary);">
+              <label class="nd-label">Đánh số từ</label>
+              <input id="bulk-start" type="number" value="1" min="1" class="nd-form-control">
             </div>
-            <button id="bulk-apply" class="btn-primary-nd" style="padding:.5rem 1rem; font-size:.85rem; white-space:nowrap;">
+            <button id="bulk-apply"class=""btn-primary-nd nd-btn-sm nd-btn-sm3 nd-btn-nowrap">
               <i class="fas fa-magic me-1"></i> Áp dụng
             </button>
           </div>
-          <div style="margin-top:.75rem; display:flex; gap:.5rem; flex-wrap:wrap;">
-            <button id="bulk-lowercase" class="btn-outline-nd" style="padding:.4rem .8rem; font-size:.8rem;">a-z thường</button>
-            <button id="bulk-uppercase" class="btn-outline-nd" style="padding:.4rem .8rem; font-size:.8rem;">A-Z HOA</button>
-            <button id="bulk-remove-spaces" class="btn-outline-nd" style="padding:.4rem .8rem; font-size:.8rem;">Bỏ khoảng trắng</button>
-            <button id="bulk-replace" class="btn-outline-nd" style="padding:.4rem .8rem; font-size:.8rem;">Tìm & thay thế</button>
-            <button id="bulk-reset" class="btn-outline-nd" style="padding:.4rem .8rem; font-size:.8rem; color:var(--accent-red); border-color:var(--accent-red);">Hoàn tác</button>
+          <div class="nd-actions nd-mt-075">
+            <button id="bulk-lowercase"class=""btn-outline-nd nd-btn-xs">a-z thường</button>
+            <button id="bulk-uppercase"class=""btn-outline-nd nd-btn-xs">A-Z HOA</button>
+            <button id="bulk-remove-spaces"class=""btn-outline-nd nd-btn-xs">Bỏ khoảng trắng</button>
+            <button id="bulk-replace"class=""btn-outline-nd nd-btn-xs">Tìm & thay thế</button>
+            <button id="bulk-reset"class=""btn-outline-nd nd-btn-xs nd-btn-danger">Hoàn tác</button>
           </div>
-          <div id="replace-panel" style="display:none; margin-top:.75rem; display:grid; grid-template-columns:1fr 1fr auto; gap:.5rem; align-items:end;">
+          <div id="replace-panel" class="nd-edit-row is-hidden nd-mt-075">
             <div>
-              <label style="font-size:.8rem; font-weight:600; color:var(--text-secondary); display:block; margin-bottom:.3rem;">Tìm</label>
-              <input id="replace-find" type="text" placeholder="tìm..." style="width:100%; padding:.5rem .7rem; border:2px solid var(--border); border-radius:var(--radius-sm); font-size:.85rem; background:var(--bg-input); color:var(--text-primary);">
+              <label class="nd-label">Tìm</label>
+              <input id="replace-find" type="text" placeholder="tìm..." class="nd-form-control">
             </div>
             <div>
-              <label style="font-size:.8rem; font-weight:600; color:var(--text-secondary); display:block; margin-bottom:.3rem;">Thay bằng</label>
-              <input id="replace-with" type="text" placeholder="thay bằng..." style="width:100%; padding:.5rem .7rem; border:2px solid var(--border); border-radius:var(--radius-sm); font-size:.85rem; background:var(--bg-input); color:var(--text-primary);">
+              <label class="nd-label">Thay bằng</label>
+              <input id="replace-with" type="text" placeholder="thay bằng..." class="nd-form-control">
             </div>
-            <button id="replace-apply" class="btn-primary-nd" style="padding:.5rem 1rem; font-size:.85rem;">Áp dụng</button>
+            <button id="replace-apply"class=""btn-primary-nd nd-btn-sm nd-btn-sm3">Áp dụng</button>
           </div>
         </div>
 
         <!-- File list -->
-        <div id="file-list-wrap" style="display:none;">
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:.75rem;">
-            <h3 style="font-size:1.1rem; font-weight:700; margin:0;">Danh sách file (<span id="file-count">0</span>)</h3>
-            <button id="download-all" class="btn-primary-nd" style="padding:.5rem 1.2rem; font-size:.85rem;">
+        <div id="file-list-wrap" class="is-hidden">
+          <div class="nd-bar">
+            <h3 class="nd-heading nd-heading--flush">Danh sách file (<span id="file-count">0</span>)</h3>
+            <button id="download-all"class=""btn-primary-nd nd-btn-sm nd-btn-sm2">
               <i class="fas fa-download me-1"></i> Tải về (ZIP)
             </button>
           </div>
-          <div style="overflow-x:auto; border:1px solid var(--border); border-radius:var(--radius-md);">
-            <table style="width:100%; border-collapse:collapse; font-size:.85rem;">
+          <div class="nd-table-wrap">
+            <table class="nd-table">
               <thead>
-                <tr style="background:var(--bg-card-hover);">
-                  <th style="padding:.6rem .8rem; text-align:left; border-bottom:1px solid var(--border); width:40px;">#</th>
-                  <th style="padding:.6rem .8rem; text-align:left; border-bottom:1px solid var(--border);">Tên gốc</th>
-                  <th style="padding:.6rem .8rem; text-align:left; border-bottom:1px solid var(--border);">Tên mới</th>
-                  <th style="padding:.6rem .8rem; text-align:left; border-bottom:1px solid var(--border); width:80px;">Kích thước</th>
-                  <th style="padding:.6rem .8rem; text-align:center; border-bottom:1px solid var(--border); width:60px;">Xóa</th>
+                <tr class="nd-thead-bg">
+                  <th class="nd-th nd-th--40">#</th>
+                  <th class="nd-th">Tên gốc</th>
+                  <th class="nd-th">Tên mới</th>
+                  <th class="nd-th nd-th--80">Kích thước</th>
+                  <th class="nd-th nd-th--center nd-th--60">Xóa</th>
                 </tr>
               </thead>
               <tbody id="file-tbody"></tbody>

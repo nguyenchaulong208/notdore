@@ -49,10 +49,10 @@ const $ = (id) => document.getElementById(id);
 
     const list = $('password-list');
     list.innerHTML = generatedPasswords.map((p, i) => `
-      <div style="display:flex; align-items:center; gap:.75rem; padding:.5rem 0; border-bottom:1px solid var(--border);">
-        <span style="color:var(--text-muted); font-size:.8rem; min-width:30px;">${i + 1}.</span>
-        <span style="flex:1; word-break:break-all; color:var(--text-primary);">${p}</span>
-        <button class="copy-one" data-idx="${i}" style="background:none; border:none; cursor:pointer; color:var(--accent-purple); font-size:.9rem;" title="Copy">
+      <div class="nd-cell-flex">
+        <span class="nd-index">${i + 1}.</span>
+        <span class="nd-flex-1 nd-break">${p}</span>
+        <buttonclass=""copy-one nd-btn-icon nd-btn-icon--accent" data-idx="${i}" title="Copy">
           <i class="fas fa-copy"></i>
         </button>
       </div>
@@ -62,7 +62,7 @@ const $ = (id) => document.getElementById(id);
       btn.addEventListener('click', (e) => {
         const idx = parseInt(e.currentTarget.dataset.idx);
         navigator.clipboard.writeText(generatedPasswords[idx]).then(() => {
-          e.currentTarget.innerHTML = '<i class="fas fa-check" style="color:var(--accent-green);"></i>';
+          e.currentTarget.innerHTML = '<iclass=""fas fa-check nd-text-success"></i>';
           setTimeout(() => { e.currentTarget.innerHTML = '<i class="fas fa-copy"></i>'; }, 1500);
         });
       });
