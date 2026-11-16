@@ -6,17 +6,17 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Tính phân bổ tiền bảo hiểm — NotDore</title>
     <link rel="canonical" href="https://www.notdore.io.vn/tools/tinh-phan-bo-bhxh">
-  <meta name="description" content="Tính và phân bổ mức đóng BHXH, BHYT, BHTN theo ngườời sử dụng lao động (21,5%) và ngườời lao động (10,5%)">
+  <meta name="description" content="Tính và phân bổ mức đóng BHXH, BHYT, BHTN theo người sử dụng lao động (21,5%) và người lao động (10,5%)">
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="NotDore">
     <meta property="og:locale" content="vi_VN">
     <meta property="og:title" content="Tính phân bổ tiền bảo hiểm — NotDore">
-    <meta property="og:description" content="Tính và phân bổ mức đóng BHXH, BHYT, BHTN theo ngườời sử dụng lao động (21,5%) và ngườời lao động (10,5%)">
+    <meta property="og:description" content="Tính và phân bổ mức đóng BHXH, BHYT, BHTN theo người sử dụng lao động (21,5%) và người lao động (10,5%)">
     <meta property="og:url" content="https://www.notdore.io.vn/tools/tinh-phan-bo-bhxh">
     <meta property="og:image" content="https://www.notdore.io.vn/assets/images/og-image.png">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="Tính phân bổ tiền bảo hiểm — NotDore">
-    <meta name="twitter:description" content="Tính và phân bổ mức đóng BHXH, BHYT, BHTN theo ngườời sử dụng lao động (21,5%) và ngườời lao động (10,5%)">
+    <meta name="twitter:description" content="Tính và phân bổ mức đóng BHXH, BHYT, BHTN theo người sử dụng lao động (21,5%) và người lao động (10,5%)">
     <meta name="twitter:image" content="https://www.notdore.io.vn/assets/images/og-image.png">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/fontawesome.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/solid.min.css">
@@ -45,7 +45,7 @@
     <main class="site-section">
       <div class="container nd-container nd-container--mid">
         <h1 class="site-section-heading">Tính phân bổ tiền bảo hiểm</h1>
-        <p class="site-section-sub">Phân bổ mức đóng BHXH, BHYT, BHTN theo hai bên: ngườời sử dụng lao động (21,5%) và ngườời lao động (10,5%)</p>
+        <p class="site-section-sub">Phân bổ mức đóng BHXH, BHYT, BHTN theo hai bên: người sử dụng lao động (21,5%) và người lao động (10,5%)</p>
 
         <section class="nd-calc" aria-labelledby="calc-form-title">
           <h2 class="nd-calc-title" id="calc-form-title"><i class="fas fa-calculator" aria-hidden="true"></i> Dữ liệu tính toán</h2>
@@ -129,7 +129,7 @@
               <div class="nd-calc-panel-head">
                 <div>
                   <div class="nd-calc-panel-title">Ngườời lao động</div>
-                  <div class="nd-calc-panel-sub">Khấu trừ từ lương của ngườời lao động</div>
+                  <div class="nd-calc-panel-sub">Khấu trừ từ lương của người lao động</div>
                 </div>
                 <span class="nd-calc-panel-rate">10,5%</span>
               </div>
@@ -147,6 +147,43 @@
               </table>
             </article>
           </div>
+
+          <article class="nd-calc-panel nd-calc-panel--sum">
+            <div class="nd-calc-panel-head">
+              <div>
+                <div class="nd-calc-panel-title">Tổng hợp theo loại bảo hiểm</div>
+                <div class="nd-calc-panel-sub">Cộng phần ngườời sử dụng lao động và ngườời lao động phải đóng</div>
+              </div>
+              <span class="nd-calc-panel-rate">32%</span>
+            </div>
+            <div class="nd-calc-sum-wrap">
+              <table class="nd-calc-sum-table">
+                <thead>
+                  <tr>
+                    <th scope="col">Loại bảo hiểm</th>
+                    <th scope="col">Tỷ lệ NSDLD</th>
+                    <th scope="col">Tiền NSDLD</th>
+                    <th scope="col">Tỷ lệ NLD</th>
+                    <th scope="col">Tiền NLD</th>
+                    <th scope="col">Tỷ lệ cả hai bên</th>
+                    <th scope="col">Tổng cộng</th>
+                  </tr>
+                </thead>
+                <tbody id="out-sum-body"></tbody>
+                <tfoot>
+                  <tr>
+                    <td>Cộng</td>
+                    <td>21,50%</td>
+                    <td id="sum-emp-total">—</td>
+                    <td>10,50%</td>
+                    <td id="sum-nld-total">—</td>
+                    <td>32,00%</td>
+                    <td class="nd-calc-panel-total" id="sum-grand">—</td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+          </article>
 
           <div class="nd-calc-grand">
             <div>
@@ -177,7 +214,7 @@
         <a href="../privacy.html">Chính sách bảo mật</a> ·
         <a href="../contact.html">Liên hệ</a>
       </p>
-    <span id="online-badge" class="nd-online-badge" title="Số ngườời đang trực tuyến (cập nhật mỗi 15 giây)"><i class="fas fa-signal" aria-hidden="true"></i><span class="nd-online-num">&hellip;</span></span>
+    <span id="online-badge" class="nd-online-badge" title="Số người đang trực tuyến (cập nhật mỗi 15 giây)"><i class="fas fa-signal" aria-hidden="true"></i><span class="nd-online-num">&hellip;</span></span>
       </footer>
   </div>
 

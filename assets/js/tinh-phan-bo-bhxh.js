@@ -42,7 +42,11 @@
     grand: document.getElementById('out-grand'),
     copy: document.getElementById('calc-copy'),
     exportBtn: document.getElementById('calc-export'),
-    copied: document.getElementById('calc-copied')
+    copied: document.getElementById('calc-copied'),
+    sumBody: document.getElementById('out-sum-body'),
+    sumEmpTotal: document.getElementById('sum-emp-total'),
+    sumNldTotal: document.getElementById('sum-nld-total'),
+    sumGrand: document.getElementById('sum-grand')
   };
 
   var current = null;
@@ -70,6 +74,36 @@
       var amount = Math.round((base * r.rate) / 100);
       html += '<tr><td>' + r.label + '</td><td>' + r.display + '</td>' +
               '<td class="nd-calc-amt">' + fmt(amount) + '</td></tr>';
+    }
+    return html;
+  }
+
+  /** Tỷ lệ dạng "25,50%" (luôn 2 số thập phân). */
+  function pct(v) {
+    return v.toFixed(2).replace('.', ',') + '%';
+  }
+
+  /**
+   * Bảng tổng hợp theo loại bảo hiểm: cộng phần NSDLD + NLD.
+   * EMP_RATES và NLD_RATES phải cùng thứ tự loại.
+   */
+  function summaryRowsHtml(data) {
+    var html = '';
+    for (var i = 0; i < data.empRates.length; i++) {
+      var label = data.empRates[i].label;
+      var empRate = data.empRates[i].rate;
+      var nldRate = data.nldRates[i].rate;
+      var empAmt = data.empAmounts[i];
+      var nldAmt = data.nldAmounts[i];
+      var total = empAmt + nldAmt;
+
+      html += '<tr><td>' + label + '</td>' +
+              '<td>' + pct(empRate) + '</td>' +
+              '<td class="nd-calc-amt">' + fmt(empAmt) + '</td>' +
+              '<td>' + pct(nldRate) + '</td>' +
+              '<td class="nd-calc-amt">' + fmt(nldAmt) + '</td>' +
+              '<td>' + pct(empRate + nldRate) + '</td>' +
+              '<td>' + fmt(total) + '</td></tr>';
     }
     return html;
   }
@@ -162,6 +196,10 @@
     els.nldBody.innerHTML = rowsHtml(data.nldRates, data.base);
     els.empTotal.textContent = fmt(data.empSum);
     els.nldTotal.textContent = fmt(data.nldSum);
+    els.sumBody.innerHTML = summaryRowsHtml(data);
+    els.sumEmpTotal.textContent = fmt(data.empSum);
+    els.sumNldTotal.textContent = fmt(data.nldSum);
+    els.sumGrand.textContent = fmt(data.grand);
     els.grand.textContent = fmt(data.grand);
     els.result.hidden = false;
 
@@ -189,6 +227,18 @@
                  '  ' + fmt(data.nldAmounts[j]) + ' VNĐ');
     }
     lines.push('  Tổng NLD: ' + fmt(data.nldSum) + ' VNĐ');
+    lines.push('');
+    lines.push('TỔNG HỢP THEO LOẠI BẢO HIỂM (NSDLD + NLD)');
+    for (var k = 0; k < data.empRates.length; k++) {
+      var total = data.empAmounts[k] + data.nldAmounts[k];
+      lines.push('  ' + data.empRates[k].label.padEnd(6, ' ') +
+                 pct(data.empRates[k].rate).padStart(8, ' ') +
+                 fmt(data.empAmounts[k]).padStart(14, ' ') +
+                 pct(data.nldRates[k].rate).padStart(8, ' ') +
+                 fmt(data.nldAmounts[k]).padStart(14, ' ') +
+                 pct(data.empRates[k].rate + data.nldRates[k].rate).padStart(9, ' ') +
+                 fmt(total).padStart(15, ' ') + ' VNĐ');
+    }
     lines.push('');
     lines.push('TỔNG PHẢI NỘP: ' + fmt(data.grand) + ' VNĐ');
     return lines.join('\n');

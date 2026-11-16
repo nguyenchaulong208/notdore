@@ -1566,3 +1566,68 @@
   align-items: center;
   gap: .4rem;
 }
+
+
+/* --- Bảng tổng hợp theo loại bảo hiểm ------------------------------- */
+.nd-calc-panel--sum .nd-calc-panel-head {
+  background: linear-gradient(135deg, rgba(106, 59, 165, .14), rgba(106, 59, 165, .04));
+}
+.nd-calc-panel--sum .nd-calc-panel-rate {
+  background: rgba(106, 59, 165, .16);
+  color: var(--accent-purple);
+}
+
+.nd-calc-sum-wrap {
+  overflow-x: auto;
+  border-top: 1px solid var(--border);
+}
+
+.nd-calc-sum-table {
+  width: 100%;
+  min-width: 720px;
+  border-collapse: collapse;
+  font-size: .86rem;
+}
+.nd-calc-sum-table th,
+.nd-calc-sum-table td {
+  padding: .68rem .8rem;
+  text-align: right;
+  white-space: nowrap;
+}
+.nd-calc-sum-table th {
+  font-size: .7rem;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  color: var(--text-muted);
+  background: var(--bg-card-hover);
+  border-bottom: 1px solid var(--border);
+}
+.nd-calc-sum-table th:first-child,
+.nd-calc-sum-table td:first-child {
+  text-align: left;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.nd-calc-sum-table tbody tr + tr td {
+  border-top: 1px dashed var(--border);
+}
+.nd-calc-sum-table td:nth-child(2),
+.nd-calc-sum-table td:nth-child(4),
+.nd-calc-sum-table td:nth-child(6) {
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+.nd-calc-sum-table tbody td:last-child {
+  font-family: var(--font-display);
+  font-weight: 700;
+  color: var(--accent-purple);
+  font-size: 1.02rem;
+}
+.nd-calc-sum-table tfoot td {
+  border-top: 1px solid var(--border);
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.nd-calc-sum-table tfoot td:first-child {
+  color: var(--text-muted);
+}
