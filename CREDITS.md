@@ -5,9 +5,11 @@ NotDore dùng một số thành phần miễn phí sau. Giữ nguyên phần ghi
 ## Thư viện
 
 - **Bootstrap 5** — giấy phép **MIT** — <https://getbootstrap.com>
-  (`assets/plugins/bootstrap/`)
+  Bản build tối ưu nằm ở `assets/plugins/bootstrap/`; trang cũng nạp từ CDN.
 - **Font Awesome Free 6** — icon **CC BY 4.0**, font **SIL OFL 1.1**, code **MIT** —
-  <https://fontawesome.com> (`assets/fontawesome/`)
+  <https://fontawesome.com> — nạp từ CDN (`assets/fontawesome/LICENSE.txt` giữ lại giấy phép).
+- **Supabase JS v2** — **MIT** — <https://github.com/supabase/supabase-js> — nạp từ CDN.
+- **Resend API** — dịch vụ gửi email cho form liên hệ và báo sai thông tin.
 
 ## Mèo pixel (chạy theo con trỏ chuột)
 
@@ -18,7 +20,7 @@ NotDore dùng một số thành phần miễn phí sau. Giữ nguyên phần ghi
 
 ## Dữ liệu địa giới hành chính
 
-- **provinces.open-api.vn** — dữ liệu tên/mã 3.321 xã, phường, đặc khu sau sáp nhập,
+- **provinces.open-api.vn** — dữ liệu tên/mã 3.321 xã, phường, đặc khu sau sắp nhập,
   được đối chiếu tổng số với 34 Nghị quyết UBTVQH15 và Bộ Nội vụ.
   <https://provinces.open-api.vn>
 - **34 Nghị quyết của Ủy ban Thường vụ Quốc hội** (1654–1687/NQ-UBTVQH15) và
@@ -27,6 +29,4 @@ NotDore dùng một số thành phần miễn phí sau. Giữ nguyên phần ghi
 
 ## Giao diện
 
-- Giao diện tự thiết kế, không dùng template bên ngoài.
-- **Bootstrap 5** — giấy phép **MIT** — <https://getbootstrap.com>
-- **Font Awesome Free 6** — icon **CC BY 4.0**, font **SIL OFL 1.1**, code **MIT** — <https://fontawesome.com>
+Giao diện tự thiết kế, không dùng template bên ngoài.
