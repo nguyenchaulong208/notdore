@@ -68,7 +68,7 @@ Bảng đang dùng:
 | `agency_management` | Cơ quan BHXH/thuế/hải quan theo đơn vị |
 | `tools`, `tool_categories` | Danh mục công cụ |
 | `invoice_links` | Link tra cứu hóa đơn |
-| `online_visitors` | Đếm số ngườời đang trực tuyến |
+| `online_visitors` | Đếm số người đang trực tuyến |
 
 ---
 

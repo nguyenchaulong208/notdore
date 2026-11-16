@@ -39,8 +39,8 @@
       '<i class="fas fa-signal" aria-hidden="true"></i>' +
       '<span class="nd-online-num">' + count + '</span>';
     el.classList.add('is-live');
-    el.setAttribute('aria-label', count + ' ngườời đang trực tuyến');
-    el.setAttribute('title', count + ' ngườời đang trực tuyến');
+    el.setAttribute('aria-label', count + ' người đang trực tuyến');
+    el.setAttribute('title', count + ' người đang trực tuyến');
   }
 
   function getClient() {
