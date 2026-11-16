@@ -117,6 +117,22 @@ thì CRUD vẫn chạy nhưng SQL bị tắt. Chi tiết: [`admin/README.md`](ad
 > `service_role`/secret key và PAT chỉ dùng ở server admin. Không đặt các key này trong
 > `assets/js/config.js`, `/api/config` hay bất kỳ file tĩnh nào.
 
+## Bản đồ code 3D (Second Brain)
+
+Graphify sinh `graphify-out/graph.json` (AST, không cần API key), rồi
+
+```bash
+npm run brain:3d      # -> graphify-out/graph-3d.html
+```
+
+Mở file đó trực tiếp trong trình duyệt (không cần server): xoay 360°, zoom, pan, tìm
+theo tên hàm/file/community, lọc theo community và độ tin cậy (EXTRACTED/INFERRED),
+bấm node để xem file, vị trí, bậc và danh sách liên kết. Nhãn node tự hiện khi zoom
+vào, nhãn community luôn nổi trên mỗi cụm.
+
+Template giao diện nằm ngay trong `scripts/make-brain3d.mjs`; `graphify-out/` đã được
+`.gitignore` nên chỉ script là phải commit.
+
 ## Cấu hình Supabase
 
 1. Tạo project tại <https://supabase.com>.
