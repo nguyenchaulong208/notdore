@@ -5,7 +5,7 @@ import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const here = dirname(fileURLToPath(import.meta.url));
-const root = resolve(process.argv[2] || here, '..');
+const root = resolve(process.argv[2] || resolve(here, '..'));
 const OUT = resolve(root, 'graphify-out/graph-3d.html');
 const g = JSON.parse(readFileSync(resolve(root, 'graphify-out/graph.json'), 'utf8'));
 
