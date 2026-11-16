@@ -1,0 +1,3 @@
+# Vendored third-party bundles — minified, no project semantics.
+# Keeps the graph on notdore's own code instead of bootstrap internals.
+assets/plugins/

@@ -19,3 +19,6 @@ Thumbs.db
 # Log & thư mục build tạm
 *.log
 dist/
+
+# Graphify knowledge graph output
+graphify-out/
