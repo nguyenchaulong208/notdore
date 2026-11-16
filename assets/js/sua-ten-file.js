@@ -44,12 +44,12 @@
         <td class="nd-td nd-td--muted">${i + 1}</td>
         <td title="${f.originalName}" class="nd-td nd-td--secondary nd-td--xs nd-td--ellipsis">${f.originalName}</td>
         <td class="nd-td">
-          <input type="text" value="${f.newName}" data-id="${f.id}"class=""rename-input nd-rename-input"
+          <input type="text" value="${f.newName}" data-id="${f.id}" class="rename-input nd-rename-input"
                 >
         </td>
         <td class="nd-td nd-td--muted nd-td--sm">${formatSize(f.size)}</td>
         <td class="nd-td nd-td--center">
-          <buttonclass=""remove-file nd-btn-icon nd-btn-icon--danger" data-id="${f.id}">
+          <button class="remove-file nd-btn-icon nd-btn-icon--danger" data-id="${f.id}">
             <i class="fas fa-times"></i>
           </button>
         </td>
@@ -168,7 +168,6 @@
 
   // Replace panel toggle
   $('bulk-replace').addEventListener('click', () => {
-    const panel = $('replace-panel');
-    panel.style.display = panel.style.display === 'none' ? 'grid' : 'none';
+    $('replace-panel').classList.toggle('is-hidden');
   });
   $('replace-apply').addEventListener('click', applyReplace);

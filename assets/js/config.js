@@ -11,10 +11,6 @@
 window.NOTDORE_CONFIG = {
   supabaseUrl: "",
   supabaseAnonKey: "",
-
-  // Hiển thị ở phần liên hệ
-  email: "nguyenchaulong.data208@gmail.com",
-  siteName: "NotDore",
 };
 
 /**
@@ -38,8 +34,8 @@ window.NOTDORE_CONFIG_READY = (async () => {
       console.info('[config] /api/config chưa có cấu hình:', (data.missing || []).join(', '));
     }
   } catch (err) {
-    // Local static server / file:// không có /api/config — dùng JSON tĩnh.
-    console.info('[config] Không đọc được /api/config, dùng JSON tĩnh:', err.message || err);
-  }
+    // Local static server / file:// không có /api/config — bỏ qua, để db.js báo lỗi rõ ràng.
+    console.info('[config] Không đọc được /api/config:', err.message || err);
+    }
   return cfg;
 })();

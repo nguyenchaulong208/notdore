@@ -16,23 +16,6 @@
 
   const MAX_TILES = 20;
 
-  /* Câu nói hay: dữ liệu tĩnh, không phụ thuộc catalog. */
-  const QUOTES = [
-    { text: 'Có công mài sắt, có ngày nên kim.', author: 'Tục ngữ Việt Nam' },
-    { text: 'Đi một ngày đàng, học một sàng khôn.', author: 'Tục ngữ Việt Nam' },
-    { text: 'Cái khó ló cái khôn.', author: 'Tục ngữ Việt Nam' },
-    { text: 'Lửa thử vàng, gian nan thử sức.', author: 'Tục ngữ Việt Nam' },
-    { text: 'Thì giờ là vàng bạc.', author: 'Tục ngữ Việt Nam' },
-    { text: 'Muốn đi nhanh thì đi một mình, muốn đi xa thì đi cùng nhau.', author: 'Tục ngữ châu Phi' },
-    { text: 'Học, học nữa, học mãi.', author: 'V. I. Lê-nin' },
-    { text: 'Không có việc gì khó, chỉ sợ lòng không bền.', author: 'Hồ Chí Minh' },
-    { text: 'Mỗi ngày một chút, rồi sẽ đến đích.', author: 'Khuyết danh' },
-    { text: 'Công cụ tốt không làm thay bạn, nhưng giúp bạn làm tốt hơn.', author: 'NotDore' },
-    { text: 'Việc nhỏ làm gọn, ngày dài nhẹ tênh.', author: 'NotDore' },
-    { text: 'Một công cụ nhỏ, một ngày nhẹ hơn.', author: 'NotDore' },
-  ];
-
-  let quoteIndex = 0;
 
   const state = {
     all: [],
@@ -161,46 +144,6 @@
     }
   };
 
-  /* Hiển thị câu nói hiện tại và chạy lại hiệu ứng mờ dần. */
-  const renderQuote = () => {
-    const box = $('quote-box');
-    const text = $('quote-text');
-    const author = $('quote-author');
-    if (!box || !text || !author) return;
-
-    const quote = QUOTES[quoteIndex];
-    if (!quote) return;
-
-    text.textContent = quote.text;
-    author.textContent = `— ${quote.author}`;
-
-    box.classList.remove('nd-quote--in');
-    void box.offsetWidth;
-    box.classList.add('nd-quote--in');
-  };
-
-  const initQuote = () => {
-    if (!QUOTES.length || !$('quote-box')) return;
-
-    /* Mỗi ngày mở trang sẽ thấy cùng một câu; nút ↻ đổi ngẫu nhiên. */
-    const day = Math.floor(Date.now() / 86400000);
-    quoteIndex = day % QUOTES.length;
-    renderQuote();
-
-    const btn = $('quote-refresh');
-    if (!btn) return;
-
-    btn.addEventListener('click', () => {
-      if (QUOTES.length < 2) return;
-
-      let next = quoteIndex;
-      while (next === quoteIndex) {
-        next = Math.floor(Math.random() * QUOTES.length);
-      }
-      quoteIndex = next;
-      renderQuote();
-    });
-  };
 
   const bind = () => {
     const input = $('tool-search');
@@ -216,8 +159,7 @@
     });
   };
 
-  const init = async () => {
-    initQuote();
+  const init = async () => {
 
     try {
       const catalog = await DB.getCatalog();

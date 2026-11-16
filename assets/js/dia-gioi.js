@@ -49,7 +49,7 @@
      host.innerHTML = rows.map((c) => {
        const before = (c.beforeNames || []).length ? c.beforeNames.map((n) => `<span class="nd-pill nd-pill--soft">${esc(n)}</span>`).join(' ') : '<span class="nd-muted">Chưa có dữ liệu</span>';
        const status = c.changed === false ? '<span class="nd-pill nd-pill--keep">Giữ nguyên</span>' : (c.beforeNames?.length ? '<span class="nd-pill nd-pill--merge">Sáp nhập</span>' : '<span class="nd-pill nd-pill--soft">Chưa đối chiếu</span>');
-       return `<divclass=""nd-unit-card nd-clickable" data-code="${esc(c.code)}" data-action="detail"><div class="nd-unit-top"><span class="nd-unit-code">${esc(c.code)}</span>${status}</div><div class="nd-unit-name">${esc(c.name)}</div><div class="nd-unit-meta">${esc(TYPE_LABELS[c.type] || c.type)} · ${esc(c.provinceName || '—')}</div><divclass=""nd-unit-from nd-mt-05"><small class="nd-meta-sm">Trước:</small>${before}</div><div class="nd-right"><button type="button"class=""nd-report-btn nd-mini-btn" data-report="${esc(c.code)}" title="Báo sai thông tin" onclick="event.stopPropagation();">Báo cáo</button></div></div>`;
+       return `<div class="nd-unit-card nd-clickable" data-code="${esc(c.code)}" data-action="detail"><div class="nd-unit-top"><span class="nd-unit-code">${esc(c.code)}</span>${status}</div><div class="nd-unit-name">${esc(c.name)}</div><div class="nd-unit-meta">${esc(TYPE_LABELS[c.type] || c.type)} · ${esc(c.provinceName || '—')}</div><div class="nd-unit-from nd-mt-05"><small class="nd-meta-sm">Trước:</small>${before}</div><div class="nd-right"><button type="button" class="nd-report-btn nd-mini-btn" data-report="${esc(c.code)}" title="Báo sai thông tin" onclick="event.stopPropagation();">Báo cáo</button></div></div>`;
      }).join('');
      host.querySelectorAll('[data-action="detail"]').forEach((el) => { el.addEventListener('click', () => openDetail(el.dataset.code)); });
      host.querySelectorAll('.nd-report-btn').forEach((btn) => {
@@ -152,7 +152,7 @@
      if (!modalEl) return;
      const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
      $('dg-modal-title').textContent = `${c.name} (${c.code})`;
-     const before = (c.beforeNames || []).length ? c.beforeNames.map((n) => `<spanclass=""nd-pill nd-pill--soft nd-m-02">${esc(n)}</span>`).join(' ') : 'Chưa có dữ liệu';
+     const before = (c.beforeNames || []).length ? c.beforeNames.map((n) => `<span class="nd-pill nd-pill--soft nd-m-02">${esc(n)}</span>`).join(' ') : 'Chưa có dữ liệu';
      const status = c.changed === false ? 'Giữ nguyên' : (c.beforeNames?.length ? 'Sáp nhập / đổi tên' : 'Chưa đối chiếu');
      const provMerger = PROVINCE_MERGER[c.provinceCode];
      const provInfo = provMerger ? `<div><strong>Tỉnh/TP gộp từ:</strong> ${esc(provMerger)}</div>` : `<div><strong>Tỉnh/TP:</strong> ${esc(c.provinceName || '—')} (không sáp nhập)</div>`;
@@ -173,7 +173,7 @@
      const thue = formatAgency(thueList);
      const haiquan = formatAgency(haiquanList);
      const agencyInfo = `<div class="nd-note-box"><strong>Cơ quan quản lý (cơ sở):</strong><br>BHXH: ${esc(bhxh)}<br>Thuế: ${esc(thue)}<br>Hải quan: ${esc(haiquan)}</div>`;
-     const reportBtn = `<div class="nd-mt-1 nd-center"><button type="button"class=""nd-report-btn nd-mini-btn nd-mini-btn--lg" id="dg-report-btn">Báo cáo sai thông tin</button></div>`;
+     const reportBtn = `<div class="nd-mt-1 nd-center"><button type="button" class="nd-report-btn nd-mini-btn nd-mini-btn--lg" id="dg-report-btn">Báo cáo sai thông tin</button></div>`;
      $('dg-modal-body').innerHTML = `<div class="nd-grid nd-grid--1"><div><strong>Loại:</strong> ${esc(TYPE_LABELS[c.type] || c.type)}</div><div><strong>Tỉnh/TP:</strong> ${esc(c.provinceName || '—')}</div>${provInfo}<div><strong>Mã:</strong> ${esc(c.code)}</div><div><strong>Trước sáp nhập:</strong><br>${before}</div><div><strong>Trạng thái:</strong> ${esc(status)}</div>${c.note ? `<div><strong>Ghi chú:</strong> ${esc(c.note)}</div>` : ''}${agencyInfo}<div class="nd-mt-1"><iframe width="100%" height="300" loading="lazy" allowfullscreen src="https://www.google.com/maps?q=${encodeURIComponent(c.name + ', ' + (c.provinceName || ''))}&output=embed" class="nd-img-rounded"></iframe></div>${reportBtn}</div>`;
      modal.show();
       // Attach report button handler in detail modal

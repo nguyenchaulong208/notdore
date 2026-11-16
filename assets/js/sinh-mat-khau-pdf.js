@@ -52,7 +52,7 @@ const $ = (id) => document.getElementById(id);
       <div class="nd-cell-flex">
         <span class="nd-index">${i + 1}.</span>
         <span class="nd-flex-1 nd-break">${p}</span>
-        <buttonclass=""copy-one nd-btn-icon nd-btn-icon--accent" data-idx="${i}" title="Copy">
+        <button class="copy-one nd-btn-icon nd-btn-icon--accent" data-idx="${i}" title="Copy">
           <i class="fas fa-copy"></i>
         </button>
       </div>
@@ -62,7 +62,7 @@ const $ = (id) => document.getElementById(id);
       btn.addEventListener('click', (e) => {
         const idx = parseInt(e.currentTarget.dataset.idx);
         navigator.clipboard.writeText(generatedPasswords[idx]).then(() => {
-          e.currentTarget.innerHTML = '<iclass=""fas fa-check nd-text-success"></i>';
+          e.currentTarget.innerHTML = '<i class="fas fa-check nd-text-success"></i>';
           setTimeout(() => { e.currentTarget.innerHTML = '<i class="fas fa-copy"></i>'; }, 1500);
         });
       });

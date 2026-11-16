@@ -128,16 +128,16 @@
     empty.style.display = 'none';
 
     host.innerHTML = rows.map(f => `
-      <divclass=""nd-unit-card nd-card-body">
+      <div class="nd-unit-card nd-card-body">
         <div class="nd-bar-tight">
-          <spanclass=""nd-pill nd-pill--soft nd-fs-72">${esc(f.category)}</span>
+          <span class="nd-pill nd-pill--soft nd-fs-72">${esc(f.category)}</span>
         </div>
         <div class="nd-card-title">${esc(f.title)}</div>
         <div class="nd-text-body">${esc(f.scenario)}</div>
         <div class="nd-codebox">${esc(f.formula)}</div>
         <div class="nd-text-hint"><strong>Ví dụ:</strong> ${esc(f.example)}</div>
         <div class="nd-tags">
-          ${(f.tags || []).map(t => `<spanclass=""nd-pill nd-pill--soft nd-badge-sm">${esc(t)}</span>`).join('')}
+          ${(f.tags || []).map(t => `<span class="nd-pill nd-pill--soft nd-badge-sm">${esc(t)}</span>`).join('')}
         </div>
       </div>
     `).join('');
