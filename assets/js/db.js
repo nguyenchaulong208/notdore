@@ -15,8 +15,6 @@
   'use strict';
 
   const cfg = global.NOTDORE_CONFIG || {};
-  const SCRIPT = document.currentScript;
-  const ROOT = new URL('../../', SCRIPT ? SCRIPT.src : location.href);
 
   const cache = new Map();
   let client = null;
@@ -58,12 +56,6 @@
   const getClient = () => {
     if (!client) client = global.supabase.createClient(cfg.supabaseUrl, cfg.supabaseAnonKey);
     return client;
-  };
-
-  const fetchJSON = async (path) => {
-    const res = await fetch(new URL(path, ROOT), { cache: 'no-cache' });
-    if (!res.ok) throw new Error(`Không tải được ${path} (HTTP ${res.status})`);
-    return res.json();
   };
 
   /** Chuẩn hoá row Supabase -> shape dùng chung với JSON */
@@ -206,41 +198,6 @@
     };
   }),
 
-getAdminDivisions = () => memo('admin', async () => {
-    await ensureConfig();
-
-    if (!isSupabaseReady()) {
-      throw new Error('Supabase chưa được cấu hình');
-    }
-
-    const sb = getClient();
-    const { data: units, error: unitsError } = await sb.from('admin_units').select('*');
-    if (unitsError) throw unitsError;
-
-    const provinces = (units || []).map((u) => ({
-      code: u.code,
-      name: u.name,
-      type: u.type,
-      region: u.region || '',
-      centrallyRun: Boolean(u.centrally_run),
-      capital: u.capital || null,
-      population: u.population || null,
-      areaKm2: u.area_km2 || null,
-      changed: false,
-      merged: false,
-      mergedFrom: u.merged_from ? [u.merged_from] : [],
-      renamedFrom: null,
-      note: u.note || null,
-    }));
-
-    return {
-      meta: { stats: { before: provinces.length, after: provinces.length, merged: 0, unchanged: provinces.length } },
-      provinces: provinces,
-      history: [],
-      source: 'supabase',
-    };
-  }),
-
 getCommunes = () => memo('communes', async () => {
     await ensureConfig();
 
@@ -310,10 +267,8 @@ getCommunes = () => memo('communes', async () => {
   });
 
   global.NotDoreDB = {
-    ROOT,
     isSupabaseReady,
     getCatalog,
-    getAdminDivisions,
     getCommunes,
     getAgencyData,
     /** Tiện ích dùng chung cho các trang */

@@ -54,6 +54,7 @@ body {
   margin: 0;
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
+  animation: fadeIn 0.4s ease;
 }
 
 a { color: var(--accent-purple); text-decoration: none; }
@@ -63,6 +64,7 @@ a:hover { color: var(--accent-purple-light); }
 
 [id] { scroll-margin-top: 96px; }
 
+/* ── Khung trang ───────────────────────────────────────────────────────── */
 .anime-container {
   max-width: 1400px;
   margin: 0 auto;
@@ -83,6 +85,7 @@ a:hover { color: var(--accent-purple-light); }
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
   border-bottom: 1px solid var(--border);
+  box-shadow: 0 2px 16px rgba(24, 28, 60, 0.04);
 }
 
 .anime-brand {
@@ -109,7 +112,8 @@ a:hover { color: var(--accent-purple-light); }
   gap: 0.3rem;
 }
 
-.anime-nav a {
+.anime-nav a,
+.anime-nav-link {
   padding: 0.5rem 0.9rem;
   border-radius: 10px;
   font-weight: 600;
@@ -119,51 +123,42 @@ a:hover { color: var(--accent-purple-light); }
   transition: all 0.2s ease;
 }
 
-.anime-nav a:hover {
+.anime-nav a:hover,
+.anime-nav-link:hover {
   color: var(--accent-purple-light);
   background: var(--bg-card-hover);
 }
 
-.anime-nav a.active {
+.anime-nav a.active,
+.anime-nav-link.active,
+.anime-nav-link[aria-current="page"] {
   color: var(--accent-purple);
   background: var(--bg-card-hover);
 }
 
-.anime-hero {
-  text-align: center;
-  padding: 4rem 1rem 3rem;
-}
-
-.anime-hero-title {
-  font-family: var(--font-display);
-  font-size: clamp(2rem, 5vw, 3.2rem);
-  font-weight: 700;
-  line-height: 1.2;
-  margin: 0 0 1rem;
-  color: var(--text-primary);
-}
-
-.anime-hero-title .highlight {
+/* Gạch chân link điều hướng */
+.anime-nav a::after,
+.anime-nav-link::after {
+  content: '';
+  position: absolute;
+  bottom: 4px;
+  left: 50%;
+  width: 0;
+  height: 2px;
   background: var(--gradient-primary);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
+  transition: width 0.2s ease, left 0.2s ease;
 }
 
-.anime-hero-sub {
-  font-size: 1.1rem;
-  color: var(--text-secondary);
-  max-width: 600px;
-  margin: 0 auto 2rem;
+.anime-nav a,
+.anime-nav-link { position: relative; }
+
+.anime-nav a:hover::after,
+.anime-nav-link:hover::after {
+  width: 60%;
+  left: 20%;
 }
 
-.anime-hero-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
-  justify-content: center;
-}
-
+/* ── Nút bấm ──────────────────────────────────────────────────────────── */
 .btn-primary-nd {
   display: inline-flex;
   align-items: center;
@@ -187,6 +182,11 @@ a:hover { color: var(--accent-purple-light); }
   box-shadow: 0 12px 28px rgba(139, 74, 240, 0.4);
 }
 
+.btn-primary-nd:active,
+.btn-outline-nd:active {
+  transform: translateY(1px) scale(0.98);
+}
+
 .btn-outline-nd {
   display: inline-flex;
   align-items: center;
@@ -208,87 +208,7 @@ a:hover { color: var(--accent-purple-light); }
   border-color: var(--accent-purple-light);
 }
 
-.tool-card {
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  background: var(--bg-card);
-  box-shadow: var(--shadow-card);
-  overflow: hidden;
-  transition: transform 0.28s ease, box-shadow 0.28s ease, border-color 0.28s ease;
-}
-
-.tool-card:hover {
-  transform: translateY(-5px);
-  border-color: rgba(139, 74, 240, 0.4);
-  box-shadow: var(--shadow-hover);
-}
-
-.tool-card .card-body { padding: 1.4rem; }
-
-.tool-card .card-title {
-  font-weight: 700;
-  margin-bottom: 0.5rem;
-}
-
-.tool-card .card-text {
-  color: var(--text-secondary);
-  font-size: 0.9rem;
-  line-height: 1.65;
-  margin-bottom: 1rem;
-}
-
-.tool-title-link {
-  color: var(--text-primary);
-  font-weight: 700;
-  text-decoration: none;
-  transition: color 0.2s ease;
-}
-
-.tool-title-link:hover { color: var(--accent-purple-light); }
-
-.badge-cat {
-  padding: 0.3rem 0.85rem;
-  border-radius: 999px;
-  background: var(--gradient-soft);
-  color: var(--accent-purple);
-  border: 1px solid rgba(139, 74, 240, 0.22);
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.03em;
-  text-transform: uppercase;
-}
-
-.anime-section {
-  padding: 3rem 0;
-}
-
-.anime-section-heading {
-  font-family: var(--font-display);
-  font-size: clamp(1.5rem, 3.4vw, 2.1rem);
-  font-weight: 700;
-  color: var(--text-primary);
-  text-align: center;
-  margin: 0 auto 0.6rem;
-}
-
-.anime-section-heading::after {
-  content: '';
-  display: block;
-  width: 64px;
-  height: 4px;
-  margin: 0.7rem auto 0;
-  border-radius: 3px;
-  background: var(--gradient-primary);
-}
-
-.anime-section-sub {
-  text-align: center;
-  color: var(--text-secondary);
-  font-size: 1rem;
-  max-width: 560px;
-  margin: 0 auto 2rem;
-}
-
+/* ── Chân trang ───────────────────────────────────────────────────────── */
 .anime-footer {
   text-align: center;
   padding: 2.5rem 1rem;
@@ -301,113 +221,7 @@ a:hover { color: var(--accent-purple-light); }
 .anime-footer p { margin: 0.25rem 0; }
 .anime-footer a { color: var(--accent-purple); }
 
-.contact-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  padding: 2rem;
-  box-shadow: var(--shadow-card);
-  max-width: 540px;
-  margin: 0 auto;
-}
-
-@media (max-width: 767.98px) {
-  .anime-container { padding: 0 1rem; }
-  .anime-header { flex-wrap: wrap; gap: 0.5rem; }
-  .anime-nav { width: 100%; justify-content: flex-start; }
-  .anime-hero { padding: 2.5rem 0.75rem 2rem; }
-  .anime-section { padding: 2rem 0; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-  }
-}
-
-/* ============================================================
-   12. Visual polish (animations, effects, depth)
-   ============================================================ */
-
-/* Card hover lift + shadow */
-.tool-card, .nd-unit-card {
-  transition: transform 0.28s cubic-bezier(.4,0,.2,1), box-shadow 0.28s ease, border-color 0.28s ease;
-}
-
-/* Smooth fade-in for page content */
-body { animation: fadeIn 0.4s ease; }
-@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
-/* Header subtle shadow on scroll */
-.site-header, .anime-header {
-  box-shadow: 0 2px 16px rgba(24, 28, 60, 0.04);
-}
-
-/* Button press feedback */
-.btn-primary-nd:active, .btn-outline-nd:active, .anime-btn:active {
-  transform: translateY(1px) scale(0.98);
-}
-
-/* Link hover underline animation */
-.site-nav a, .anime-nav-link {
-  position: relative;
-}
-.site-nav a::after, .anime-nav-link::after {
-  content: '';
-  position: absolute;
-  bottom: 4px;
-  left: 50%;
-  width: 0;
-  height: 2px;
-  background: var(--gradient-primary);
-  transition: width 0.2s ease, left 0.2s ease;
-}
-.site-nav a:hover::after, .anime-nav-link:hover::after {
-  width: 60%;
-  left: 20%;
-}
-
-/* Card image/icon hover scale */
-.tool-card img, .tool-card .card-icon {
-  transition: transform 0.3s ease;
-}
-.tool-card:hover img, .tool-card:hover .card-icon {
-  transform: scale(1.05);
-}
-
-/* Scrollbar styling */
-::-webkit-scrollbar { width: 10px; height: 10px; }
-::-webkit-scrollbar-track { background: var(--bg-body); }
-::-webkit-scrollbar-thumb { background: #cfd3e2; border-radius: 6px; }
-::-webkit-scrollbar-thumb:hover { background: var(--accent-purple-light); }
-
-/* Focus ring for accessibility */
-:focus-visible {
-  outline: 2px solid var(--accent-purple-light);
-  outline-offset: 2px;
-}
-
-/* Smooth transitions for all interactive elements */
-button, a, input, select, textarea {
-  transition: all 0.2s ease;
-}
-
-/* Loading spinner */
-@keyframes spin { to { transform: rotate(360deg); } }
-.fa-spin { animation: spin 1s linear infinite; }
-
-/* Subtle card entrance animation */
-.tool-card, .nd-unit-card {
-  animation: slideUp 0.4s ease both;
-}
-@keyframes slideUp {
-  from { opacity: 0; transform: translateY(12px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-/* ── Trang con: section, footer ──────────────────────────────────────── */
+/* ── Trang con: section ───────────────────────────────────────────────── */
 .site-section {
   padding: 2rem 0 3rem;
 }
@@ -431,20 +245,47 @@ button, a, input, select, textarea {
   margin-bottom: 2rem;
 }
 
-.site-footer {
-  text-align: center;
-  padding: 2rem 0;
-  margin-top: 3rem;
-  border-top: 1px solid var(--border);
-  color: var(--text-muted);
-  font-size: 0.85rem;
+/* ── Thẻ đơn vị (tra cứu địa giới) ───────────────────────────────────── */
+.nd-unit-card {
+  transition: transform 0.28s cubic-bezier(.4,0,.2,1), box-shadow 0.28s ease, border-color 0.28s ease;
+  animation: slideUp 0.4s ease both;
 }
 
-.site-footer a {
-  color: var(--text-secondary);
-  text-decoration: none;
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
-.site-footer a:hover {
-  color: var(--accent-purple);
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.fa-spin { animation: spin 1s linear infinite; }
+
+/* ── Tiện ích khác ────────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: var(--bg-body); }
+::-webkit-scrollbar-thumb { background: #cfd3e2; border-radius: 6px; }
+::-webkit-scrollbar-thumb:hover { background: var(--accent-purple-light); }
+
+:focus-visible {
+  outline: 2px solid var(--accent-purple-light);
+  outline-offset: 2px;
+}
+
+button, a, input, select, textarea {
+  transition: all 0.2s ease;
+}
+
+@media (max-width: 767.98px) {
+  .anime-container { padding: 0 1rem; }
+  .anime-header { flex-wrap: wrap; gap: 0.5rem; }
+  .anime-nav { width: 100%; justify-content: flex-start; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

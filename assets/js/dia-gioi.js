@@ -10,13 +10,12 @@
      communes: null,
      communesLoading: false,
      communesError: null,
-     mode: 'after',
      q: '',
      province: 'all',
      type: 'all',
      page: 1,
      pageSize: 15,
-     };
+   };
 
    const $ = (id) => document.getElementById(id);
    const TYPE_LABELS = { xa: 'Xã', phuong: 'Phường', dac_ku: 'Đặc khu' };
@@ -98,36 +97,6 @@
      renderPagination(totalPages);
    };
 
-   const renderBeforeCards = () => {
-     const host = $('dg-card-grid');
-     if (!host) return;
-     const beforeMap = new Map();
-     allCommunes().forEach((c) => { (c.beforeNames || []).forEach((name) => { if (!beforeMap.has(name)) beforeMap.set(name, []); beforeMap.get(name).push(c); }); });
-     let items = [...beforeMap.entries()];
-     const q = state.q.trim();
-     if (q) items = items.filter(([name]) => matches(name, q));
-     if (state.province !== 'all') items = items.filter(([, targets]) => targets.some((t) => t.provinceCode === state.province));
-     if (state.type !== 'all') items = items.filter(([, targets]) => targets.some((t) => t.type === state.type));
-     const total = items.length;
-     const totalPages = Math.max(1, Math.ceil(total / state.pageSize));
-     if (state.page > totalPages) state.page = totalPages;
-     if (state.page < 1) state.page = 1;
-     const start = (state.page - 1) * state.pageSize;
-     const pageItems = items.slice(start, start + state.pageSize);
-     const countEl = $('dg-count');
-     if (countEl) countEl.textContent = `${total} tên cũ`;
-     if (!total) { host.innerHTML = '<p class="nd-empty"><i class="fas fa-magnifying-glass me-2"></i>Không tìm thấy đơn vị phù hợp.</p>'; renderPagination(totalPages); return; }
-     host.innerHTML = pageItems.map(([name, targets]) => {
-       const targetNames = targets.map((t) => esc(t.name)).join(', ');
-       const province = targets[0]?.provinceName || '—';
-       return `<div class="nd-unit-card" data-name="${esc(name)}" data-action="detail-before" style="cursor:pointer;"><div class="nd-unit-top"><span class="nd-unit-code">Cũ</span><span class="nd-pill nd-pill--merge">Sáp nhập</span></div><div class="nd-unit-name">${esc(name)}</div><div class="nd-unit-meta">${esc(province)}</div><div class="nd-unit-from" style="margin-top:.5rem;"><small style="color:var(--text-muted);font-size:.75rem;">Sau:</small><span class="nd-pill nd-pill--soft">${esc(targetNames)}</span></div></div>`;
-     }).join('');
-     host.querySelectorAll('[data-action="detail-before"]').forEach((el) => {
-       el.addEventListener('click', () => { const name = el.dataset.name; const targets = beforeMap.get(name) || []; openDetailBefore(name, targets); });
-     });
-     renderPagination(totalPages);
-     };
-
    const renderPagination = (totalPages) => {
      const host = $('dg-pagination');
      if (!host) return;
@@ -157,7 +126,7 @@
      host.querySelectorAll('[data-page]').forEach((btn) => {
        btn.addEventListener('click', () => {
          state.page = parseInt(btn.dataset.page, 10);
-         renderCards();
+         renderAfterCards();
        });
      });
      const goBtn = $('dg-page-go');
@@ -167,7 +136,7 @@
          const p = parseInt(input.value, 10);
          if (!isNaN(p) && p >= 1 && p <= totalPages) {
            state.page = p;
-           renderCards();
+           renderAfterCards();
          }
        });
        input.addEventListener('keydown', (e) => {
@@ -175,8 +144,6 @@
        });
      }
    };
-
-  const renderCards = () => { if (state.mode === 'after') renderAfterCards(); else renderBeforeCards(); };
 
    const openDetail = async (code) => {
      const c = allCommunes().find((x) => x.code === code);
@@ -251,16 +218,6 @@
       }
    };
 
-   const openDetailBefore = (name, targets) => {
-     const modalEl = $('dg-modal');
-     if (!modalEl) return;
-     const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
-     $('dg-modal-title').textContent = name;
-     const targetList = targets.map((t) => `<li><strong>${esc(t.name)}</strong> (${esc(t.code)}) — ${esc(t.provinceName || '—')}</li>`).join('');
-     $('dg-modal-body').innerHTML = `<div style="display:grid;gap:1rem;"><div><strong>Tên trước sáp nhập:</strong> ${esc(name)}</div><div><strong>Sau sáp nhập thuộc:</strong><ul style="margin:.5rem 0 0 1.5rem;">${targetList}</ul></div></div>`;
-     modal.show();
-   };
-
    const populateProvinceFilter = () => {
      const select = $('dg-commune-province');
      if (!select) return;
@@ -279,37 +236,22 @@
      host.innerHTML = items.map((i) => `<div class="nd-stat"><i class="fas ${i.icon}" aria-hidden="true"></i><strong>${i.value.toLocaleString('vi-VN')}</strong><span>${esc(i.label)}</span></div>`).join('');
    };
 
-   document.querySelectorAll('.nd-mode-btn').forEach((btn) => {
-     btn.addEventListener('click', () => {
-       state.mode = btn.dataset.mode;
-       state.page = 1;
-       document.querySelectorAll('.nd-mode-btn').forEach((b) => {
-         const active = b.dataset.mode === state.mode;
-         b.classList.toggle('active', active);
-         b.style.background = active ? 'var(--accent-purple)' : 'var(--bg-card)';
-         b.style.color = active ? '#fff' : 'var(--text-secondary)';
-         b.style.borderColor = active ? 'var(--accent-purple)' : 'var(--border)';
-       });
-       renderCards();
-     });
-   });
-
-   const search = $('dg-search');
-   let timer;
-   if (search) { search.addEventListener('input', () => { clearTimeout(timer); timer = setTimeout(() => { state.q = search.value; state.page = 1; renderCards(); }, 120); }); }
+  const search = $('dg-search');
+  let timer;
+  if (search) { search.addEventListener('input', () => { clearTimeout(timer); timer = setTimeout(() => { state.q = search.value; state.page = 1; renderAfterCards(); }, 120); }); }
 
    const provSelect = $('dg-commune-province');
-   if (provSelect) { provSelect.addEventListener('change', (e) => { state.province = e.target.value; state.page = 1; renderCards(); }); }
+   if (provSelect) { provSelect.addEventListener('change', (e) => { state.province = e.target.value; state.page = 1; renderAfterCards(); }); }
 
    const typeSelect = $('dg-commune-type');
-   if (typeSelect) { typeSelect.addEventListener('change', (e) => { state.type = e.target.value; state.page = 1; renderCards(); }); }
+   if (typeSelect) { typeSelect.addEventListener('change', (e) => { state.type = e.target.value; state.page = 1; renderAfterCards(); }); }
 
    const init = async () => {
      try {
        state.communes = await DB.getCommunes();
        renderStats();
        populateProvinceFilter();
-       renderCards();
+       renderAfterCards();
        const badge = $('dg-source');
        if (badge) badge.textContent = state.communes.source === 'supabase' ? 'Supabase' : 'JSON tĩnh';
      } catch (err) {
