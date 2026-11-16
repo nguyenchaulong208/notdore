@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tính phân bổ tiền bảo hiểm — NotDore</title>
+  <meta name="description" content="Tính và phân bổ mức đóng BHXH, BHYT, BHTN theo ngườời sử dụng lao động (21,5%) và ngườời lao động (10,5%)">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/fontawesome.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/solid.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" media="print" onload="this.media='all'">
+  <link rel="stylesheet" href="../assets/css/notdore.css">
+  <link rel="stylesheet" href="../assets/css/tools.css">
+    <meta name="google-adsense-account" content="ca-pub-9767208027997083">
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9767208027997083" crossorigin="anonymous"></script>
+</head>
+<body>
+  <div class="anime-container">
+    <header class="anime-header">
+      <a class="anime-brand" href="../index.html">
+      <div class="anime-brand-text">
+        <span class="brand-fragment">Not</span>
+        <span class="brand-fragment brand-fragment--main">Dore</span>
+      </div>
+    </a>
+      <nav class="anime-nav" aria-label="Điều hướng chính">
+        <a href="../index.html" class="anime-nav-link" aria-current="page">Công cụ</a>
+        <a href="../thu-vien.html" class="anime-nav-link">Thư viện</a>
+        <a href="../contact.html" class="anime-nav-link">Liên hệ</a>
+      </nav>
+    </header>
+
+    <main class="site-section">
+      <div class="container" style="max-width: 1080px;">
+        <h1 class="site-section-heading">Tính phân bổ tiền bảo hiểm</h1>
+        <p class="site-section-sub">Phân bổ mức đóng BHXH, BHYT, BHTN theo hai bên: ngườời sử dụng lao động (21,5%) và ngườời lao động (10,5%)</p>
+
+        <section class="nd-calc" aria-labelledby="calc-form-title">
+          <h2 class="nd-calc-title" id="calc-form-title"><i class="fas fa-calculator" aria-hidden="true"></i> Dữ liệu tính toán</h2>
+
+          <div class="nd-calc-modes" role="radiogroup" aria-label="Chọn cách nhập dữ liệu">
+            <label class="nd-calc-mode is-active">
+              <input type="radio" name="calc-mode" value="salary" checked>
+              <span>
+                <span class="nd-calc-mode-title">Từ mức lương đóng bảo hiểm</span>
+                <span class="nd-calc-mode-hint">Nhập mức lương cơ sở dùng để đóng BHXH tháng</span>
+              </span>
+            </label>
+            <label class="nd-calc-mode">
+              <input type="radio" name="calc-mode" value="total">
+              <span>
+                <span class="nd-calc-mode-title">Từ tổng số tiền đã đóng</span>
+                <span class="nd-calc-mode-hint">Nhập tổng tiền bảo hiểm thực nộp, tính ngược mức lương</span>
+              </span>
+            </label>
+          </div>
+
+          <div class="nd-calc-field">
+            <label class="nd-calc-label" for="bhxh-input" id="calc-label">Mức lương đóng bảo hiểm</label>
+            <div class="nd-calc-inputwrap">
+              <i class="fas fa-coins" aria-hidden="true"></i>
+              <input id="bhxh-input" type="text" inputmode="numeric" autocomplete="off"
+                     placeholder="VD: 191.500.000" aria-labelledby="calc-label">
+              <span class="nd-calc-unit">VNĐ</span>
+            </div>
+            <p class="nd-calc-hint">Có thể nhập kèm dấu chấm, dấu phẩy hoặc khoảng trắng (VD: 191.500.000).</p>
+          </div>
+
+          <p class="nd-calc-error" id="calc-error" role="alert" hidden>Vui lòng nhập một số tiền hợp lệ (lớn hơn 0).</p>
+
+          <div class="nd-calc-actions">
+            <button type="button" id="calc-run" class="btn-primary-nd nd-submit-btn">
+              <i class="fas fa-bolt me-1" aria-hidden="true"></i> Tính phân bổ
+            </button>
+            <button type="button" id="calc-reset" class="nd-ghost-btn">
+              <i class="fas fa-rotate-left me-1" aria-hidden="true"></i> Nhập lại
+            </button>
+          </div>
+        </section>
+
+        <section id="calc-result" class="nd-calc-out" aria-live="polite" hidden>
+          <div class="nd-calc-summary">
+            <div class="nd-calc-stat">
+              <div class="nd-calc-stat-label">Mức lương đóng bảo hiểm</div>
+              <div class="nd-calc-stat-value" id="out-base">—</div>
+            </div>
+            <div class="nd-calc-stat">
+              <div class="nd-calc-stat-label">Tổng số tiền đã đóng (32%)</div>
+              <div class="nd-calc-stat-value" id="out-total">—</div>
+            </div>
+          </div>
+
+          <div class="nd-calc-panels">
+            <article class="nd-calc-panel nd-calc-panel--emp">
+              <div class="nd-calc-panel-head">
+                <div>
+                  <div class="nd-calc-panel-title">Ngườời sử dụng lao động</div>
+                  <div class="nd-calc-panel-sub">Khấu trừ vào chi phí, ghi nhận trả cùng lương</div>
+                </div>
+                <span class="nd-calc-panel-rate">21,5%</span>
+              </div>
+              <table>
+                <thead>
+                  <tr><th scope="col">Loại bảo hiểm</th><th scope="col">Tỷ lệ</th><th scope="col">Số tiền</th></tr>
+                </thead>
+                <tbody id="out-emp-body"></tbody>
+                <tfoot>
+                  <tr>
+                    <td colspan="2">Tổng NSDLD</td>
+                    <td class="nd-calc-panel-total" id="out-emp-total">—</td>
+                  </tr>
+                </tfoot>
+              </table>
+            </article>
+
+            <article class="nd-calc-panel nd-calc-panel--nld">
+              <div class="nd-calc-panel-head">
+                <div>
+                  <div class="nd-calc-panel-title">Ngườời lao động</div>
+                  <div class="nd-calc-panel-sub">Khấu trừ từ lương của ngườời lao động</div>
+                </div>
+                <span class="nd-calc-panel-rate">10,5%</span>
+              </div>
+              <table>
+                <thead>
+                  <tr><th scope="col">Loại bảo hiểm</th><th scope="col">Tỷ lệ</th><th scope="col">Số tiền</th></tr>
+                </thead>
+                <tbody id="out-nld-body"></tbody>
+                <tfoot>
+                  <tr>
+                    <td colspan="2">Tổng NLD</td>
+                    <td class="nd-calc-panel-total" id="out-nld-total">—</td>
+                  </tr>
+                </tfoot>
+              </table>
+            </article>
+          </div>
+
+          <div class="nd-calc-grand">
+            <div>
+              <div class="nd-calc-grand-label">Tổng số tiền bảo hiểm phải nộp</div>
+              <div class="nd-calc-grand-sub">Cả hai bên cộng lại</div>
+            </div>
+            <div class="nd-calc-grand-value" id="out-grand">—</div>
+          </div>
+
+          <div class="nd-calc-tools">
+            <button type="button" id="calc-copy" class="nd-ghost-btn">
+              <i class="fas fa-copy me-1" aria-hidden="true"></i> Sao chép kết quả
+            </button>
+            <button type="button" id="calc-export" class="nd-ghost-btn">
+              <i class="fas fa-file-arrow-down me-1" aria-hidden="true"></i> Xuất file .txt
+            </button>
+            <span class="nd-calc-copied" id="calc-copied" role="status" aria-live="polite"></span>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <footer class="anime-footer">
+      <p>NotDore — Theodore.</p>
+      <p>
+        <a href="../index.html">Trang chủ</a> ·
+        <a href="../about.html">Giới thiệu</a> ·
+        <a href="../privacy.html">Chính sách bảo mật</a> ·
+        <a href="../contact.html">Liên hệ</a>
+      </p>
+    <span id="online-badge" class="nd-online-badge" title="Số ngườời đang trực tuyến (cập nhật mỗi 15 giây)"><i class="fas fa-signal" aria-hidden="true"></i><span class="nd-online-num">&hellip;</span></span>
+      </footer>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" defer></script>
+  <script src="../assets/js/tinh-phan-bo-bhxh.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../assets/js/config.js"></script>
+      <script src="../assets/js/online-counter.js"></script>
+  </body>
+</html>
