@@ -10,8 +10,7 @@
       "dev": "node scripts/dev-server.mjs",
       "admin": "node admin/server.mjs",
       "check:links": "node scripts/check-links.mjs",
-      "brain:3d": "node scripts/make-brain3d.mjs",
-      "build": "webpack --config webpack.config.js"
+      "brain:3d": "node scripts/make-brain3d.mjs"
     },
   "description": "Website công cụ chạy trực tiếp trên trình duyệt. Không cần cài đặt, không gửi dữ liệu lên server.",
   "repository": {
