@@ -25,6 +25,17 @@
     copyAllBtn: $('copy-all-btn'),
     exportTxtBtn: $('export-txt-btn'),
     clearBtn: $('clear-btn'),
+    genText: $('gen-text'),
+    genFormat: $('gen-format'),
+    genSize: $('gen-size'),
+    genEccWrap: $('gen-ecc-wrap'),
+    genEcc: $('gen-ecc'),
+    genShowValue: $('gen-show-value'),
+    genError: $('gen-error'),
+    genBtn: $('gen-btn'),
+    genOut: $('gen-out'),
+    genCanvas: $('gen-canvas'),
+    genDownloadBtn: $('gen-download-btn'),
   };
 
   const MAX_DIM = 1600;
@@ -269,6 +280,179 @@
     els.cameraBtn.classList.remove('is-hidden');
     els.scanStatus.textContent = '';
   }
+
+  /* ---------- Tạo mã từ text ---------- */
+
+  const GEN_FORMATS = [
+    { value: 'QR_CODE', label: 'QR Code', engine: 'zxing' },
+    { value: 'DATA_MATRIX', label: 'Data Matrix', engine: 'zxing' },
+    { value: 'CODE_128', label: 'Code 128', engine: 'jsbarcode', js: 'CODE128' },
+    { value: 'CODE_39', label: 'Code 39', engine: 'jsbarcode', js: 'CODE39' },
+    { value: 'EAN_13', label: 'EAN-13', engine: 'jsbarcode', js: 'EAN13' },
+    { value: 'EAN_8', label: 'EAN-8', engine: 'jsbarcode', js: 'EAN8' },
+    { value: 'UPC_A', label: 'UPC-A', engine: 'jsbarcode', js: 'UPC' },
+    { value: 'ITF', label: 'ITF', engine: 'jsbarcode', js: 'ITF' },
+    { value: 'CODABAR', label: 'Codabar', engine: 'jsbarcode', js: 'CODABAR' },
+  ];
+
+  function genFormatInfo(fmt) {
+    return GEN_FORMATS.find(x => x.value === fmt);
+  }
+
+  /** Chữ số kiểm tra cho EAN/UPC (áp dụng khi nhập thiếu 1 chữ số cuối). */
+  function checkDigit(digits) {
+    let sum = 0;
+    const n = digits.length;
+    for (let i = 0; i < n; i++) {
+      const w = (n % 2 === 0) ? (i % 2 === 0 ? 1 : 3) : (i % 2 === 0 ? 3 : 1);
+      sum += Number(digits[i]) * w;
+    }
+    return String((10 - (sum % 10)) % 10);
+  }
+
+  /** Trả về chuỗi lỗi, hoặc null nếu hợp lệ. */
+  function validatePayload(fmt, text) {
+    const digits = /^\d+$/.test(text);
+    if (fmt === 'EAN_13' && (!digits || (text.length !== 12 && text.length !== 13))) {
+      return 'EAN-13 cần đúng 12 hoặc 13 chữ số (thiếu thì tự bổ sung chữ số kiểm tra).';
+    }
+    if (fmt === 'EAN_8' && (!digits || (text.length !== 7 && text.length !== 8))) {
+      return 'EAN-8 cần đúng 7 hoặc 8 chữ số.';
+    }
+    if (fmt === 'UPC_A' && (!digits || (text.length !== 11 && text.length !== 12))) {
+      return 'UPC-A cần đúng 11 hoặc 12 chữ số.';
+    }
+    if (fmt === 'CODE_39' && !/^[0-9A-Z \-\.\$\/\+\%]+$/.test(text)) {
+      return 'Code 39 chỉ hỗ trợ chữ hoa, số và ký tự - . $ / + %';
+    }
+    if (fmt === 'ITF' && (!digits || text.length % 2 !== 0)) {
+      return 'ITF cần số lượng chữ số chẵn (thường là 14 cho mã vạch hàng hóa).';
+    }
+    if (fmt === 'CODABAR' && !/^[0-9\-\$\:\/\.\+ABCD]+$/.test(text.toUpperCase())) {
+      return 'Codabar chỉ hỗ trợ số và ký tự - $ : / . + (có thể kèm A/B/C/D đầu–cuối).';
+    }
+    if (text.length > 1500) {
+      return 'Nội dung quá dài (tối đa 1500 ký tự).';
+    }
+    return null;
+  }
+
+  function genShowError(msg) {
+    els.genError.textContent = msg || '';
+    els.genError.style.display = msg ? 'block' : 'none';
+  }
+
+  function renderMatrix(matrix) {
+    const mw = matrix.getWidth();
+    const mh = matrix.getHeight();
+    let scale = Math.max(1, Math.floor(640 / mw));
+    scale = Math.min(scale, 12);
+    while (mh * scale > 600 && scale > 1) scale -= 1;
+    const pad = 8;
+    const canvas = els.genCanvas;
+    canvas.width = mw * scale + pad * 2;
+    canvas.height = mh * scale + pad * 2;
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = '#000000';
+    for (let y = 0; y < mh; y++) {
+      for (let x = 0; x < mw; x++) {
+        if (matrix.get(x, y)) ctx.fillRect(pad + x * scale, pad + y * scale, scale, scale);
+      }
+    }
+    els.genOut.classList.remove('is-hidden');
+  }
+
+  /** Vẽ barcode 1D bằng JsBarcode vào canvas xem trước. */
+  function renderWithJsBarcode(info, payload, size) {
+    if (!window.JsBarcode) throw new Error('Thư viện JsBarcode chưa tải xong.');
+    // Xóa canvas cũ bằng cách thay kích thước (JsBarcode vẽ đè lên)
+    els.genCanvas.width = 1;
+    els.genCanvas.height = 1;
+    window.JsBarcode(els.genCanvas, payload, {
+      format: info.js,
+      width: 2,
+      height: Math.max(50, Math.round(size * 0.24)),
+      margin: 10,
+      displayValue: els.genShowValue.value === '1',
+      fontSize: 16,
+      lineColor: '#000000',
+      background: '#ffffff',
+      textMargin: 4,
+    });
+    els.genOut.classList.remove('is-hidden');
+  }
+
+  function generateCode() {
+    genShowError('');
+    const text = els.genText.value.trim();
+    if (!text) {
+      genShowError('Nhập nội dung cần tạo mã.');
+      els.genOut.classList.add('is-hidden');
+      return;
+    }
+    const fmt = els.genFormat.value;
+    const info = genFormatInfo(fmt);
+    if (!info) return;
+
+    const err = validatePayload(fmt, text);
+    if (err) {
+      genShowError(err);
+      els.genOut.classList.add('is-hidden');
+      return;
+    }
+    ensureLib();
+
+    const size = Math.min(1200, Math.max(120, parseInt(els.genSize.value, 10) || 320));
+    let payload = text;
+    if (fmt === 'EAN_13' && text.length === 12) payload = text + checkDigit(text);
+    else if (fmt === 'EAN_8' && text.length === 7) payload = text + checkDigit(text);
+    else if (fmt === 'UPC_A' && text.length === 11) payload = text + checkDigit(text);
+
+    try {
+      if (info.engine === 'jsbarcode') {
+        renderWithJsBarcode(info, payload, size);
+        return;
+      }
+      // Mã 2D bằng ZXing (QRCodeWriter / DataMatrixWriter)
+      const hints = new Map();
+      hints.set(ZXing.EncodeHintType.MARGIN, 2);
+      if (fmt === 'QR_CODE') hints.set(ZXing.EncodeHintType.ERROR_CORRECTION, els.genEcc.value);
+      const Writer = fmt === 'DATA_MATRIX' ? ZXing.DataMatrixWriter : ZXing.QRCodeWriter;
+      const matrix = new Writer().encode(payload, ZXing.BarcodeFormat[fmt], size, size, hints);
+      renderMatrix(matrix);
+    } catch (e) {
+      genShowError('Không tạo được mã: ' + (e && e.message ? e.message : e));
+      els.genOut.classList.add('is-hidden');
+    }
+  }
+
+  function updateGenMeta() {
+    els.genEccWrap.classList.toggle('is-hidden', els.genFormat.value !== 'QR_CODE');
+    els.genOut.classList.add('is-hidden');
+    genShowError('');
+  }
+
+  function initGen() {
+    els.genFormat.innerHTML = GEN_FORMATS.map(f => `<option value="${f.value}">${f.label}</option>`).join('');
+    updateGenMeta();
+  }
+
+  els.genBtn.addEventListener('click', generateCode);
+  els.genFormat.addEventListener('change', updateGenMeta);
+  els.genDownloadBtn.addEventListener('click', () => {
+    els.genCanvas.toBlob((blob) => {
+      if (!blob) return;
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = els.genFormat.value.toLowerCase() + '.png';
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+    }, 'image/png');
+  });
+
+  initGen();
 
   /* ---------- Sự kiện ---------- */
 
