@@ -68,8 +68,16 @@
             <select id="device-select" class="nd-select is-hidden"></select>
           </div>
 
-          <input id="paste-catch" type="text" class="nd-input nd-paste-catch is-hidden"
-                 placeholder="Nhấn Ctrl+V (Cmd+V) tại ô này…" aria-label="Dán ảnh từ clipboard">
+          <div id="paste-box" class="is-hidden">
+            <input id="paste-catch" type="text" class="nd-input"
+                   placeholder="Nhấn Ctrl+V (Cmd+V) tại ô này…" aria-label="Dán ảnh từ clipboard">
+            <div class="nd-paste-hint">
+              <span>Không dán được?</span>
+              <button id="paste-auto-btn" type="button" class="nd-mini-btn nd-mini-btn--lg">
+                <i class="fas fa-clipboard me-1"></i> Đọc clipboard tự động
+              </button>
+            </div>
+          </div>
           <p class="nd-hint nd-mb-1">Mẹo: nhấn <kbd>Ctrl</kbd>+<kbd>V</kbd> ở bất kỳ đâu trong trang cũng dán được ảnh.</p>
 
           <div id="scan-wrap" class="nd-scan-wrap is-hidden">
