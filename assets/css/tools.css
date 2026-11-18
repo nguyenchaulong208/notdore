@@ -1677,6 +1677,14 @@
   margin-top: .75rem;
   min-height: 1.2em;
 }
+.nd-paste-hint {
+  display: flex;
+  align-items: center;
+  gap: .6rem;
+  margin-top: .6rem;
+  font-size: .82rem;
+  color: var(--text-muted);
+}
 .nd-result + .nd-result {
   border-top: 1px dashed var(--border);
   margin-top: .75rem;

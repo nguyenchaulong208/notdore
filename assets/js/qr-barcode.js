@@ -15,7 +15,9 @@
     cameraBtn: $('camera-btn'),
     deviceSelect: $('device-select'),
     pasteBtn: $('paste-btn'),
+    pasteBox: $('paste-box'),
     pasteCatch: $('paste-catch'),
+    pasteAutoBtn: $('paste-auto-btn'),
     scanWrap: $('scan-wrap'),
     scanVideo: $('scan-video'),
     scanStatus: $('scan-status'),
@@ -469,56 +471,98 @@
     els.dropzone.classList.remove('is-drag');
   }));
   els.dropzone.addEventListener('drop', (e) => {
-    decodeFiles(Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/')));
+    runDecode(Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/')));
   });
   els.fileInput.addEventListener('change', () => {
-    decodeFiles(Array.from(els.fileInput.files || []));
+    runDecode(Array.from(els.fileInput.files || []));
     els.fileInput.value = '';
   });
 
   /* ---------- Dán từ clipboard ---------- */
 
   function showPasteCatcher() {
-    els.pasteCatch.classList.remove('is-hidden');
+    els.pasteBox.classList.remove('is-hidden');
     els.fileStatus.textContent = 'Nhấn Ctrl+V (Cmd+V) tại ô đã hiện…';
     els.pasteCatch.focus();
   }
 
   function hidePasteCatcher() {
-    els.pasteCatch.classList.add('is-hidden');
+    els.pasteBox.classList.add('is-hidden');
     els.pasteCatch.value = '';
   }
 
-  async function pasteFromClipboard() {
-    ensureLib();
-    // Đường 1: đọc clipboard trực tiếp (cần quyền, Chrome/Edge)
-    if (navigator.clipboard && navigator.clipboard.read) {
-      try {
-        const items = await navigator.clipboard.read();
-        const files = [];
-        for (const item of items) {
-          const type = (item.types || []).find(t => t.startsWith('image/'));
-          if (!type) continue;
-          const blob = await item.getType(type);
-          const ext = type.split('/')[1] || 'png';
-          files.push(new File([blob], `clipboard-${Date.now()}.${ext}`, { type }));
-        }
-        if (files.length) {
-          decodeFiles(files);
-          return;
-        }
-        els.fileStatus.textContent = 'Clipboard không có ảnh — thử dán thủ công.';
-      } catch (e) {
-        els.fileStatus.textContent = 'Không đọc được clipboard tự động — dán thủ công.';
-      }
-    } else {
-      els.fileStatus.textContent = 'Trình duyệt không hỗ trợ đọc clipboard — dán thủ công.';
+  /** Đọc ảnh trong clipboard. Ném lỗi nếu trình duyệt chặn/từ chối. */
+  async function readClipboardImages() {
+    if (!(navigator.clipboard && navigator.clipboard.read)) {
+      throw new Error('Trình duyệt không hỗ trợ đọc clipboard.');
     }
-    // Đường 2: ô dán dự phòng
+    const items = await navigator.clipboard.read();
+    const files = [];
+    for (const item of items) {
+      const type = (item.types || []).find(t => t.startsWith('image/'));
+      if (!type) continue;
+      const blob = await item.getType(type);
+      const ext = type.split('/')[1] || 'png';
+      files.push(new File([blob], `clipboard-${Date.now()}.${ext}`, { type }));
+    }
+    return files;
+  }
+
+  async function pasteFromClipboard() {
+    // Luôn mở ô dán trước: người dùng có đường dùng ngay, không phụ thuộc quyền clipboard.
     showPasteCatcher();
+    try {
+      let state = 'unknown';
+      try {
+        if (navigator.permissions && navigator.permissions.query) {
+          state = (await navigator.permissions.query({ name: 'clipboard-read' })).state;
+        }
+      } catch (e) { /* trình duyệt không hỗ trợ query */ }
+
+      if (state === 'denied') {
+        els.fileStatus.textContent = 'Trình duyệt đang chặn đọc clipboard — hãy dán thủ công vào ô.';
+        return;
+      }
+      if (state !== 'granted') {
+        els.fileStatus.textContent = 'Nhấn Ctrl+V vào ô, hoặc bấm “Đọc clipboard tự động” để cấp quyền.';
+        return;
+      }
+      const files = await readClipboardImages();
+      if (files.length) {
+        hidePasteCatcher();
+        runDecode(files);
+      } else {
+        els.fileStatus.textContent = 'Clipboard không có ảnh — hãy dán thủ công vào ô.';
+      }
+    } catch (e) {
+      els.fileStatus.textContent = 'Không đọc được clipboard — hãy dán thủ công vào ô.';
+    }
+  }
+
+  async function pasteAutoRead() {
+    els.fileStatus.textContent = 'Đang đọc clipboard…';
+    try {
+      const files = await readClipboardImages();
+      if (files.length) {
+        hidePasteCatcher();
+        runDecode(files);
+      } else {
+        els.fileStatus.textContent = 'Clipboard không có ảnh.';
+      }
+    } catch (e) {
+      els.fileStatus.textContent = 'Không đọc được clipboard: ' + (e && e.message ? e.message : e);
+    }
+  }
+
+  function runDecode(files) {
+    decodeFiles(files).catch(err => {
+      console.error('Lỗi khi xử lý ảnh:', err);
+      els.fileStatus.textContent = 'Lỗi khi xử lý ảnh: ' + (err && err.message ? err.message : err);
+    });
   }
 
   els.pasteBtn.addEventListener('click', pasteFromClipboard);
+  els.pasteAutoBtn.addEventListener('click', pasteAutoRead);
 
   els.pasteCatch.addEventListener('paste', (e) => {
     const files = Array.from((e.clipboardData || {}).items || [])
@@ -528,7 +572,7 @@
     if (files.length) {
       e.preventDefault();
       hidePasteCatcher();
-      decodeFiles(files);
+      runDecode(files);
     }
   });
 
@@ -540,7 +584,7 @@
     const items = Array.from((e.clipboardData || {}).items || []).filter(i => i.type.startsWith('image/'));
     if (!items.length) return;
     e.preventDefault();
-    decodeFiles(items.map(i => i.getAsFile()).filter(Boolean));
+    runDecode(items.map(i => i.getAsFile()).filter(Boolean));
   });
 
   els.cameraBtn.addEventListener('click', startScan);
