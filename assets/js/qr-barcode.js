@@ -63,17 +63,34 @@
     return reader;
   }
 
-  function drawToCanvas(img, maxDim) {
-    const canvas = document.createElement('canvas');
+  /**
+   * Vẽ ảnh ra canvas ở mức phóng `factor` (giữ pixel cứng), tùy chọn tăng tương phản.
+   * Ảnh chụp/nén thường cần phóng lớn hoặc co mức xám mới giải mã được.
+   */
+  function drawToCanvas(img, factor, gray, maxDim) {
     let w = img.naturalWidth || img.width || 0;
     let h = img.naturalHeight || img.height || 0;
     if (!w || !h) throw new Error('Không đọc được kích thước ảnh.');
-    const k = Math.min(1, maxDim / Math.max(w, h));
-    w = Math.max(1, Math.round(w * k));
-    h = Math.max(1, Math.round(h * k));
-    canvas.width = w;
-    canvas.height = h;
-    canvas.getContext('2d', { willReadFrequently: true }).drawImage(img, 0, 0, w, h);
+    let k = factor;
+    if (Math.max(w, h) * k > maxDim) k = maxDim / Math.max(w, h);
+    const cw = Math.max(1, Math.round(w * k));
+    const ch = Math.max(1, Math.round(h * k));
+    const canvas = document.createElement('canvas');
+    canvas.width = cw;
+    canvas.height = ch;
+    const ctx = canvas.getContext('2d', { willReadFrequently: true });
+    ctx.imageSmoothingEnabled = false;
+    ctx.drawImage(img, 0, 0, cw, ch);
+    if (gray) {
+      const d = ctx.getImageData(0, 0, cw, ch);
+      const px = d.data;
+      for (let i = 0; i < px.length; i += 4) {
+        const lum = 0.299 * px[i] + 0.587 * px[i + 1] + 0.114 * px[i + 2];
+        const v = Math.min(255, Math.max(0, (lum - 128) * 2.2 + 128));
+        px[i] = px[i + 1] = px[i + 2] = v;
+      }
+      ctx.putImageData(d, 0, 0);
+    }
     return canvas;
   }
 
@@ -90,8 +107,30 @@
     }
   }
 
+  /**
+   * Thử lần lượt các mức phóng/tương phản rồi mới bỏ cuộc.
+   * factors: mảng [factor, gray]
+   */
+  function decodeWithRetries(img, factors) {
+    ensureLib();
+    for (let i = 0; i < factors.length; i++) {
+      const f = factors[i];
+      let canvas;
+      try {
+        canvas = drawToCanvas(img, f[0], !!f[1], MAX_DIM);
+      } catch (e) {
+        return null;
+      }
+      const out = decodeCanvas(canvas);
+      if (out) return out;
+    }
+    return null;
+  }
+
+  const DECODE_FACTORS = [[1], [2, true], [3], [4, true]];
+
   async function decodeImageEl(img) {
-    return decodeCanvas(drawToCanvas(img, MAX_DIM));
+    return decodeWithRetries(img, DECODE_FACTORS);
   }
 
   let formatMap = null;
@@ -265,7 +304,7 @@
     const v = els.scanVideo;
     if (!v || v.readyState < 2 || !v.videoWidth) return;
     try {
-      const out = decodeCanvas(drawToCanvas(v, 1200));
+      const out = decodeWithRetries(v, [[1], [2, true], [3]]);
       if (out) {
         addResult({ source: 'Camera', format: out.format, text: out.text });
         const short = out.text.slice(0, 40);
