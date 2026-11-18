@@ -4,30 +4,42 @@
   "private": true,
   "type": "module",
   "engines": {
-      "node": ">=20"
-    },
-    "scripts": {
+    "node": ">=20"
+  },
+  "scripts": {
       "dev": "node scripts/dev-server.mjs",
       "admin": "node admin/server.mjs",
       "check:links": "node scripts/check-links.mjs",
-      "brain:3d": "node scripts/make-brain3d.mjs"
+      "brain:3d": "node scripts/make-brain3d.mjs",
+      "build": "webpack --config webpack.config.js"
     },
-    "description": "Website công cụ chạy trực tiếp trên trình duyệt. Không cần cài đặt, không gửi dữ liệu lên server.",
-    "repository": {
-      "type": "git",
-      "url": "git+https://github.com/nguyenchaulong208/notdore.git"
-    },
-    "keywords": [
-      "cong-cu",
-      "bao-hiem",
-      "dia-gioi-hanh-chinh",
-      "excel",
-      "notdore"
-    ],
-    "author": "Theodore",
-    "license": "ISC",
-    "bugs": {
-      "url": "https://github.com/nguyenchaulong208/notdore/issues"
-    },
-    "homepage": "https://www.notdore.io.vn"
+  "description": "Website công cụ chạy trực tiếp trên trình duyệt. Không cần cài đặt, không gửi dữ liệu lên server.",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nguyenchaulong208/notdore.git"
+  },
+  "keywords": [
+    "cong-cu",
+    "bao-hiem",
+    "dia-gioi-hanh-chinh",
+    "excel",
+    "notdore"
+  ],
+  "author": "Theodore",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/nguyenchaulong208/notdore/issues"
+  },
+  "homepage": "https://www.notdore.io.vn",
+  "devDependencies": {
+    "@babel/core": "^8.1.2",
+    "@babel/preset-env": "^8.0.7",
+    "babel-loader": "^10.1.1",
+    "css-loader": "^7.1.5",
+    "html-webpack-plugin": "^5.6.8",
+    "mini-css-extract-plugin": "^2.10.2",
+    "postcss-loader": "^8.2.1",
+    "webpack": "^5.112.2",
+    "webpack-cli": "^7.3.1"
   }
+}
