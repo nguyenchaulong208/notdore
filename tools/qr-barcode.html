@@ -103,6 +103,61 @@
           </div>
           <div id="result-list" class="nd-output"></div>
         </div>
+
+        <!-- Tạo mã từ text -->
+        <div class="nd-panel">
+          <h3 class="nd-heading nd-heading--lg">Tạo mã từ text</h3>
+
+          <div class="nd-field nd-mb-1">
+            <label class="nd-label nd-label--md" for="gen-text">Nội dung cần mã hóa</label>
+            <textarea id="gen-text" rows="3" class="nd-form-control" placeholder="Nhập text, số, link…"></textarea>
+          </div>
+
+          <div class="nd-row">
+            <div class="nd-field nd-field--grow">
+              <label class="nd-label" for="gen-format">Loại mã</label>
+              <select id="gen-format" class="nd-select"></select>
+            </div>
+            <div class="nd-field">
+              <label class="nd-label" for="gen-size">Kích thước (px)</label>
+              <input id="gen-size" type="number" min="120" max="1200" step="10" value="320" class="nd-form-control">
+            </div>
+            <div class="nd-field" id="gen-ecc-wrap">
+              <label class="nd-label" for="gen-ecc">Mức sửa lỗi QR</label>
+              <select id="gen-ecc" class="nd-select">
+                <option value="L">Thấp (L ~7%)</option>
+                <option value="M" selected>Trung bình (M ~15%)</option>
+                <option value="Q">Cao (Q ~25%)</option>
+                <option value="H">Rất cao (H ~30%)</option>
+              </select>
+            </div>
+            <div class="nd-field">
+              <label class="nd-label" for="gen-show-value">Hiện số dưới mã</label>
+              <select id="gen-show-value" class="nd-select">
+                <option value="1" selected>Có</option>
+                <option value="0">Không</option>
+              </select>
+            </div>
+          </div>
+
+          <div id="gen-error" class="nd-alert" role="alert"></div>
+
+          <button id="gen-btn" class="btn-primary-nd nd-btn-block nd-mt-1">
+            <i class="fas fa-qrcode me-1"></i> Tạo mã
+          </button>
+
+          <div id="gen-out" class="is-hidden nd-mt-1">
+            <div class="nd-panel-bar">
+              <h4 class="nd-heading nd-heading--flush">Xem trước</h4>
+              <div class="nd-actions">
+                <button id="gen-download-btn" class="btn-outline-nd nd-btn-xs">
+                  <i class="fas fa-download me-1"></i> Tải PNG
+                </button>
+              </div>
+            </div>
+            <div class="nd-gen-preview"><canvas id="gen-canvas"></canvas></div>
+          </div>
+        </div>
       </div>
 
     <section class="nd-guide" aria-labelledby="guide-title">
@@ -120,6 +175,23 @@
 
             <h2>Những loại mã được hỗ trợ</h2>
             <p>Công cụ dùng thư viện ZXing nên đọc được phổ biến nhất hiện nay: QR Code, Micro QR, Data Matrix, Aztec, PDF417, EAN-8, EAN-13, UPC-A, UPC-E, Code 39, Code 93, Code 128, ITF, Codabar…</p>
+
+            <h2>Tạo mã từ text</h2>
+            <p>Phần dưới cùng của trang cho phép nhập nội dung và chọn loại mã để sinh ra hình ảnh mã QR hoặc barcode. Bảng dưới đây tóm tắt các loại mã và định dạng nội dung cần nhập.</p>
+
+            <table>
+              <thead>
+                <tr><th>Loại mã</th><th>Nội dung hợp lệ</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>QR Code, Data Matrix</td><td>Mọi ký tự (tối đa 1500)</td></tr>
+                <tr><td>Code 128</td><td>Mọi ký tự</td></tr>
+                <tr><td>Code 39</td><td>Chữ hoa, số, khoảng trắng, - . $ / + %</td></tr>
+                <tr><td>EAN-13 / EAN-8 / UPC-A</td><td>Chữ số; nhập thiếu chữ số kiểm tra cuối thì công cụ tự bổ sung</td></tr>
+                <tr><td>ITF</td><td>Chữ số, số lượng chẵn</td></tr>
+                <tr><td>Codabar</td><td>Chữ số và - $ : / . + (kèm A/B/C/D đầu–cuối nếu cần)</td></tr>
+              </tbody>
+            </table>
 
             <h2>Lưu ý khi đọc không thành công</h2>
             <p>Ảnh mờ, thiếu sáng hoặc mã bị che khuất sẽ khó đọc. Hãy chụp lại cho rõ nét, đưa mã chiếm phần lớn khung hình và tránh phản quang. Với barcode, đảm bảo các vạch không bị nhòe và có khoảng cách hai bên.</p>
@@ -145,6 +217,7 @@
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" defer></script>
   <script src="https://cdn.jsdelivr.net/npm/@zxing/library@0.21.3/umd/index.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
   <script src="../assets/js/config.js"></script>
   <script src="../assets/js/qr-barcode.js"></script>
     <script src="../assets/js/online-counter.js"></script>

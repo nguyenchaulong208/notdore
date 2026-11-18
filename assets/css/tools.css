@@ -1704,3 +1704,35 @@
   line-height: 1.6;
   margin-bottom: .5rem;
 }
+.nd-gen-preview {
+  display: flex;
+  justify-content: center;
+  padding: 1rem;
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-md);
+  background: var(--bg-card-hover);
+}
+.nd-gen-preview canvas {
+  max-width: 100%;
+  height: auto;
+  image-rendering: pixelated;
+}
+.nd-guide-body table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0 0 1.2rem;
+  font-size: .9rem;
+}
+.nd-guide-body th,
+.nd-guide-body td {
+  padding: .55rem .7rem;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+  color: var(--text-secondary);
+}
+.nd-guide-body thead th {
+  font-size: .72rem;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  color: var(--text-muted);
+}
