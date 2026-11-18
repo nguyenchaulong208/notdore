@@ -1631,3 +1631,76 @@
 .nd-calc-sum-table tfoot td:first-child {
   color: var(--text-muted);
 }
+
+/* --- Đọc mã QR & Barcode --------------------------------------------- */
+.nd-dropzone {
+  margin-bottom: 0;
+}
+.nd-dropzone-icon {
+  display: block;
+  font-size: 2rem;
+  color: var(--accent-purple-light);
+  margin-bottom: .6rem;
+}
+.nd-dropzone-title {
+  margin: 0;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.nd-dropzone-sub {
+  margin: .3rem 0 0;
+  font-size: .85rem;
+  color: var(--text-muted);
+}
+.nd-dropzone.is-drag {
+  border-color: var(--accent-purple-light);
+  background: var(--gradient-soft);
+}
+.nd-scan-wrap {
+  margin-top: 1rem;
+}
+.nd-scan-video {
+  width: 100%;
+  max-height: 320px;
+  border-radius: var(--radius-sm);
+  background: #000;
+  object-fit: cover;
+}
+.nd-scan-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .75rem;
+  margin-top: .6rem;
+}
+.nd-file-status {
+  margin-top: .75rem;
+  min-height: 1.2em;
+}
+.nd-result + .nd-result {
+  border-top: 1px dashed var(--border);
+  margin-top: .75rem;
+  padding-top: .75rem;
+}
+.nd-result-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .5rem;
+  margin-bottom: .35rem;
+}
+.nd-result-source {
+  font-size: .82rem;
+  color: var(--text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.nd-result-text {
+  word-break: break-all;
+  white-space: pre-wrap;
+  color: var(--text-primary);
+  font-size: .95rem;
+  line-height: 1.6;
+  margin-bottom: .5rem;
+}

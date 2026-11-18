@@ -159,7 +159,8 @@
     });
   };
 
-  const init = async () => {
+  const init = async () => {
+
 
     try {
       const catalog = await DB.getCatalog();
@@ -181,6 +182,7 @@
         { name: 'Sinh mật khẩu PDF', description: 'Tạo mật khẩu ngẫu nhiên cho file PDF — chọn độ dài, copy hoặc xuất file txt', icon: 'fa-key', url: 'tools/sinh-mat-khau-pdf.html', tags: ['password', 'pdf', 'mật khẩu', 'ngẫu nhiên'], external: false },
         { name: 'Tra cứu hóa đơn', description: 'Danh sách link tra cứu hóa đơn điện tử, biên lai — tìm kiếm nhanh theo tên, loại', icon: 'fa-file-invoice', url: 'tools/tra-cuu-hoa-don.html', tags: ['hóa đơn', 'invoice', 'link', 'tra cứu'], external: false },
         { name: 'Tính phân bổ tiền bảo hiểm', description: 'Tính mức đóng BHXH, BHYT, BHTN phân bổ theo NSDLD (21,5%) và NLD (10,5%)', icon: 'fa-calculator', url: 'tools/tinh-phan-bo-bhxh.html', tags: ['bhxh', 'bhyt', 'bhtn', 'bảo hiểm', 'phân bổ'], external: false },
+        { name: 'Đọc mã QR & Barcode', description: 'Đọc mã QR, barcode từ ảnh hoặc camera — hiển thị nội dung text, copy hoặc xuất TXT', icon: 'fa-qrcode', url: 'tools/qr-barcode.html', tags: ['qr', 'barcode', 'quét mã', 'camera'], external: false },
       ];
 
       const external = (catalog.external || []).map((e) => ({

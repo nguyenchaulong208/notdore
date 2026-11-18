@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+    <link rel="icon" href="../favicon.ico">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Đọc mã QR & Barcode — NotDore</title>
+    <link rel="canonical" href="https://www.notdore.io.vn/tools/qr-barcode">
+  <meta name="description" content="Đọc mã QR, barcode từ ảnh hoặc camera — hiển thị nội dung dạng text, copy hoặc xuất file TXT">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="NotDore">
+    <meta property="og:locale" content="vi_VN">
+    <meta property="og:title" content="Đọc mã QR & Barcode — NotDore">
+    <meta property="og:description" content="Đọc mã QR, barcode từ ảnh hoặc camera — hiển thị nội dung dạng text, copy hoặc xuất file TXT">
+    <meta property="og:url" content="https://www.notdore.io.vn/tools/qr-barcode">
+    <meta property="og:image" content="https://www.notdore.io.vn/assets/images/og-image.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Đọc mã QR & Barcode — NotDore">
+    <meta name="twitter:description" content="Đọc mã QR, barcode từ ảnh hoặc camera — hiển thị nội dung dạng text, copy hoặc xuất file TXT">
+    <meta name="twitter:image" content="https://www.notdore.io.vn/assets/images/og-image.png">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/fontawesome.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/solid.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" media="print" onload="this.media='all'">
+  <link rel="stylesheet" href="../assets/css/notdore.css">
+  <link rel="stylesheet" href="../assets/css/tools.css">
+    <meta name="google-adsense-account" content="ca-pub-9767208027997083">
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9767208027997083" crossorigin="anonymous"></script>
+</head>
+<body>
+  <div class="anime-container">
+    <header class="anime-header">
+      <a class="anime-brand" href="../index.html">
+        <div class="anime-brand-text">
+          <span class="brand-fragment">Not</span>
+          <span class="brand-fragment brand-fragment--main">Dore</span>
+        </div>
+      </a>
+      <nav class="anime-nav" aria-label="Điều hướng chính">
+        <a href="../index.html" class="anime-nav-link" aria-current="page">Công cụ</a>
+        <a href="../thu-vien.html" class="anime-nav-link">Thư viện</a>
+        <a href="../contact.html" class="anime-nav-link">Liên hệ</a>
+      </nav>
+    </header>
+
+    <main class="site-section">
+      <div class="container nd-container nd-container--form">
+        <h1 class="site-section-heading">Đọc mã QR &amp; Barcode</h1>
+        <p class="site-section-sub">Đọc mã QR, barcode từ ảnh hoặc camera — hiển thị nội dung dạng text, copy hoặc xuất file TXT</p>
+
+        <!-- Nhập liệu -->
+        <div class="nd-panel">
+          <h3 class="nd-heading nd-heading--lg">Nguồn mã</h3>
+
+          <div id="dropzone" class="nd-dropzone" tabindex="0" role="button" aria-label="Chọn hoặc thả ảnh chứa mã QR, barcode">
+            <i class="fas fa-cloud-arrow-up nd-dropzone-icon" aria-hidden="true"></i>
+            <p class="nd-dropzone-title">Thả ảnh vào đây hoặc nhấn để chọn</p>
+            <p class="nd-dropzone-sub">Hỗ trợ nhiều ảnh cùng lúc · PNG, JPG, WEBP</p>
+            <input id="file-input" type="file" accept="image/*" multiple class="is-hidden">
+          </div>
+
+          <div class="nd-row nd-row--lg">
+            <button id="camera-btn" class="btn-outline-nd">
+              <i class="fas fa-camera me-1"></i> Quét bằng camera
+            </button>
+            <button id="paste-btn" class="btn-outline-nd">
+              <i class="fas fa-paste me-1"></i> Dán ảnh
+            </button>
+            <select id="device-select" class="nd-select is-hidden"></select>
+          </div>
+
+          <input id="paste-catch" type="text" class="nd-input nd-paste-catch is-hidden"
+                 placeholder="Nhấn Ctrl+V (Cmd+V) tại ô này…" aria-label="Dán ảnh từ clipboard">
+          <p class="nd-hint nd-mb-1">Mẹo: nhấn <kbd>Ctrl</kbd>+<kbd>V</kbd> ở bất kỳ đâu trong trang cũng dán được ảnh.</p>
+
+          <div id="scan-wrap" class="nd-scan-wrap is-hidden">
+            <video id="scan-video" class="nd-scan-video" playsinline muted></video>
+            <div class="nd-scan-bar">
+              <span id="scan-status" class="nd-muted">Đang quét…</span>
+              <button id="stop-camera-btn" class="btn-outline-nd nd-btn-xs">
+                <i class="fas fa-stop me-1"></i> Dừng
+              </button>
+            </div>
+          </div>
+
+          <div id="file-status" class="nd-file-status nd-muted" aria-live="polite"></div>
+        </div>
+
+        <!-- Kết quả -->
+        <div id="results-wrap" class="is-hidden nd-mt-1">
+          <div class="nd-panel-bar">
+            <h3 class="nd-heading nd-heading--flush">Kết quả đọc được</h3>
+            <div class="nd-actions">
+              <button id="copy-all-btn" class="btn-outline-nd nd-btn-xs">
+                <i class="fas fa-copy me-1"></i> Copy tất cả
+              </button>
+              <button id="export-txt-btn" class="btn-outline-nd nd-btn-xs">
+                <i class="fas fa-file-export me-1"></i> Xuất file TXT
+              </button>
+              <button id="clear-btn" class="btn-outline-nd nd-btn-xs">
+                <i class="fas fa-trash-can me-1"></i> Xóa kết quả
+              </button>
+            </div>
+          </div>
+          <div id="result-list" class="nd-output"></div>
+        </div>
+      </div>
+
+    <section class="nd-guide" aria-labelledby="guide-title">
+      <h2 class="nd-guide-title" id="guide-title"><i class="fas fa-book-open" aria-hidden="true"></i> Hướng dẫn chi tiết</h2>
+      <div class="nd-guide-body">
+<p>Mã QR và barcode hiện diện khắp nơi: trên hóa đơn, phiếu giao hàng, thẻ nhân viên, hộp sản phẩm. Đôi khi bạn chỉ cần lấy nội dung bên trong mã đó dưới dạng text để dán vào phần mềm kế toán, CRM hay đối chiếu dữ liệu. Trang <a href="../tools/qr-barcode.html">Đọc mã QR &amp; Barcode</a> trên NotDore làm việc đó ngay trên trình duyệt.</p>
+
+            <h2>Cách dùng công cụ</h2>
+            <ol>
+              <li>Nhấn ô chọn ảnh hoặc thả một hoặc nhiều ảnh chứa mã vào khung.</li>
+              <li>Công cụ tự động đọc và hiển thị nội dung text kèm loại mã (QR, EAN-13, Code 128…).</li>
+              <li>Dùng nút copy từng dòng hoặc “Copy tất cả”, “Xuất file TXT” để lưu kết quả.</li>
+              <li>Với mã in trên sản phẩm, chọn “Quét bằng camera” để đọc trực tiếp.</li>
+            </ol>
+
+            <h2>Những loại mã được hỗ trợ</h2>
+            <p>Công cụ dùng thư viện ZXing nên đọc được phổ biến nhất hiện nay: QR Code, Micro QR, Data Matrix, Aztec, PDF417, EAN-8, EAN-13, UPC-A, UPC-E, Code 39, Code 93, Code 128, ITF, Codabar…</p>
+
+            <h2>Lưu ý khi đọc không thành công</h2>
+            <p>Ảnh mờ, thiếu sáng hoặc mã bị che khuất sẽ khó đọc. Hãy chụp lại cho rõ nét, đưa mã chiếm phần lớn khung hình và tránh phản quang. Với barcode, đảm bảo các vạch không bị nhòe và có khoảng cách hai bên.</p>
+
+            <div class="nd-callout">
+              <strong>Bảo mật:</strong> toàn bộ ảnh và kết quả được xử lý ngay trên trình duyệt của bạn. Không có ảnh hay nội dung mã nào được gửi lên máy chủ.
+            </div>
+      </div>
+    </section>
+    </main>
+
+    <footer class="anime-footer">
+      <p>NotDore — Theodore.</p>
+      <p>
+        <a href="../index.html">Trang chủ</a> ·
+        <a href="../about.html">Giới thiệu</a> ·
+        <a href="../privacy.html">Chính sách bảo mật</a> ·
+        <a href="../contact.html">Liên hệ</a>
+      </p>
+    <span id="online-badge" class="nd-online-badge" title="Số người đang trực tuyến (cập nhật mỗi 15 giây)"><i class="fas fa-signal" aria-hidden="true"></i><span class="nd-online-num">&hellip;</span></span>
+      </footer>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/@zxing/library@0.21.3/umd/index.min.js"></script>
+  <script src="../assets/js/config.js"></script>
+  <script src="../assets/js/qr-barcode.js"></script>
+    <script src="../assets/js/online-counter.js"></script>
+  </body>
+</html>
