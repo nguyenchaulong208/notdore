@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Đọc và trình bày file XML BHXH D02-TS, TK1-TS trực tiếp trên trình duyệt. Dữ liệu không tải lên máy chủ.">
+  <title>Đọc XML BHXH — NotDore</title>
+  <link rel="icon" href="../favicon.ico">
+  <link rel="stylesheet" href="../assets/css/notdore.css">
+  <link rel="stylesheet" href="../assets/css/tools.css">
+  <style>
+    :root{--bhx-ink:#213047;--bhx-muted:#69788d;--bhx-line:#e4eaf1;--bhx-soft:#f5f8fc;--bhx-primary:#2674d9;--bhx-green:#147d5a}
+    body{color:var(--bhx-ink)}.bhx-wrap{width:min(1120px,calc(100% - 32px));margin:28px auto 64px}.bhx-head{margin:28px 0 22px}.bhx-head h1{margin:0 0 8px;font-size:clamp(1.7rem,4vw,2.4rem)}.bhx-head p{color:var(--bhx-muted);margin:0;max-width:760px;line-height:1.65}
+    .bhx-privacy,.bhx-notice{border:1px solid #cfe7dc;background:#f2fbf6;color:#245c47;border-radius:12px;padding:12px 15px;line-height:1.55}.bhx-privacy{margin:18px 0}.bhx-notice{display:none;margin:14px 0}.bhx-notice.error{border-color:#f2cccc;background:#fff6f6;color:#9c3333}.bhx-upload-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin:20px 0}.bhx-upload{border:1px dashed #b9c9dc;background:#fff;border-radius:15px;padding:18px;min-height:145px;transition:.15s}.bhx-upload.drag{border-color:var(--bhx-primary);background:#f2f7ff}.bhx-upload-head{display:flex;align-items:center;justify-content:space-between;gap:12px}.bhx-upload h2{font-size:1.05rem;margin:0}.bhx-upload p{color:var(--bhx-muted);font-size:.9rem;margin:8px 0 14px}.bhx-file-name{font-size:.86rem;color:var(--bhx-green);word-break:break-word}.bhx-input{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}.bhx-btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;border:1px solid #cfdae7;border-radius:9px;padding:9px 13px;background:#fff;color:var(--bhx-ink);font:inherit;font-weight:650;cursor:pointer;text-decoration:none}.bhx-btn:hover{border-color:var(--bhx-primary);color:var(--bhx-primary)}.bhx-btn.primary{background:var(--bhx-primary);border-color:var(--bhx-primary);color:#fff}.bhx-btn:disabled{opacity:.5;cursor:not-allowed}.bhx-summary{display:none;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:18px 0}.bhx-stat{border:1px solid var(--bhx-line);border-radius:12px;padding:14px 16px;background:#fff}.bhx-stat span{display:block;color:var(--bhx-muted);font-size:.84rem}.bhx-stat strong{display:block;margin-top:5px;font-size:1.15rem;overflow-wrap:anywhere}.bhx-toolbar{display:none;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:20px 0 12px}.bhx-tabs{display:flex;gap:8px;flex-wrap:wrap}.bhx-tab{border:1px solid var(--bhx-line);border-radius:9px;background:#fff;padding:9px 13px;color:var(--bhx-ink);font:inherit;font-weight:650;cursor:pointer}.bhx-tab[aria-selected="true"]{background:#eaf3ff;border-color:#a9c9f3;color:#175bad}.bhx-tools{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.bhx-search{border:1px solid #cfdae7;border-radius:9px;padding:9px 12px;min-width:min(260px,70vw);font:inherit}.bhx-panel{display:none;border:1px solid var(--bhx-line);background:#fff;border-radius:14px;overflow:hidden}.bhx-panel.active{display:block}.bhx-panel-top{padding:16px 18px;border-bottom:1px solid var(--bhx-line);background:#fbfcfe}.bhx-panel-top h2{font-size:1.1rem;margin:0 0 4px}.bhx-panel-top p{color:var(--bhx-muted);margin:0;font-size:.9rem}.bhx-table-wrap{overflow:auto}.bhx-table{border-collapse:collapse;width:100%;min-width:780px}.bhx-table th,.bhx-table td{padding:11px 12px;border-bottom:1px solid #edf1f5;text-align:left;vertical-align:top}.bhx-table th{background:#f7f9fc;color:#526278;font-size:.82rem;white-space:nowrap}.bhx-table td{font-size:.9rem}.bhx-table tbody tr{cursor:pointer}.bhx-table tbody tr:hover{background:#f5f9ff}.bhx-table tbody tr.selected{background:#edf5ff}.bhx-table .num,.bhx-table .money{white-space:nowrap}.bhx-badge{display:inline-block;background:#eef3f8;border-radius:999px;padding:3px 8px;color:#42546b;font-size:.78rem;white-space:nowrap}.bhx-detail{display:none;padding:18px;border-top:1px solid var(--bhx-line);background:#fbfcfe}.bhx-detail.show{display:block}.bhx-detail h3{margin:0 0 13px;font-size:1rem}.bhx-detail-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.bhx-field{border:1px solid #e8edf3;border-radius:9px;padding:10px;background:white;min-width:0}.bhx-field span{display:block;color:var(--bhx-muted);font-size:.78rem;margin-bottom:4px}.bhx-field strong{display:block;font-size:.9rem;font-weight:600;overflow-wrap:anywhere;white-space:pre-wrap}.bhx-empty{padding:30px;text-align:center;color:var(--bhx-muted)}.bhx-footnote{font-size:.84rem;color:var(--bhx-muted);line-height:1.6;margin:14px 0}.bhx-count{color:var(--bhx-muted);font-size:.86rem}
+    @media(max-width:700px){.bhx-upload-grid{grid-template-columns:1fr}.bhx-summary{grid-template-columns:1fr}.bhx-detail-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.bhx-wrap{width:min(100% - 22px,1120px)}.bhx-toolbar{align-items:stretch}.bhx-tools{width:100%}.bhx-search{flex:1;min-width:160px}}
+    @media print{.anime-header,.bhx-upload-grid,.bhx-privacy,.bhx-toolbar,.bhx-footnote,.anime-footer{display:none!important}.bhx-wrap{width:100%;margin:0}.bhx-panel{display:block!important;break-inside:avoid}.bhx-panel:not(.active){display:none!important}.bhx-detail{display:block!important}.bhx-table-wrap{overflow:visible}.bhx-table{min-width:0;font-size:9pt}.bhx-table th,.bhx-table td{padding:5px}.bhx-summary{display:grid!important}}
+  </style>
+</head>
+<body>
+  <div class="anime-container">
+    <header class="anime-header">
+      <a class="anime-brand" href="../index.html"><div class="anime-brand-text"><span class="brand-fragment">Not</span><span class="brand-fragment brand-fragment--main">Dore</span></div></a>
+      <nav class="anime-nav" aria-label="Điều hướng chính"><a href="../index.html" class="anime-nav-link">Công cụ</a><a href="../thu-vien.html" class="anime-nav-link">Thư viện</a><a href="../contact.html" class="anime-nav-link">Liên hệ</a></nav>
+    </header>
+    <main class="bhx-wrap">
+      <header class="bhx-head"><h1>Đọc XML BHXH</h1><p>Tải lên file <strong>D02-TS</strong> và/hoặc <strong>TK1-TS</strong> để xem thông tin theo dạng bản thể hiện dễ đọc, có thể tìm kiếm, in hoặc lưu PDF.</p></header>
+      <div class="bhx-privacy"><strong>Riêng tư:</strong> XML được đọc và xử lý ngay trong trình duyệt của bạn; công cụ không gửi hoặc lưu file lên máy chủ.</div>
+      <div id="notice" class="bhx-notice" role="alert"></div>
+      <section class="bhx-upload-grid" aria-label="Chọn file XML">
+        <article class="bhx-upload" data-kind="D02-TS">
+          <div class="bhx-upload-head"><h2>D02-TS — Báo tăng/giảm lao động</h2><label class="bhx-btn" for="file-d02">Chọn file XML</label></div>
+          <p>Kéo thả file D02-TS vào đây hoặc chọn từ thiết bị.</p><div id="name-d02" class="bhx-file-name">Chưa chọn file</div>
+          <input class="bhx-input" id="file-d02" type="file" accept=".xml,text/xml,application/xml" aria-label="Chọn file D02-TS XML">
+        </article>
+        <article class="bhx-upload" data-kind="TK1-TS">
+          <div class="bhx-upload-head"><h2>TK1-TS — Tờ khai tham gia, điều chỉnh</h2><label class="bhx-btn" for="file-tk1">Chọn file XML</label></div>
+          <p>Kéo thả file TK1-TS vào đây hoặc chọn từ thiết bị.</p><div id="name-tk1" class="bhx-file-name">Chưa chọn file</div>
+          <input class="bhx-input" id="file-tk1" type="file" accept=".xml,text/xml,application/xml" aria-label="Chọn file TK1-TS XML">
+        </article>
+      </section>
+      <section id="summary" class="bhx-summary" aria-label="Tổng quan"></section>
+      <div id="toolbar" class="bhx-toolbar">
+        <div id="tabs" class="bhx-tabs" role="tablist" aria-label="Loại hồ sơ"></div>
+        <div class="bhx-tools"><input id="search" class="bhx-search" type="search" placeholder="Tìm tên, mã số, nội dung…" aria-label="Tìm trong hồ sơ"><button id="print" class="bhx-btn" type="button">In / Lưu PDF</button></div>
+      </div>
+      <section id="panels" aria-live="polite"></section>
+      <p class="bhx-footnote">Thông tin được hiển thị theo dữ liệu có trong file XML. Công cụ không xác thực chữ ký số hoặc thay thế bản XML/bản hồ sơ chính thức.</p>
+    </main>
+    <footer class="anime-footer"><p>NotDore — Theodore.</p><p><a href="../index.html">Trang chủ</a> · <a href="../privacy.html">Chính sách bảo mật</a> · <a href="../contact.html">Liên hệ</a></p></footer>
+  </div>
+  <script>
+  (() => {
+    'use strict';
+    const docs = new Map();
+    let activeKind = '';
+    let query = '';
+    const $ = (id) => document.getElementById(id);
+    const labels = {
+      STT:'Số thứ tự',HoTen:'Họ và tên',MasoBHXH:'Mã số BHXH',ChucVu:'Chức vụ',NoiLamViec:'Nơi làm việc',TienLuong:'Tiền lương',
+      PhuCapCV:'Phụ cấp chức vụ',PhuCapTNVK:'Phụ cấp thâm niên vượt khung',PhuCapTNNghe:'Phụ cấp thâm niên nghề',PhuCapLuong:'Phụ cấp lương',PhuCapBosung:'Phụ cấp bổ sung',
+      TuThang:'Từ tháng',DenThang:'Đến tháng',Ghichu:'Ghi chú',PA:'Phương án',TyleDong:'Tỷ lệ đóng',TinhLai:'Tính lại',DaCoSo:'Đã có sổ',MucHuong:'Mức hưởng',MaPhongBan:'Mã phòng ban',MavungSS:'Mã vùng sinh sống',MavungLTT:'Mã vùng lương tối thiểu',ID:'Mã hồ sơ',Loai:'Loại',NgaySinh:'Ngày sinh',GioiTinh:'Giới tính',CMND:'CCCD/CMND',CoGiamChet:'Có giảm do chết',NgayChet:'Ngày chết',
+      QuocTich:'Quốc tịch',DanToc:'Dân tộc',Matinh_KS:'Mã tỉnh khai sinh',Mahuyen_KS:'Mã huyện khai sinh',Maxa_KS:'Mã xã khai sinh',Diachi_NN:'Địa chỉ nhận thông báo',Matinh_NN:'Mã tỉnh thường trú',Mahuyen_NN:'Mã huyện thường trú',Maxa_NN:'Mã xã thường trú',Ten_ChaMe_Giamho:'Tên cha/mẹ/người giám hộ',Dienthoai_LH:'Điện thoại liên hệ',Maho_Giadinh:'Mã hộ gia đình',Mucdong:'Mức đóng',Phuongthuc:'Phương thức',MaTinhBenhVien:'Mã tỉnh bệnh viện',MaBenhVien:'Mã bệnh viện',Noidung_Thaydoi:'Nội dung thay đổi',HosoKemtheo:'Hồ sơ kèm theo',CCNS:'Có cấp sổ',Diachi_KS:'Địa chỉ khai sinh',Email_LH:'Email liên hệ',Nhan_BanDientu:'Nhận bản điện tử',Nhan_Bangiay:'Nhận bản giấy',Diachi_NhanBangiay:'Địa chỉ nhận bản giấy',Tinh_NhanBangiay:'Tỉnh nhận bản giấy',Huyen_NhanBangiay:'Huyện nhận bản giấy',Xa_NhanBangiay:'Xã nhận bản giấy',PhuLuc:'Phụ lục'
+    };
+    const textOf = (el) => (el?.textContent || '').trim();
+    const childText = (el, name) => textOf([...el.children].find((child) => child.localName === name));
+    const escapeText = (value) => String(value ?? '');
+    function showNotice(message, error = false) { const box = $('notice'); box.textContent = message; box.classList.toggle('error', error); box.style.display = 'block'; }
+    function parseFile(file, expected) {
+      if (!file || file.size > 10 * 1024 * 1024) throw new Error('File không hợp lệ hoặc lớn hơn giới hạn 10 MB.');
+      return file.text().then((source) => {
+        const xml = new DOMParser().parseFromString(source, 'application/xml');
+        if (xml.querySelector('parsererror')) throw new Error('Không đọc được XML. Hãy kiểm tra file có đúng định dạng và không bị lỗi.');
+        const root = xml.documentElement;
+        if (!root || root.localName !== expected) throw new Error(`Sai loại file: cần XML ${expected}, nhưng file này có cấu trúc ${root?.localName || 'không xác định'}.`);
+        const records = [...xml.getElementsByTagNameNS('*', 'LaoDong')];
+        if (!records.length) throw new Error(`Không tìm thấy danh sách LaoDong trong file ${expected}.`);
+        return { kind: expected, fileName: file.name, records, root };
+      });
+    }
+    function money(value) {
+      const n = Number(String(value || '').replace(/[.,\s]/g, ''));
+      return value && Number.isFinite(n) ? new Intl.NumberFormat('vi-VN').format(n) + ' ₫' : (value || '—');
+    }
+    function displayField(name, value) {
+      if (!value) return '—';
+      if (name === 'TienLuong') return money(value);
+      if (name === 'GioiTinh') return value === '1' ? 'Nam' : value === '0' ? 'Nữ' : value;
+      if (name === 'QuocTich' && value === 'VN') return 'Việt Nam';
+      if (name === 'PA') return ({TM:'Tăng mới',GH:'Giảm hẳn',TU:'Giảm BHYT'})[value] || value;
+      return value;
+    }
+    function safeCell(text, className = '') { const td = document.createElement('td'); td.textContent = text || '—'; if (className) td.className = className; return td; }
+    function appendField(grid, name, value) {
+      const box = document.createElement('div'); box.className = 'bhx-field';
+      const label = document.createElement('span'); label.textContent = labels[name] || name;
+      const content = document.createElement('strong'); content.textContent = displayField(name, value);
+      box.append(label, content); grid.append(box);
+    }
+    function findRecords(kind) {
+      const doc = docs.get(kind); if (!doc) return [];
+      const q = query.trim().toLocaleLowerCase('vi');
+      return doc.records.filter((record) => !q || [...record.children].some((el) => textOf(el).toLocaleLowerCase('vi').includes(q)));
+    }
+    function renderSummary() {
+      const summary = $('summary'); summary.replaceChildren();
+      const all = [...docs.values()];
+      if (!all.length) { summary.style.display = 'none'; return; }
+      summary.style.display = 'grid';
+      const uniquePeople = new Set(all.flatMap((doc) => doc.records.map((r) => childText(r, 'MasoBHXH') || childText(r, 'ID') || childText(r, 'HoTen')).filter(Boolean)));
+      const stats = [
+        ['Loại hồ sơ', all.map((doc) => doc.kind).join(' · ')],
+        ['Số dòng hồ sơ', String(all.reduce((sum, doc) => sum + doc.records.length, 0))],
+        ['Người tham gia', String(uniquePeople.size)]
+      ];
+      stats.forEach(([label, value]) => { const card = document.createElement('div'); card.className = 'bhx-stat'; const l = document.createElement('span'); l.textContent = label; const v = document.createElement('strong'); v.textContent = value; card.append(l, v); summary.append(card); });
+    }
+    function render() {
+      const kinds = [...docs.keys()];
+      $('toolbar').style.display = kinds.length ? 'flex' : 'none';
+      const tabs = $('tabs'); tabs.replaceChildren();
+      const panels = $('panels'); panels.replaceChildren();
+      if (!kinds.includes(activeKind)) activeKind = kinds[0] || '';
+      kinds.forEach((kind) => {
+        const tab = document.createElement('button'); tab.type = 'button'; tab.className = 'bhx-tab'; tab.role = 'tab'; tab.setAttribute('aria-selected', String(kind === activeKind)); tab.textContent = kind; tab.addEventListener('click', () => { activeKind = kind; render(); }); tabs.append(tab);
+        const doc = docs.get(kind); const panel = document.createElement('article'); panel.className = `bhx-panel${kind === activeKind ? ' active' : ''}`;
+        const top = document.createElement('header'); top.className = 'bhx-panel-top'; const title = document.createElement('h2'); title.textContent = kind === 'D02-TS' ? 'Bảng kê thay đổi lao động' : 'Tờ khai tham gia, điều chỉnh thông tin'; const meta = document.createElement('p'); meta.textContent = `${doc.fileName} · ${doc.records.length} dòng trong XML`; top.append(title, meta);
+        const wrap = document.createElement('div'); wrap.className = 'bhx-table-wrap'; const table = document.createElement('table'); table.className = 'bhx-table';
+        const head = document.createElement('thead'); const trh = document.createElement('tr');
+        const cols = kind === 'D02-TS'
+          ? [['STT','STT'],['HoTen','Người lao động'],['MasoBHXH','Mã số BHXH'],['PA','Nội dung'],['TuThang','Thời gian'],['TienLuong','Tiền lương'],['MaPhongBan','Phòng ban'],['Ghichu','Ghi chú']]
+          : [['STT','STT'],['HoTen','Người lao động'],['NgaySinh','Ngày sinh'],['MasoBHXH','Mã số BHXH'],['CMND','CCCD/CMND'],['Diachi_NN','Địa chỉ'],['MaBenhVien','Mã bệnh viện']];
+        cols.forEach(([, label]) => { const th = document.createElement('th'); th.scope = 'col'; th.textContent = label; trh.append(th); }); head.append(trh); table.append(head);
+        const body = document.createElement('tbody'); const filtered = findRecords(kind);
+        filtered.forEach((record, index) => {
+          const tr = document.createElement('tr'); tr.tabIndex = 0;
+          cols.forEach(([key]) => {
+            let val = childText(record, key);
+            if (key === 'PA') val = displayField(key, val);
+            if (key === 'TienLuong') val = displayField(key, val);
+            if (key === 'MaBenhVien' && val) val = `${val} · ${childText(record, 'MaTinhBenhVien') || ''}`;
+            const td = safeCell(val, ['STT','TienLuong'].includes(key) ? (key === 'TienLuong' ? 'money' : 'num') : '');
+            if (key === 'PA' && val !== '—') { const badge = document.createElement('span'); badge.className = 'bhx-badge'; badge.textContent = val; td.replaceChildren(badge); }
+            tr.append(td);
+          });
+          const detail = document.createElement('div'); detail.className = 'bhx-detail'; const detailTitle = document.createElement('h3'); detailTitle.textContent = `Chi tiết: ${childText(record, 'HoTen') || 'Người lao động'}`; const grid = document.createElement('div'); grid.className = 'bhx-detail-grid';
+          [...record.children].forEach((el) => { if (!textOf(el)) return; appendField(grid, el.localName, textOf(el)); }); detail.append(detailTitle, grid);
+          const select = () => { body.querySelectorAll('tr').forEach((row) => row.classList.remove('selected')); panels.querySelectorAll('.bhx-detail').forEach((d) => d.classList.remove('show')); tr.classList.add('selected'); detail.classList.add('show'); };
+          tr.addEventListener('click', select); tr.addEventListener('keydown', (event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); select(); } });
+          body.append(tr); body.append(detail);
+        });
+        if (!filtered.length) { const empty = document.createElement('tr'); const td = document.createElement('td'); td.colSpan = cols.length; td.className = 'bhx-empty'; td.textContent = 'Không tìm thấy dòng dữ liệu phù hợp.'; empty.append(td); body.append(empty); }
+        table.append(body); wrap.append(table); panel.append(top, wrap); panels.append(panel);
+      });
+      renderSummary();
+    }
+    async function loadFile(file, kind) {
+      if (!file) return;
+      try {
+        const doc = await parseFile(file, kind); docs.set(kind, doc); activeKind = kind;
+        $(kind === 'D02-TS' ? 'name-d02' : 'name-tk1').textContent = `Đã đọc: ${file.name}`;
+        $('notice').style.display = 'none'; render();
+      } catch (error) { showNotice(error.message || 'Không thể đọc file XML.', true); }
+    }
+    [['file-d02','D02-TS'],['file-tk1','TK1-TS']].forEach(([id, kind]) => $(id).addEventListener('change', (event) => loadFile(event.target.files[0], kind)));
+    document.querySelectorAll('.bhx-upload').forEach((zone) => {
+      const kind = zone.dataset.kind;
+      zone.addEventListener('dragover', (event) => { event.preventDefault(); zone.classList.add('drag'); });
+      zone.addEventListener('dragleave', () => zone.classList.remove('drag'));
+      zone.addEventListener('drop', (event) => { event.preventDefault(); zone.classList.remove('drag'); loadFile(event.dataTransfer.files[0], kind); });
+    });
+    $('search').addEventListener('input', (event) => { query = event.target.value; render(); });
+    $('print').addEventListener('click', () => window.print());
+  })();
+  </script>
+</body>
+</html>
